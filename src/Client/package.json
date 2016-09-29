@@ -29,7 +29,7 @@
     "postinstall": "typings install && gulp build",
     "buildprod": "set NODE_ENV=production&&gulp build"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Kyle Wascher",
+  "license": "GPL-3.0",
   "description": ""
 }

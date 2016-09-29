@@ -1,5 +1,10 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +22,7 @@ namespace Zoxive.HttpLoadTesting.Client
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             //app.UseStaticFiles();
-            app.UseFileServer();
+            //app.UseFileServer();
 
             app.UseMvc();
 
@@ -28,19 +33,54 @@ namespace Zoxive.HttpLoadTesting.Client
                 app.UseDeveloperExceptionPage();
             }
 
-            /*
             app.Run(async (context) =>
             {
-                /*
-                var stepResultsRepository = app.ApplicationServices.GetService<IIterationResultRepository>();
+                var path = context.Request.Path.Value;
 
-                var stepResults = stepResultsRepository.GetAll();
+                if (path == "/scripts/app.js")
+                {
+                    await ResourcesOrRealThing.Stream("wwwroot/scripts/app.js", context.Response, "text/javascript");
+                    return;
+                }
 
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(stepResults));
-
-                await context.Response.WriteAsync("TODO home page");
+                await ResourcesOrRealThing.Stream("wwwroot/index.html", context.Response, "text/html");
             });
-            */
+        }
+    }
+
+    public static class ResourcesOrRealThing
+    {
+        private static readonly string CurrentDirectory = Directory.GetCurrentDirectory();
+        private static readonly Assembly CurrentAssembly = typeof(ResourcesOrRealThing).GetTypeInfo().Assembly;
+
+        private static Stream Stream(string resourceName)
+        {
+            var fullPath = CurrentDirectory + "/a/" + resourceName;
+
+            if (File.Exists(fullPath))
+            {
+                return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
+            }
+
+            var embededResourceName = "Client." + resourceName.Replace('/', '.');
+
+            return CurrentAssembly.GetManifestResourceStream(embededResourceName);
+        }
+
+        public static async Task Stream(string resourceName, HttpResponse response, string contentType)
+        {
+            var stream = Stream(resourceName);
+            if (stream == null)
+            {
+                response.StatusCode = 404;
+                await response.WriteAsync("Not Found");
+                return;
+            }
+
+            response.ContentLength = stream.Length;
+            response.ContentType = contentType;
+
+            await stream.CopyToAsync(response.Body);
         }
     }
 }
