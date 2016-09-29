@@ -10,7 +10,7 @@ namespace Zoxive.HttpLoadTesting.Client
 {
     public class WebClient
     {
-        public static void Run(ILoadTestExecution testExecution, IReadOnlyList<ISchedule> schedule, string contentRoot)
+        public static void Run(ILoadTestExecution testExecution, IReadOnlyList<ISchedule> schedule)
         {
             var stepResultsRepository = new IterationResultRepository();
 
@@ -33,7 +33,7 @@ namespace Zoxive.HttpLoadTesting.Client
             (
                 options,
                 () => testExecution.Execute(schedule, cancellationSource.Token),
-                () => Program.Start(stepResultsRepository, contentRoot, cancellationSource.Token)
+                () => Program.Start(stepResultsRepository, cancellationSource.Token)
             );
         }
 

@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -21,9 +20,6 @@ namespace Zoxive.HttpLoadTesting.Client
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            //app.UseStaticFiles();
-            //app.UseFileServer();
-
             app.UseMvc();
 
             loggerFactory.AddConsole(LogLevel.Warning);
@@ -40,10 +36,11 @@ namespace Zoxive.HttpLoadTesting.Client
                 if (path == "/scripts/app.js")
                 {
                     await ResourcesOrRealThing.Stream("wwwroot/scripts/app.js", context.Response, "text/javascript");
-                    return;
                 }
-
-                await ResourcesOrRealThing.Stream("wwwroot/index.html", context.Response, "text/html");
+                else
+                {
+                    await ResourcesOrRealThing.Stream("wwwroot/index.html", context.Response, "text/html");
+                }
             });
         }
     }
@@ -55,7 +52,7 @@ namespace Zoxive.HttpLoadTesting.Client
 
         private static Stream Stream(string resourceName)
         {
-            var fullPath = CurrentDirectory + "/a/" + resourceName;
+            var fullPath = CurrentDirectory + "/" + resourceName;
 
             if (File.Exists(fullPath))
             {
@@ -81,6 +78,8 @@ namespace Zoxive.HttpLoadTesting.Client
             response.ContentType = contentType;
 
             await stream.CopyToAsync(response.Body);
+
+            stream.Dispose();
         }
     }
 }

@@ -11,16 +11,16 @@ namespace Zoxive.HttpLoadTesting.Client
     {
         public static void Main(string[] args)
         {
-            // TODO Throw exception cant start directly?
+            // TODO load passed in data
 
-            Start(new IterationResultRepository(), Directory.GetCurrentDirectory());
+            Start(new IterationResultRepository());
         }
 
-        internal static void Start(IIterationResultRepository iterationResultRepository, string contentRoot, CancellationToken? cancellationToken = null)
+        internal static void Start(IIterationResultRepository iterationResultRepository, CancellationToken? cancellationToken = null)
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
-                .UseContentRoot(contentRoot)
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .ConfigureServices(services =>
                 {
