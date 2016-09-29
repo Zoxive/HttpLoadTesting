@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -38,9 +37,7 @@ namespace Zoxive.HttpLoadTesting.Examples.Examples
 
             var testExecution = new LoadTestExecution(users, tests);
 
-            var dir = Directory.GetCurrentDirectory() + @"\..\..\Client";
-
-            WebClient.Run(testExecution, schedule, dir);
+            WebClient.Run(testExecution, schedule);
         }
 
         private static void SetHttpClientProperties(HttpClient httpClient)
