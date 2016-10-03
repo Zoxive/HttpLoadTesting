@@ -1,12 +1,12 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.0.1",
   "buildOptions": {
     "emitEntryPoint": true
   },
 
   "dependencies": {
-    "Client": "1.0.0-*",
-    "Framework": "1.0.0-*",
+    "Client": "0.0.1",
+    "Framework": "0.0.1",
     "Microsoft.NETCore.App": {
         "type": "platform",
         "version": "1.0.1"
