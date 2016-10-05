@@ -12,6 +12,7 @@ public class ReadAPost : ILoadTest
 
     public Task Initialize(ILoadTestHttpClient loadTestHttpClient)
     {
+    	// nothing to initialize
         return Task.FromResult(0);
     }
 
@@ -20,10 +21,8 @@ public class ReadAPost : ILoadTest
         // Simulate user delay in clicking (User think time)
 		await loadTestHttpClient.DelayUserClick();
 
-		var postId = (string)loadTestHttpClient.TestState[PostId];
-
 		// User had to open the post
-		await loadTestHttpClient.Get($"posts/{postId}");
+		await loadTestHttpClient.Get("posts/1");
 
 		// User thinking and typing
 		await loadTestHttpClient.DelayUserThink()
@@ -35,7 +34,7 @@ public class ReadAPost : ILoadTest
 			{"body", "Comment body"}
 		};
 
-		await loadTestHttpClient.Post($"posts/{postId}/comments", comment);
+		await loadTestHttpClient.Post("posts/1/comments", comment);
 	}
 }
 
