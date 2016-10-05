@@ -1,6 +1,8 @@
 # HttpLoadTesting
 
-Allows you to write test scenarios  
+HTTP Load testing when single HTTP endpoint is not enough.
+
+Allows you to write test scenarios.
 
 ```csharp
 // Test
@@ -13,13 +15,28 @@ public class ReadAPost : ILoadTest
         return Task.FromResult(0);
     }
 
-    public async Task Execute(ILoadTestHttpClient loadTestHttpClient)
-    {
+	public async Task Execute(ILoadTestHttpClient loadTestHttpClient)
+	{
         // Simulate user delay in clicking (User think time)
-        await loadTestHttpClient.DelayUserClick();
+		await loadTestHttpClient.DelayUserClick();
 
-        await loadTestHttpClient.Get($"posts/1");
-    }
+		var postId = (string)loadTestHttpClient.TestState[PostId];
+
+		// User had to open the post
+		await loadTestHttpClient.Get($"posts/{postId}");
+
+		// User thinking and typing
+		await loadTestHttpClient.DelayUserThink()
+
+		var comment = new Dictionary<string, object>
+		{
+			{"name", "HttpLoadTesting"},
+			{"email", "vel+minus+molestias+voluptatum@omnis.com"},
+			{"body", "Comment body"}
+		};
+
+		await loadTestHttpClient.Post($"posts/{postId}/comments", comment);
+	}
 }
 
 // Console Application
@@ -62,7 +79,7 @@ public class Program
         var testExecution = new LoadTestExecution(users, tests);
         
         // Run the Tests!
-        WebClient.Run(testExecution, schedule, Directory.GetCurrentDirectory());
+        WebClient.Run(testExecution, schedule);
     }
 }
 ```
@@ -70,4 +87,5 @@ public class Program
 TODO list
  - Display what "Schedule" is currently running (Time started, time left?)
  - Display current user count
+ - Finish web client
  - Save output from cli that can later open in web client

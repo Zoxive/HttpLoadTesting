@@ -23,7 +23,7 @@ namespace Zoxive.HttpLoadTesting.Examples.Examples
 
             var tests = new List<ILoadTest>
             {
-                new ReadAPost()
+                new ReadAPostCreateAComment()
             };
 
             var users = new List<IHttpUser>
