@@ -1,5 +1,10 @@
 {
     "version": "0.0.1",
+    "title": "Zoxive.HttpLoadTesting.Client",
+    "description": "HttpLoadTesting http load generator web client",
+    "authors": [
+        "Kyle Wascher"
+    ],
 
     "dependencies": {
         "Microsoft.NETCore.App": {
@@ -13,11 +18,11 @@
         "Microsoft.Extensions.Caching.Memory": "1.0.0",
         "Microsoft.AspNetCore.Routing": "1.0.1",
         "Microsoft.AspNetCore.Mvc": "1.0.1",
-        "Framework": "0.0.1"
+        "Zoxive.HttpLoadTesting.Framework": "0.0.1"
     },
 
     "tools": {
-  
+    
     },
 
     "frameworks": {
@@ -49,6 +54,17 @@
         "include": [
             "wwwroot",
             "web.config"
+        ]
+    },
+
+    "packOptions": {
+        "repository": {
+            "type": "git",
+            "url": "https://github.com/Zoxive/HttpLoadTesting"
+        },
+        "licenseUrl": "https://github.com/Zoxive/HttpLoadTesting/blob/master/LICENSE",
+        "tags": [
+            "load tests", "performance", "http", "rest", "benchmark", "test", "testing", "dotnetcore"
         ]
     },
 

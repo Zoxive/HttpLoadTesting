@@ -10,9 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Zoxive.HttpLoadTesting.Client", "src\Client\Zoxive.HttpLoadTesting.Client.xproj", "{EBF15348-54E4-4F77-B2FA-31A06C747711}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Zoxive.HttpLoadTesting.Client", "src\Zoxive.HttpLoadTesting.Client\Zoxive.HttpLoadTesting.Client.xproj", "{EBF15348-54E4-4F77-B2FA-31A06C747711}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Zoxive.HttpLoadTesting.Framework", "src\Framework\Zoxive.HttpLoadTesting.Framework.xproj", "{7BD44A96-C44C-416E-B7B1-6D84AF07A68D}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Zoxive.HttpLoadTesting.Framework", "src\Zoxive.HttpLoadTesting.Framework\Zoxive.HttpLoadTesting.Framework.xproj", "{7BD44A96-C44C-416E-B7B1-6D84AF07A68D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{3890A95D-0020-4CB4-8689-D9D00F76E54D}"
 EndProject
