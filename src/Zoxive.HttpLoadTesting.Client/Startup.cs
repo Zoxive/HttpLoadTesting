@@ -37,6 +37,10 @@ namespace Zoxive.HttpLoadTesting.Client
                 {
                     await ResourcesOrRealThing.Stream("wwwroot/scripts/app.js", context.Response, "text/javascript");
                 }
+                else if (path == "/scripts/app.js.map")
+                {
+                    await ResourcesOrRealThing.Stream("wwwroot/scripts/app.js.map", context.Response, "text/javascript");
+                }
                 else
                 {
                     await ResourcesOrRealThing.Stream("wwwroot/index.html", context.Response, "text/html");
@@ -59,7 +63,7 @@ namespace Zoxive.HttpLoadTesting.Client
                 return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
             }
 
-            var embededResourceName = "Client." + resourceName.Replace('/', '.');
+            var embededResourceName = "Zoxive.HttpLoadTesting.Client." + resourceName.Replace('/', '.');
 
             return CurrentAssembly.GetManifestResourceStream(embededResourceName);
         }

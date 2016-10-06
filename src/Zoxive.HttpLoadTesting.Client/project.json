@@ -20,7 +20,6 @@
     },
 
     "tools": {
-    
     },
 
     "frameworks": {
@@ -38,7 +37,8 @@
         "warningsAsErrors": true,
         "embed": [
             "wwwroot/index.html",
-            "wwwroot/scripts/app.js"
+            "wwwroot/scripts/app.js",
+            "wwwroot/scripts/app.js.map"
         ]
     },
 
@@ -67,6 +67,10 @@
     },
 
     "scripts": {
+        "prepack": [
+            "gulp build"
+        ],
+
         "prepublish": [
             "gulp build"
         ]
