@@ -29,6 +29,7 @@ namespace Zoxive.HttpLoadTesting.Client
                 app.UseDeveloperExceptionPage();
             }
 
+            // Fix this and move this out somewhere
             app.Run(async (context) =>
             {
                 var path = context.Request.Path.Value;
@@ -56,12 +57,15 @@ namespace Zoxive.HttpLoadTesting.Client
 
         private static Stream Stream(string resourceName)
         {
+
+#if DEBUG
             var fullPath = CurrentDirectory + "/" + resourceName;
 
             if (File.Exists(fullPath))
             {
                 return new FileStream(fullPath, FileMode.Open, FileAccess.Read);
             }
+#endif
 
             var embededResourceName = "Zoxive.HttpLoadTesting.Client." + resourceName.Replace('/', '.');
 

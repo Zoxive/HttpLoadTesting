@@ -6,18 +6,6 @@ import { fetchAllIterations } from "./store/actions/iterations";
 
 var store = configureStore({});
 
-/*
-function Load()
-{
-    window.fetch("/api/all")
-        .then(r => r.json())
-        .then(json =>
-        {
-            store.dispatch(loadedAll(json));
-        });
-}
-*/
-
 var LoadAll = () => store.dispatch(fetchAllIterations());
 
 LoadAll();
