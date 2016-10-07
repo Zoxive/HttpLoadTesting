@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
-using Zoxive.HttpLoadTesting.Client.Repositories;
+using Zoxive.HttpLoadTesting.Client.Domain;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Controller.Api
@@ -26,39 +24,19 @@ namespace Zoxive.HttpLoadTesting.Client.Controller.Api
         [HttpGet("user/{id}", Name = "UserResults")]
         public IEnumerable<UserIterationResult> GetUserResults(int id)
         {
-            foreach (var kvp in _iterationResultRepository.GetAll())
-            {
-                if (kvp.Value.UserNumber == id)
-                {
-                    yield return kvp.Value;
-                }
-            }
+            return _iterationResultRepository.GetUserResults(id);
         }
 
         [HttpGet("test/{testName}", Name = "TestResults")]
         public IEnumerable<UserIterationResult> GetTestResults(string testName)
         {
-            foreach (var kvp in _iterationResultRepository.GetAll())
-            {
-                // Case sensitive atm yep
-                if (kvp.Value.TestName == testName)
-                {
-                    yield return kvp.Value;
-                }
-            }
+            return _iterationResultRepository.GetTestResults(testName);
         }
 
         [HttpGet("test/names")]
         public IDictionary<string, int> GetTestNames()
         {
-            var testNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var tests in _iterationResultRepository.GetAll().GroupBy(x => x.Value.TestName))
-            {
-                testNames.Add(tests.Key, tests.Count());
-            }
-
-            return testNames;
+            return _iterationResultRepository.GetTestNames();
         }
     }
 }
