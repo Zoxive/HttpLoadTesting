@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -25,7 +24,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.InMemory.Repositories
         {
             foreach (var kvp in _results)
             {
-                if (kvp.Value.UserNumber == id)
+                if (kvp.Value?.UserNumber == id)
                 {
                     yield return kvp.Value;
                 }
@@ -37,7 +36,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.InMemory.Repositories
             foreach (var kvp in _results)
             {
                 // Case sensitive atm yep
-                if (kvp.Value.TestName == testName)
+                if (kvp.Value?.TestName == testName)
                 {
                     yield return kvp.Value;
                 }
@@ -50,6 +49,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.InMemory.Repositories
 
             foreach (var tests in _results)
             {
+                if (tests.Value == null)
+                    continue;
+
                 var testName = tests.Value.TestName;
 
                 int currentCount;

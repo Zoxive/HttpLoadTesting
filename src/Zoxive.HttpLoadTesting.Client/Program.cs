@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Zoxive.HttpLoadTesting.Client.Domain;
 using Zoxive.HttpLoadTesting.Client.Domain.InMemory.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Core;
+using Zoxive.HttpLoadTesting.Framework.Core.Schedules;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client
@@ -16,8 +18,31 @@ namespace Zoxive.HttpLoadTesting.Client
     {
         public static void Main(string[] args)
         {
-            // TODO load passed in data
+#if DEBUG
+            var httpUsers = new List<IHttpUser>
+            {
+                new HttpUser("http://localhost")
+            };
+            var loadTests = new List<ILoadTest>
+            {
+                new LocalhostHit()
+            };
+
+            var schedule = new List<ISchedule>
+            {
+                new AddUsers(2, 2, 1),
+                new Duration(0.005m)
+            };
+
+            var loadTestExection = new LoadTestExecution(httpUsers, loadTests);
+            Parallel.Invoke
+            (
+                () => loadTestExection.Execute(schedule).Wait(),
+                () => Start(loadTestExection)
+            );
+#else
             Start(null);
+#endif
         }
 
         internal static void Start(ILoadTestExecution loadTestExecution, CancellationToken? cancellationToken = null)
@@ -104,4 +129,21 @@ namespace Zoxive.HttpLoadTesting.Client
             Console.WriteLine($"{seconds} ({thinkTime}) - {result.TestName} | {result.BaseUrl} User{result.UserNumber}.{result.Iteration}");
         }
     }
+
+#if DEBUG
+    public class LocalhostHit : ILoadTest
+    {
+        public string Name => "LocalhostHit";
+
+        public Task Initialize(ILoadTestHttpClient loadTestHttpClient)
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task Execute(ILoadTestHttpClient loadTestHttpClient)
+        {
+            await loadTestHttpClient.Get("");
+        }
+    }
+#endif
 }
