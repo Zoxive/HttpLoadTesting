@@ -2,12 +2,8 @@
 {
     public static class DbInitializer
     {
-        public static void Initialize(IterationsContext context)
+        public static void Initialize()
         {
-            context.Database.EnsureCreated();
-
-            // TODO Migrations?
-            //context.Database.Migrate();
         }
     }
 }
