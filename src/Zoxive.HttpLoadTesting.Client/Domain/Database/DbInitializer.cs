@@ -14,6 +14,10 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
             {
                 dbConnection.Execute("DELETE FROM Iteration");
                 dbConnection.Execute("delete from sqlite_sequence where name='Iteration'");
+
+                dbConnection.Execute("DELETE FROM HttpStatusResult");
+                dbConnection.Execute("delete from sqlite_sequence where name='HttpStatusResult'");
+
                 dbConnection.Execute("Vacuum");
 
                 return;
@@ -32,6 +36,17 @@ CREATE TABLE Iteration (
     BaseUrl    VARCHAR,
     Elapsed    BIGINT,
     TestName   VARCHAR
+);
+");
+
+            dbConnection.Execute(@"
+CREATE TABLE HttpStatusResult (
+    Id                  INTEGER PRIMARY KEY,
+    IterationId         INTEGER REFERENCES Iteration (Id) ON DELETE CASCADE,
+    Method              VARCHAR,
+    ElapsedMilliseconds BIGINT,
+    RequestUrl          VARCHAR,
+    StatusCode          INTEGER
 );
 ");
         }

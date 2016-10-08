@@ -37,14 +37,31 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
 
             _dbConnection.Open();
 
-            await _dbConnection.InsertAsync(iterationDto);
+            using (var transaction = _dbConnection.BeginTransaction())
+            {
+                var iterationId = await _dbConnection.InsertAsync(iterationDto);
+
+                var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
+                {
+                    IterationId = iterationId,
+                    ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
+                    Method = httpStatusResult.Method,
+                    RequestUrl = httpStatusResult.RequestUrl,
+                    StatusCode = httpStatusResult.StatusCode
+                });
+
+                await _dbConnection.InsertAsync(inserts);
+
+                transaction.Commit();
+            }
         }
 
         public async Task<IReadOnlyDictionary<int, UserIterationResult>> GetAll()
         {
             var iterations = await _dbConnection.GetAllAsync<IterationDto>();
+            var httpStatusResults = (await _dbConnection.GetAllAsync<HttpStatusResultDto>()).GroupBy(x => x.IterationId).ToDictionary(x => x.Key, y => y.AsList());
 
-            return iterations.ToDictionary(x => x.Id, ToModel);
+            return iterations.ToDictionary(x => x.Id, ToModel(httpStatusResults));
         }
 
         public Task<IEnumerable<UserIterationResult>> GetUserResults(int id)
@@ -64,9 +81,20 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
             return testNames.ToDictionary(x => x.TestName, x => x.Count);
         }
 
-        private static UserIterationResult ToModel(IterationDto iteration)
+        private static Func<IterationDto, UserIterationResult> ToModel(Dictionary<int, List<HttpStatusResultDto>> httpStatusResultsDictionary)
         {
-            return new UserIterationResult(iteration.BaseUrl, iteration.UserNumber, new TimeSpan(iteration.Elapsed), iteration.Iteration, iteration.TestName, new List<HttpStatusResult>(), iteration.StartTick, iteration.EndTick, iteration.UserDelay, iteration.Exception);
+            return iteration =>
+            {
+                List<HttpStatusResultDto> httpStatusResultDtos;
+                if (!httpStatusResultsDictionary.TryGetValue(iteration.Id, out httpStatusResultDtos))
+                {
+                    httpStatusResultDtos = new List<HttpStatusResultDto>();
+                }
+
+                var httpStatusResults = httpStatusResultDtos.Select(x => new HttpStatusResult(x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode));
+
+                return new UserIterationResult(iteration.BaseUrl, iteration.UserNumber, new TimeSpan(iteration.Elapsed), iteration.Iteration, iteration.TestName, httpStatusResults.ToList(), iteration.StartTick, iteration.EndTick, iteration.UserDelay, iteration.Exception);
+            };
         }
     }
 }

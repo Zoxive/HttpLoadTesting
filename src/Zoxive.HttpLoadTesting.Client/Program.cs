@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Zoxive.HttpLoadTesting.Client.Domain;
 using Zoxive.HttpLoadTesting.Client.Domain.Database;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Core;
@@ -147,6 +146,8 @@ namespace Zoxive.HttpLoadTesting.Client
         public async Task Execute(ILoadTestHttpClient loadTestHttpClient)
         {
             await loadTestHttpClient.Get("");
+
+            //await Task.Delay(50);
         }
     }
 #endif
