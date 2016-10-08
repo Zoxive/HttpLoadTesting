@@ -30,8 +30,8 @@ namespace Zoxive.HttpLoadTesting.Client
 
             var schedule = new List<ISchedule>
             {
-                new AddUsers(2, 2, 1),
-                new Duration(0.005m)
+                new AddUsers(2, 2, 0),
+                //new Duration(0.005m)
             };
 
             var loadTestExection = new LoadTestExecution(httpUsers, loadTests);
