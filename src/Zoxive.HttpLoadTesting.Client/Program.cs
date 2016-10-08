@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Zoxive.HttpLoadTesting.Client.Domain;
-using Zoxive.HttpLoadTesting.Client.Domain.InMemory.Repositories;
+using Zoxive.HttpLoadTesting.Client.Domain.Database;
+using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Core.Schedules;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -37,8 +40,14 @@ namespace Zoxive.HttpLoadTesting.Client
             var loadTestExection = new LoadTestExecution(httpUsers, loadTests);
             Parallel.Invoke
             (
-                () => loadTestExection.Execute(schedule).Wait(),
-                () => Start(loadTestExection)
+                () => Start(loadTestExection), async () =>
+                {
+                    // Wait for Kestrel to start...
+                    // TODO callback? listen for ports?
+                    await Task.Delay(1000);
+
+                    await loadTestExection.Execute(schedule);
+                }
             );
 #else
             Start(null);
@@ -78,19 +87,14 @@ namespace Zoxive.HttpLoadTesting.Client
                 loadTestExecution.UserIterationFinished += LogIteration(iterationResultRepository);
             }
 
-            //DbInitializer.Initialize(sp.GetService<IterationsContext>());
+            DbInitializer.Initialize(sp.GetService<IDbConnection>());
         }
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton<IIterationResultRepository>(new InMemoryIterationResultRepository());
+            services.TryAddSingleton<IDbConnection>(new SqliteConnection("Data Source=test.db"));
 
-            // TODO dump data into a database
-            /*
-            services.AddDbContext<IterationsContext>(o => o.UseSqlite("Filename=test.db"));
-
-            services.TryAddSingleton<IIterationResultRepository>(provider => new InMemoryIterationResultRepository(provider.GetService<IterationsContext>()));
-            */
+            services.TryAddSingleton<IIterationResultRepository>(provider => new IterationResultRepository(provider.GetService<IDbConnection>()));
         }
 
         private static UserIterationFinished LogIteration(IIterationResultRepository iterationResultRepository)

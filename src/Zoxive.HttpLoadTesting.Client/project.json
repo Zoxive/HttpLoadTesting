@@ -17,7 +17,9 @@
         "Microsoft.AspNetCore.Routing": "1.0.1",
         "Microsoft.AspNetCore.Mvc": "1.0.1",
         "Zoxive.HttpLoadTesting.Framework": "0.0.1",
-        "Microsoft.Data.Sqlite": "1.0.0"
+        "Microsoft.Data.Sqlite": "1.0.0",
+        "Dapper": "1.50.2",
+        "Dapper.Contrib": "1.50.0"
     },
 
     "tools": {

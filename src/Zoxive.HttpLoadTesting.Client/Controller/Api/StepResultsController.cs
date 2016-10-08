@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Zoxive.HttpLoadTesting.Client.Domain;
+using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Controller.Api
@@ -16,25 +17,25 @@ namespace Zoxive.HttpLoadTesting.Client.Controller.Api
         }
 
         [HttpGet("all")]
-        public IReadOnlyDictionary<string, UserIterationResult> Get()
+        public Task<IReadOnlyDictionary<int, UserIterationResult>> Get()
         {
             return _iterationResultRepository.GetAll();
         }
 
         [HttpGet("user/{id}", Name = "UserResults")]
-        public IEnumerable<UserIterationResult> GetUserResults(int id)
+        public Task<IEnumerable<UserIterationResult>> GetUserResults(int id)
         {
             return _iterationResultRepository.GetUserResults(id);
         }
 
         [HttpGet("test/{testName}", Name = "TestResults")]
-        public IEnumerable<UserIterationResult> GetTestResults(string testName)
+        public Task<IEnumerable<UserIterationResult>> GetTestResults(string testName)
         {
             return _iterationResultRepository.GetTestResults(testName);
         }
 
         [HttpGet("test/names")]
-        public IDictionary<string, int> GetTestNames()
+        public Task<IDictionary<string, int>> GetTestNames()
         {
             return _iterationResultRepository.GetTestNames();
         }

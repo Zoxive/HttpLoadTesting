@@ -13,7 +13,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public long UserDelay { get; }
 
-        public Exception Exception { get; }
+        public string Exception { get; }
 
         public bool DidError { get; }
 
@@ -27,7 +27,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public string TestName { get; }
 
-        public UserIterationResult(string baseUrl, int userNumber, TimeSpan elapsed, int iteration, string testName, IReadOnlyList<HttpStatusResult> statusResults, int startTick, int endTick, long userDelay, Exception exception)
+        public UserIterationResult(string baseUrl, int userNumber, TimeSpan elapsed, int iteration, string testName, IReadOnlyList<HttpStatusResult> statusResults, int startTick, int endTick, long userDelay, string exception)
         {
             BaseUrl = baseUrl;
             UserNumber = userNumber;
