@@ -100,36 +100,9 @@ namespace Zoxive.HttpLoadTesting.Client
         {
             return iterationResult =>
             {
-                Task.Run(() =>
-                {
-                    iterationResultRepository.Save(iterationResult);
-
-                    DisplayCrappyResults(iterationResult);
-                });
+                // in a task so it doesnt slow down the user execution
+                Task.Run(() => iterationResultRepository.Save(iterationResult));
             };
-        }
-
-        private static void DisplayCrappyResults(UserIterationResult result)
-        {
-            var totalHttpResponseMs = 0d;
-
-            var previous = Console.ForegroundColor;
-            foreach (var statusCode in result.StatusResults)
-            {
-                totalHttpResponseMs += statusCode.ElapsedMilliseconds;
-                if ((int)statusCode.StatusCode >= 400)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"{statusCode.StatusCode} {statusCode.Method} {statusCode.RequestUrl}");
-                }
-            }
-            Console.ForegroundColor = previous;
-
-            var seconds = totalHttpResponseMs / 1000;
-
-            var thinkTime = result.Elapsed.TotalSeconds - seconds;
-
-            Console.WriteLine($"{seconds} ({thinkTime}) - {result.TestName} | {result.BaseUrl} User{result.UserNumber}.{result.Iteration}");
         }
     }
 

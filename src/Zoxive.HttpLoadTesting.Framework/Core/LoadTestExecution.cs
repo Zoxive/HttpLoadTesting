@@ -6,12 +6,8 @@ using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Framework.Core
 {
+    // TODO move events to a class/interface to imeplement
     public delegate void UserIterationFinished(UserIterationResult result);
-
-    // TODO list
-    /// What "Schedule" is currently running (Time started, time left?)
-    /// Current User Count
-    /// Save output from cli that can later open in web client
 
     public class LoadTestExecution : ILoadTestExecution
     {
@@ -129,7 +125,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                 {
                     var user = new User(userNum, _loadTests, httpUser);
 
-                    Console.WriteLine($"Initializing User {userNum}");
+                     Console.WriteLine($"Initializing User {userNum}");
 
                     try
                     {
