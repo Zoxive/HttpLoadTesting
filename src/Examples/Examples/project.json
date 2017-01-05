@@ -5,8 +5,8 @@
   },
 
   "dependencies": {
-    "Zoxive.HttpLoadTesting.Client": "0.0.1",
-    "Zoxive.HttpLoadTesting.Framework": "0.0.1",
+    "Zoxive.HttpLoadTesting.Client": "0.0.2",
+    "Zoxive.HttpLoadTesting.Framework": "0.0.2",
     "Microsoft.NETCore.App": {
         "type": "platform",
         "version": "1.0.1"
