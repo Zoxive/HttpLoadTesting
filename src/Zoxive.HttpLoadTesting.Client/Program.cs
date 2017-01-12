@@ -9,6 +9,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Zoxive.HttpLoadTesting.Client.Domain.Database;
+using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Core.Schedules;
@@ -94,6 +95,7 @@ namespace Zoxive.HttpLoadTesting.Client
             services.TryAddSingleton<IDbConnection>(new SqliteConnection("Data Source=test.db"));
 
             services.TryAddSingleton<IIterationResultRepository>(provider => new IterationResultRepository(provider.GetService<IDbConnection>()));
+            services.TryAddSingleton<IHttpStatusResultRepository>(provider => new HttpStatusResultRepository(provider.GetService<IDbConnection>()));
         }
 
         private static UserIterationFinished LogIteration(IIterationResultRepository iterationResultRepository)
