@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
@@ -10,10 +12,12 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
     public class HttpStatusResultRepository : IHttpStatusResultRepository
     {
         private readonly IDbConnection _dbConnection;
+        private readonly IHttpStatusResultStatisticsFactory _statisticsFactory;
 
-        public HttpStatusResultRepository(IDbConnection dbConnection)
+        public HttpStatusResultRepository(IDbConnection dbConnection, IHttpStatusResultStatisticsFactory statisticsFactory)
         {
             _dbConnection = dbConnection;
+            _statisticsFactory = statisticsFactory;
         }
 
         public async Task<string[]> GetDistinctRequestUrls(string method)
@@ -50,7 +54,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             return methods.ToArray();
         }
 
-        public async Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl)
+        public async Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl, int? deviations)
         {
             var sql = "SELECT ElapsedMilliseconds FROM HttpStatusResult";
 
@@ -59,9 +63,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += whereClause;
 
-            var averageDuration = await _dbConnection.ExecuteScalarAsync<long>(sql, sqlParams);
+            var durations = (await _dbConnection.QueryAsync<long>(sql, sqlParams)).ToArray();
 
-            return new HttpStatusResultStatistics(method, requestUrl, averageDuration);
+            return _statisticsFactory.Create(method, requestUrl, durations, deviations);
         }
 
         private static string CreateWhereClause(string method, string requestUrl, out IDictionary<string, object> sqlParams)

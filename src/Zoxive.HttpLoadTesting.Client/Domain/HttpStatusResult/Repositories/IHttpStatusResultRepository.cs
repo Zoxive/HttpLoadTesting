@@ -7,6 +7,6 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
     {
         Task<string[]> GetDistinctRequestUrls(string method);
         Task<string[]> GetDistinctMethods(string requestUrl);
-        Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl);
+        Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl, int? deviations);
     }
 }

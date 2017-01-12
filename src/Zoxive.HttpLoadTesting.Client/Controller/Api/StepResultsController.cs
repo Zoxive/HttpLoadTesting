@@ -56,9 +56,9 @@ namespace Zoxive.HttpLoadTesting.Client.Controller.Api
         }
 
         [HttpGet("httpStatusResult/statistics")]
-        public Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl)
+        public Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl, int? deviations)
         {
-            return _httpStatusResultRepository.GetStatistics(method, requestUrl);
+            return _httpStatusResultRepository.GetStatistics(method, requestUrl, deviations);
         }
     }
 }
