@@ -17,21 +17,30 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
         public async Task<string[]> GetDistinctRequestUrls(string method)
         {
-            var requestUrls = await _dbConnection.QueryAsync<string>("SELECT DISTINCT RequestUrl FROM HttpStatusResult WHERE Method = @method", new {method});
+            var requestUrls =
+                await
+                    _dbConnection.QueryAsync<string>(
+                        "SELECT DISTINCT RequestUrl FROM HttpStatusResult WHERE Method = @method", new {method});
 
             return requestUrls.ToArray();
         }
 
         public async Task<string[]> GetDistinctMethods(string requestUrl)
         {
-            var methods = await _dbConnection.QueryAsync<string>("SELECT DISTINCT Method FROM HttpStatusResult WHERE RequestUrl = @0", requestUrl);
+            var methods =
+                await
+                    _dbConnection.QueryAsync<string>(
+                        "SELECT DISTINCT Method FROM HttpStatusResult WHERE RequestUrl = @requestUrl", new {requestUrl});
 
             return methods.ToArray();
         }
 
         public async Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl)
         {
-            var averageDuration = await _dbConnection.ExecuteScalarAsync<long>("SELECT AVG(ElapsedMilliseconds) AS AverageDuration FROM HttpStatusResult");
+            var averageDuration =
+                await
+                    _dbConnection.ExecuteScalarAsync<long>(
+                        "SELECT AVG(ElapsedMilliseconds) AS AverageDuration FROM HttpStatusResult");
 
             return new HttpStatusResultStatistics(method, requestUrl, averageDuration);
         }

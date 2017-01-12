@@ -43,7 +43,7 @@ namespace Zoxive.HttpLoadTesting.Client.Controller.Api
             return _iterationResultRepository.GetTestNames();
         }
 
-        [HttpGet("httpStatusResult/requestUrls)")]
+        [HttpGet("httpStatusResult/requestUrls")]
         public Task<string[]> GetRequestUrls(string method)
         {
             return _httpStatusResultRepository.GetDistinctRequestUrls(method);
