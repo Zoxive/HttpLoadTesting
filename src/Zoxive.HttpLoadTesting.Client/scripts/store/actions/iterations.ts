@@ -1,4 +1,5 @@
-﻿import { IAction, IActionGeneric, IDispatch } from "~redux-thunk~redux";
+﻿import { Dispatch } from "redux";
+import State from "../../store/state";
 
 export const RECIEVE_ALL_ITERATIONS = "RECIEVE_ALL_ITERATIONS";
 
@@ -8,7 +9,7 @@ export interface IActionReceiveAllIterations extends IAction
 
 export function fetchAllIterations()
 {
-    return (dispatch: IDispatch) =>
+    return (dispatch: Dispatch<State>, getState: () => State) =>
     {
         return fetch(`/api/all/`)
             .then(response => response.json())

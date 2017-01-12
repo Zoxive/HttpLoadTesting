@@ -1,4 +1,4 @@
-﻿export interface Statistics
+﻿export type Statistics =
 {
     method: string;
     requestUrl: string;
@@ -9,3 +9,5 @@
     averageDurationWithinStdDevs: number;
     durationWithinStdDevsCount: number;
 }
+
+export default Statistics;

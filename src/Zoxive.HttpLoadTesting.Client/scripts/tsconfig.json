@@ -1,21 +1,31 @@
 {
-    "compilerOptions": 
-    {
-        "module": "commonjs",
-        "jsx": "react",
-
-        // pretty strict
-        "noImplicitAny": true,
-        "noEmitOnError": true,
-        "suppressImplicitAnyIndexErrors": false,
-
-        "removeComments": false,
-        "sourceMap": true,
-        "target": "es6"
-    },
-    "files": 
-    [
-        "app.tsx",
-        "../typings/index.d.ts"
+  "compileOnSave": false,
+  "buidOnSave": false,
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "preserveConstEnums": true,
+    "module": "es2015",
+    "target": "es6",
+    "jsx": "react",
+    "allowJs": true,
+    "lib": [
+      "dom",
+      "es5",
+      "es2016"
     ]
+  },
+  "files": [
+    "custom_types.d.ts",
+    "app.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "wwwroot"
+  ]
 }

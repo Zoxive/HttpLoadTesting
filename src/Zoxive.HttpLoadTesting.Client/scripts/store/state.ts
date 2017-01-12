@@ -1,7 +1,8 @@
-﻿import Statistics = require("../httpStatusResult/models/statistics");
+﻿import Statistics from "../httpStatusResult/models/statistics";
+
 export type State =
 {
-    statistics: Statistics.Statistics;
+    statistics: Statistics;
 }
 
 export default State;
