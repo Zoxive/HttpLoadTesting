@@ -2,6 +2,7 @@
 {
     method: string;
     requestUrl: string;
+    numberOfStandardDeviations: number;
     averageDuration: number;
     durationCount: number;
     standardDeviation: number;

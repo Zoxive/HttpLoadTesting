@@ -15,6 +15,7 @@ export default function reducer(state: any, action: IAction): any
         var statistics = {
             method: "",
             requestUrl: "",
+            numberOfStandardDeviations: 3,
             averageDuration: 0,
             durationCount: 0,
             standardDeviation: 0,
@@ -24,7 +25,6 @@ export default function reducer(state: any, action: IAction): any
         state = {
             methods: [],
             requestUrls: [],
-            numberOfDeviations: 3,
             statistics: statistics
         };
     }
@@ -33,15 +33,14 @@ export default function reducer(state: any, action: IAction): any
     {
         case RECEIVE_STATISTICS:
             var statsAction = <IActionGetStatistics>action;
-            console.log("stats state", state);
             return xtend(state, { statistics: statsAction.statistics });
+
         case RECEIVE_REQUEST_METHODS:
             var methodsAction = <IActionGetRequestMethods>action;
-            console.log("methods state", state);
             return xtend(state, { methods: methodsAction.methods });
+
         case RECEIVE_REQUEST_URLS:
             var requestUrlsAction = <IActionGetRequestUrls>action;
-            console.log("requestUrls state", state);
             return xtend(state, { requestUrls: requestUrlsAction.requestUrls });
     }
 

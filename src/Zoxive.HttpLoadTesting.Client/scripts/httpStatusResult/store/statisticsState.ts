@@ -4,7 +4,6 @@ export type HttpStatusResultStatisticsState =
 {
     methods?: string[],
     requestUrls?: string[],
-    numberOfDeviations?: number,
     statistics?: Statistics;
 };
 

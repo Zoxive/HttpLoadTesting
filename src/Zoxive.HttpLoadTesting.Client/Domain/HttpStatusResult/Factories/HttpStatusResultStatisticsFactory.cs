@@ -26,7 +26,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
             var averageDurationWithinDeviations = durationsWithinDeviations.Average();
 
 
-            return new HttpStatusResultStatistics(method, requestUrl, averageDuration, durationCount, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount);
+            return new HttpStatusResultStatistics(method, requestUrl, deviations.Value, averageDuration, durationCount, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount);
         }
 
         public static double StandardDeviation(IEnumerable<long> values, double average)

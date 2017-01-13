@@ -2,10 +2,11 @@
 {
     public class HttpStatusResultStatistics
     {
-        public HttpStatusResultStatistics(string method, string requestUrl, double averageDuration, long durationCount, double standardDeviation, double averageDurationWithinDeviations, long durationWithinDeviationsCount)
+        public HttpStatusResultStatistics(string method, string requestUrl, long numberOfStandardDeviations , double averageDuration, long durationCount, double standardDeviation, double averageDurationWithinDeviations, long durationWithinDeviationsCount)
         {
             Method = method;
             RequestUrl = requestUrl;
+            NumberOfStandardDeviations = numberOfStandardDeviations;
             AverageDuration = averageDuration;
             DurationCount = durationCount;
             StandardDeviation = standardDeviation;
@@ -16,6 +17,8 @@
         public string Method { get; private set; }
 
         public string RequestUrl { get; private set; }
+
+        public long NumberOfStandardDeviations { get; private set; }
 
         public double AverageDuration { get; private set; }
 

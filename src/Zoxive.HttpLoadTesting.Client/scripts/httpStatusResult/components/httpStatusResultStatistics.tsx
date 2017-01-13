@@ -3,18 +3,20 @@ import StatisticsState from "./../store/statisticsState";
 import { connect, Dispatch } from "react-redux";
 import { Statistics } from "./../models/statistics";
 
+import { fetchStatistics } from "./../store/statisticsAction";
+import { fetchMethods } from "./../store/getRequestMethodsAction";
+import { fetchRequestUrls } from "./../store/getRequestUrlsAction";
 
 type StatisticProps =
 {
     methods?: string[],
     requestUrls?: string[],
-    numberOfDeviations?: number,
     statistics?: Statistics,
     dispatch?: Dispatch<StatisticsState>
 };
 
 export function HttpStatusResultStatistics(props: StatisticProps) {
-    console.log("props", props);
+    console.log("props", props, "this", this);
     var methodOptions = props.methods.map(function(option: any) {
         return (
             <option key={option} value={option}>
@@ -33,33 +35,43 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
 
     var methodChanged = function(e: any)
     {
-        if(e.target.value === this.props.statistics.method)
+        if(e.target.value === props.statistics.method)
         {
             return;
         }
 
-        console.log("fetch statistics for method "  + e.target.Value);
+        props.statistics.method = e.target.value;
+
+        props.dispatch(fetchRequestUrls(props.statistics.method));
+        props.dispatch(fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations));
     };
 
     var requestUrlChanged = function(e: any)
     {
-        if(e.target.value === this.props.statistics.requestUrl)
+        if(e.target.value === props.statistics.requestUrl)
         {
             return;
         }
 
-        console.log("fetch statistics for method "  + e.target.Value);
+        props.statistics.requestUrl = e.target.value;
+
+        props.dispatch(fetchMethods(props.statistics.requestUrl));
+        props.dispatch(fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations));
     };
 
     var numberOfStdDevsChanged = function(e: any)
     {
-        if(e.target.value === this.props.numberOfDeviations)
+        if(e.target.value === props.statistics.numberOfStandardDeviations)
         {
             return;
         }
 
-        console.log("fetch statistics for numberOfDeviations "  + e.target.Value);
+        props.statistics.numberOfStandardDeviations = e.target.value;
+
+        props.dispatch(fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations));
     };
+
+    var requestsOutsideOfDeviations = props.statistics.durationCount - props.statistics.durationWithinDeviationsCount;
     
     return (
         <div>
@@ -77,7 +89,7 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
                 </select>
             </div>
             <div>Number of Std Devs: 
-                <input value={props.numberOfDeviations} onChange={numberOfStdDevsChanged}>
+                <input type='text' value={props.statistics.numberOfStandardDeviations} onChange={numberOfStdDevsChanged}>
                 </input>
             </div>
             <br/>
@@ -87,8 +99,9 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
             <br/>
             <div>Standard Deviation: {props.statistics.standardDeviation} ms</div>
             <br/>
-            <div>Average Duration of Requests within {props.numberOfDeviations} StdDevs of Avg: {props.statistics.averageDurationWithinDeviations} ms</div>
-            <div>Number of Requests within {props.numberOfDeviations} StdDevs of Avg: {props.statistics.durationWithinDeviationsCount} </div>
+            <div>Average Duration of Requests within {props.statistics.numberOfStandardDeviations} Std Devs of Avg: {props.statistics.averageDurationWithinDeviations} ms</div>
+            <div>Number of Requests within {props.statistics.numberOfStandardDeviations} Std Devs of Avg: {props.statistics.durationWithinDeviationsCount} </div>
+            <div>Number of Requests outside of {props.statistics.numberOfStandardDeviations} Std Devs from Avg: {requestsOutsideOfDeviations} </div>
         </div>
     );
 }
@@ -97,7 +110,6 @@ function mapStateToProps(state: any, props: StatisticProps): StatisticProps {
     return {
         methods: state.statistics.methods,
         requestUrls: state.statistics.requestUrls,
-        numberOfDeviations: state.statistics.numberOfDeviations,
         statistics: state.statistics.statistics
     };
 }

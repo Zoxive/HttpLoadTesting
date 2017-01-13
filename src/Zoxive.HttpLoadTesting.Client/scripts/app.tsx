@@ -12,10 +12,10 @@ var store = configureStore({});
 
 var LoadAll = () => {
     store.dispatch(fetchAllIterations());
-    store.dispatch(fetchStatistics());
+    store.dispatch(fetchStatistics("", "", 3));
     store.dispatch(fetchMethods(""));
     store.dispatch(fetchRequestUrls(""));
-}
+};
 
 LoadAll();
 
