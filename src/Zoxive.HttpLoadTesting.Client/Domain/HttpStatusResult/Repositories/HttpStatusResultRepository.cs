@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
+using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
@@ -13,11 +14,13 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
     {
         private readonly IDbConnection _dbConnection;
         private readonly IHttpStatusResultStatisticsFactory _statisticsFactory;
+        private readonly IHttpStatusResultService _service;
 
-        public HttpStatusResultRepository(IDbConnection dbConnection, IHttpStatusResultStatisticsFactory statisticsFactory)
+        public HttpStatusResultRepository(IDbConnection dbConnection, IHttpStatusResultStatisticsFactory statisticsFactory, IHttpStatusResultService service)
         {
             _dbConnection = dbConnection;
             _statisticsFactory = statisticsFactory;
+            _service = service;
         }
 
         public async Task<string[]> GetDistinctRequestUrls(string method)
@@ -34,7 +37,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             var requestUrls = await _dbConnection.QueryAsync<string>(sql, sqlParams);
 
-            return requestUrls.ToArray();
+            return _service.SelectUniqueRequests(requestUrls).ToArray();
         }
 
         public async Task<string[]> GetDistinctMethods(string requestUrl)
@@ -45,8 +48,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             if (!string.IsNullOrEmpty(requestUrl))
             {
-                sql += " WHERE RequestUrl = @requestUrl";
-                sqlParams.Add("requestUrl", requestUrl);
+                sql += " WHERE " + _service.CreateRequestUrlWhereClause(requestUrl, out sqlParams);
             }
 
             var methods = await _dbConnection.QueryAsync<string>(sql, sqlParams);
@@ -63,12 +65,14 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += whereClause;
 
+            sql += " ORDER BY ElapsedMilliseconds DESC";
+
             var durations = (await _dbConnection.QueryAsync<long>(sql, sqlParams)).ToArray();
 
             return _statisticsFactory.Create(method, requestUrl, durations, deviations);
         }
 
-        private static string CreateWhereClause(string method, string requestUrl, out IDictionary<string, object> sqlParams)
+        private string CreateWhereClause(string method, string requestUrl, out IDictionary<string, object> sqlParams)
         {
             sqlParams = new Dictionary<string, object>();
 
@@ -81,8 +85,22 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             if (!string.IsNullOrEmpty(requestUrl))
             {
-                whereCriteria.Add("RequestUrl = @requestUrl");
-                sqlParams.Add("requestUrl", requestUrl);
+                Dictionary<string, object> requestUrlSqlParams;
+                var requestUrlWhereCriteria = _service.CreateRequestUrlWhereClause(requestUrl, out requestUrlSqlParams);
+                whereCriteria.Add(requestUrlWhereCriteria);
+
+                foreach (var kvp in requestUrlSqlParams)
+                {
+                    if (sqlParams.ContainsKey(kvp.Key))
+                    {
+                        throw new ArgumentException(
+                            string.Format(
+                                "The sql parameter '{0}' provided by the CreateRequestUrlWhereClause method of the IHttpStatusResultService implementation already exists",
+                                kvp.Key));
+                    }
+
+                    sqlParams.Add(kvp.Key, kvp.Value);
+                }
             }
 
             if (whereCriteria.Count == 0)

@@ -33,6 +33,18 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
         )
     });
 
+    var fastestRequestDurations = props.statistics.fastestRequestDurations.map(function(item: any) {
+        return (
+            <li>{item}</li>
+        )
+    });
+
+    var slowestRequestDurations = props.statistics.slowestRequestDurations.map(function(item: any) {
+        return (
+            <li>{item}</li>
+        )
+    });
+
     var methodChanged = function(e: any)
     {
         if(e.target.value === props.statistics.method)
@@ -72,6 +84,7 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
     };
 
     var requestsOutsideOfDeviations = props.statistics.durationCount - props.statistics.durationWithinDeviationsCount;
+    var percentageOutsideOfDeviations = (requestsOutsideOfDeviations / props.statistics.durationCount) * 100.0;
     
     return (
         <div>
@@ -82,7 +95,7 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
                     {methodOptions}
                 </select>
             </div>
-            <div>Request Url: 
+            <div>Request: 
                 <select value={props.statistics.requestUrl} onChange={requestUrlChanged}>
                     <option key='' value='' />
                     {requestUrlOptions}
@@ -101,7 +114,19 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
             <br/>
             <div>Average Duration of Requests within {props.statistics.numberOfStandardDeviations} Std Devs of Avg: {props.statistics.averageDurationWithinDeviations} ms</div>
             <div>Number of Requests within {props.statistics.numberOfStandardDeviations} Std Devs of Avg: {props.statistics.durationWithinDeviationsCount} </div>
+            <br/>
             <div>Number of Requests outside of {props.statistics.numberOfStandardDeviations} Std Devs from Avg: {requestsOutsideOfDeviations} </div>
+            <div>Percentage of Requests outside of {props.statistics.numberOfStandardDeviations} Std Devs from Avg: {percentageOutsideOfDeviations}% </div>
+            <br/>
+            <div>Slowest Request Durations (ms)</div>
+            <ul>
+                {slowestRequestDurations}
+            </ul>
+            <br/>
+            <div>Fastest Request Durations (ms)</div>
+            <ul>
+                {fastestRequestDurations}
+            </ul>
         </div>
     );
 }

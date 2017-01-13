@@ -41,7 +41,7 @@ namespace Zoxive.HttpLoadTesting.Client
             var loadTestExection = new LoadTestExecution(httpUsers, loadTests);
             Parallel.Invoke
             (
-                () => Start(loadTestExection), async () =>
+                () => Start(loadTestExection, new KeystoneHttpStatusResultService()), async () =>
                 {
                     // Wait for Kestrel to start...
                     // TODO callback? listen for ports?
@@ -51,11 +51,11 @@ namespace Zoxive.HttpLoadTesting.Client
                 }
             );
 #else
-            Start(null);
+            Start(null, null);
 #endif
         }
 
-        internal static void Start(ILoadTestExecution loadTestExecution, CancellationToken? cancellationToken = null)
+        internal static void Start(ILoadTestExecution loadTestExecution, IHttpStatusResultService httpStatusResultService, CancellationToken? cancellationToken = null)
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
@@ -63,7 +63,7 @@ namespace Zoxive.HttpLoadTesting.Client
                 .UseStartup<Startup>()
                 .ConfigureServices(services =>
                 {
-                    ConfigureServices(services);
+                    ConfigureServices(services, httpStatusResultService);
 
                     InitializeWithServices(loadTestExecution, services);
                 })
@@ -91,15 +91,21 @@ namespace Zoxive.HttpLoadTesting.Client
             DbInitializer.Initialize(sp.GetService<IDbConnection>());
         }
 
-        private static void ConfigureServices(IServiceCollection services)
+        private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService)
         {
             services.TryAddSingleton<IDbConnection>(new SqliteConnection("Data Source=test.db"));
+
+            if (httpStatusResultService == null)
+            {
+                httpStatusResultService = new HttpStatusResultNullService();
+            }
 
             var httpStatusResultStatisticsFactory = new HttpStatusResultStatisticsFactory();
 
             services.TryAddSingleton<IIterationResultRepository>(provider => new IterationResultRepository(provider.GetService<IDbConnection>()));
             services.TryAddSingleton<IHttpStatusResultStatisticsFactory>(provider => httpStatusResultStatisticsFactory);
-            services.TryAddSingleton<IHttpStatusResultRepository>(provider => new HttpStatusResultRepository(provider.GetService<IDbConnection>(), httpStatusResultStatisticsFactory));
+            services.TryAddSingleton<IHttpStatusResultService>(provider => httpStatusResultService);
+            services.TryAddSingleton<IHttpStatusResultRepository>(provider => new HttpStatusResultRepository(provider.GetService<IDbConnection>(), httpStatusResultStatisticsFactory, httpStatusResultService));
         }
 
         private static UserIterationFinished LogIteration(IIterationResultRepository iterationResultRepository)
