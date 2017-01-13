@@ -3,11 +3,19 @@ import { render } from "react-dom";
 import { Provider } from "react-redux";
 import configureStore from "./store/configure";
 import { fetchAllIterations } from "./store/actions/iterations";
+import { fetchStatistics } from "./httpStatusResult/store/statisticsAction";
+import { fetchMethods } from "./httpStatusResult/store/getRequestMethodsAction";
+import { fetchRequestUrls } from "./httpStatusResult/store/getRequestUrlsAction";
 import HttpStatusResultStatistics from "./httpStatusResult/components/httpStatusResultStatistics";
 
 var store = configureStore({});
 
-var LoadAll = () => store.dispatch(fetchAllIterations());
+var LoadAll = () => {
+    store.dispatch(fetchAllIterations());
+    store.dispatch(fetchStatistics());
+    store.dispatch(fetchMethods(""));
+    store.dispatch(fetchRequestUrls(""));
+}
 
 LoadAll();
 
@@ -15,9 +23,10 @@ function AppHome()
 {
     return (
         <div>
-            <a onClick={LoadAll}>Load</a>
-            <div>hi from react</div>
-            <HttpStatusResultStatistics  />
+            <a onClick={LoadAll}>Click to Load All Iterations</a>
+            <br/>
+            <br/>
+            <HttpStatusResultStatistics/>
         </div>
     );
 }

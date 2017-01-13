@@ -1,8 +1,8 @@
-﻿import Statistics from "../httpStatusResult/models/statistics";
+﻿import HttpStatusResultStatisticsState from "../httpStatusResult/store/statisticsState";
 
 export type State =
 {
-    statistics: Statistics;
+    statisticsState: HttpStatusResultStatisticsState;
 }
 
 export default State;

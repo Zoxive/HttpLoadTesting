@@ -1,13 +1,21 @@
 ﻿import thunk from "redux-thunk";
-import { createStore, applyMiddleware, compose, Store } from "redux";
-import reducer from "./reducers/index";
+import { createStore, applyMiddleware, compose, Store, Middleware } from "redux";
+import reducer from "./reducers";
+import * as createLogger from "redux-logger";
 import State from "./state";
 
-var middleware: any[] = [thunk];
+const middleware: Middleware[] = [thunk];
 
 if (__DEV__)
 {
     // logger middleware
+    let logger = createLogger(
+    {
+        collapsed: true,
+        level: 'info',
+        duration: true
+    });
+    middleware.push(logger);
 }
 
 const finalCreateStore = compose(applyMiddleware.apply(applyMiddleware, middleware))(createStore);
