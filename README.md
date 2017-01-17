@@ -4,13 +4,6 @@ HTTP Load testing when single HTTP endpoint is not enough.
 
 Allows you to write test scenarios.
 
-TODO list
- - Display what "Schedule" is currently running (Time started, time left?)
- - Display current user count
- - Finish web client
- - Save output from cli that can later open in web client
-
-
 ```csharp
 // Test
 public class ReadAPost : ILoadTest
