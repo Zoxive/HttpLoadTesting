@@ -104,19 +104,17 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
     var requestsOutsideOfDeviations = props.statistics.durationCount - props.statistics.durationWithinDeviationsCount;
     var percentageOutsideOfDeviations = (requestsOutsideOfDeviations / props.statistics.durationCount) * 100.0;
     
-    
-
     return (
         <div>
             <h3>Statistics Calculation Options</h3>
             <div>Method: 
-                <select value={props.statistics.method} onChange={methodChanged}>
+                <select value={props.statistics.method || ""} onChange={methodChanged}>
                     <option key='' value='' />
                     {methodOptions}
                 </select>
             </div>
             <div>Request: 
-                <select value={props.statistics.requestUrl} onChange={requestUrlChanged}>
+                <select value={props.statistics.requestUrl || ""} onChange={requestUrlChanged}>
                     <option key='' value='' />
                     {requestUrlOptions}
                 </select>
