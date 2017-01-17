@@ -21,6 +21,7 @@ export default function reducer(state: any, action: IAction): any
             standardDeviation: 0,
             averageDurationWithinStdDevs: 0,
             durationWithinStdDevsCount: 0,
+            statusCodeCounts: <any[]>[],
             fastestRequests: <any[]>[],
             slowestRequests: <any[]>[]
         }

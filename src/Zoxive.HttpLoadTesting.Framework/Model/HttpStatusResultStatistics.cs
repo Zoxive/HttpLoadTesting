@@ -4,7 +4,7 @@
     {
         public HttpStatusResultStatistics(string method, string requestUrl, long numberOfStandardDeviations,
             double averageDuration, long durationCount, double standardDeviation, double averageDurationWithinDeviations,
-            long durationWithinDeviationsCount, HttpStatusResult[] slowestRequests, HttpStatusResult[] fastestRequests)
+            long durationWithinDeviationsCount, HttpStatusCodeCount[] statusCodeCounts,  HttpStatusResult[] slowestRequests, HttpStatusResult[] fastestRequests)
         {
             Method = method;
             RequestUrl = requestUrl;
@@ -14,6 +14,7 @@
             StandardDeviation = standardDeviation;
             AverageDurationWithinDeviations = averageDurationWithinDeviations;
             DurationWithinDeviationsCount = durationWithinDeviationsCount;
+            StatusCodeCounts = statusCodeCounts;
             FastestRequests = fastestRequests;
             SlowestRequests = slowestRequests;
         }
@@ -33,6 +34,8 @@
         public double AverageDurationWithinDeviations { get; private set; }
 
         public long DurationWithinDeviationsCount { get; private set; }
+
+        public HttpStatusCodeCount[] StatusCodeCounts { get; private set; }
 
         public HttpStatusResult[] FastestRequests { get; private set; }
 

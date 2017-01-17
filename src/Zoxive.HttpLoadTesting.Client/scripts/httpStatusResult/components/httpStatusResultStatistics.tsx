@@ -32,6 +32,15 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
         )
     });
 
+    var statusCodeCounts = props.statistics.statusCodeCounts.map(function(item: any) {
+        return (
+            <tr key={item.statusCode}>
+                <td>{item.statusCode} ({item.statusCodeName})</td>
+                <td>{item.count}</td>
+            </tr>
+        )
+    });
+
     var fastestRequestDurations = props.statistics.fastestRequests.map(function(item: any) {
         return (
             <tr key={item.id}>
@@ -99,7 +108,7 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
 
     return (
         <div>
-            <div>--------Statistics Calculation Options--------</div>
+            <h3>Statistics Calculation Options</h3>
             <div>Method: 
                 <select value={props.statistics.method} onChange={methodChanged}>
                     <option key='' value='' />
@@ -117,7 +126,7 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
                 </input>
             </div>
             <br/>
-            <div>--------Result Statistics--------</div>
+            <h3>Result Statistics</h3>
             <div>Average Duration: {props.statistics.averageDuration} ms</div>
             <div>Number of Requests: {props.statistics.durationCount}</div>
             <br/>
@@ -129,7 +138,20 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
             <div>Number of Requests outside of {props.statistics.numberOfStandardDeviations} Std Devs from Avg: {requestsOutsideOfDeviations} </div>
             <div>Percentage of Requests outside of {props.statistics.numberOfStandardDeviations} Std Devs from Avg: {percentageOutsideOfDeviations}% </div>
             <br/>
-            <div>Slowest Request Durations (ms)</div>
+            <h3>Status Code Counts</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status Code</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {statusCodeCounts}
+                </tbody>
+            </table>
+            <br/>
+            <h3>Slowest Request Durations</h3>
             <table>
                 <thead>
                     <tr>
@@ -144,7 +166,7 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
                 </tbody>
             </table>
             <br/>
-            <div>Fastest Request Durations (ms)</div>
+            <h3>Fastest Request Durations</h3>
             <table>
                 <thead>
                     <tr>

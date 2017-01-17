@@ -8,6 +8,7 @@
     standardDeviation: number;
     averageDurationWithinDeviations: number;
     durationWithinDeviationsCount: number;
+    statusCodeCounts: any[];
     fastestRequests: any[];
     slowestRequests: any[];
 }

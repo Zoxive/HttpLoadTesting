@@ -59,7 +59,18 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
         public async Task<HttpStatusResultStatistics> GetStatistics(string method, string requestUrl, int? deviations)
         {
-            var sql = "SELECT ElapsedMilliseconds FROM HttpStatusResult";
+            var requests = await GetRequests(method, requestUrl);
+
+            const int count = 50;
+            var slowestRequests = await GetSlowestRequests(count);
+            var fastestRequests = await GetFastestRequests(count);
+
+            return _statisticsFactory.Create(method, requestUrl, requests, deviations, slowestRequests, fastestRequests);
+        }
+
+        private async Task<HttpStatusResultDto[]> GetRequests(string method, string requestUrl)
+        {
+            var sql = "SELECT * FROM HttpStatusResult";
 
             IDictionary<string, object> sqlParams;
             var whereClause = CreateWhereClause(method, requestUrl, out sqlParams);
@@ -68,17 +79,21 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += " ORDER BY ElapsedMilliseconds DESC";
 
-            var durations = (await _dbConnection.QueryAsync<long>(sql, sqlParams)).ToArray();
+            return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams)).ToArray();
+        }
 
-            const string slowestSql = "SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds DESC LIMIT 50";
+        private async Task<HttpStatusResultDto[]> GetSlowestRequests(int count)
+        {
+            var sql = string.Format("SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds DESC LIMIT {0}", count);
 
-            var slowestRequests = (await _dbConnection.QueryAsync<HttpStatusResultDto>(slowestSql)).ToArray();
+            return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql)).ToArray();
+        }
 
-            const string fastestSql = "SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds ASC LIMIT 50";
+        private async Task<HttpStatusResultDto[]> GetFastestRequests(int count)
+        {
+            var sql = string.Format("SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds ASC LIMIT {0}", count);
 
-            var fastestRequests = (await _dbConnection.QueryAsync<HttpStatusResultDto>(fastestSql)).ToArray();
-
-            return _statisticsFactory.Create(method, requestUrl, durations, deviations, slowestRequests, fastestRequests);
+            return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql)).ToArray();
         }
 
         private string CreateWhereClause(string method, string requestUrl, out IDictionary<string, object> sqlParams)
