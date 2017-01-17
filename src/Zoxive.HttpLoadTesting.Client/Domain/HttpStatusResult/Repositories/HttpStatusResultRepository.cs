@@ -62,8 +62,8 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             var requests = await GetRequests(method, requestUrl);
 
             const int count = 50;
-            var slowestRequests = await GetSlowestRequests(count);
-            var fastestRequests = await GetFastestRequests(count);
+            var slowestRequests = await GetSlowestRequests(method, requestUrl, count);
+            var fastestRequests = await GetFastestRequests(method, requestUrl, count);
 
             return _statisticsFactory.Create(method, requestUrl, requests, deviations, slowestRequests, fastestRequests);
         }
@@ -82,18 +82,32 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams)).ToArray();
         }
 
-        private async Task<HttpStatusResultDto[]> GetSlowestRequests(int count)
+        private async Task<HttpStatusResultDto[]> GetSlowestRequests(string method, string requestUrl, int count)
         {
-            var sql = string.Format("SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds DESC LIMIT {0}", count);
+            var sql = "SELECT * FROM HttpStatusResult";
 
-            return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql)).ToArray();
+            IDictionary<string, object> sqlParams;
+            var whereClause = CreateWhereClause(method, requestUrl, out sqlParams);
+
+            sql += whereClause;
+
+            sql += string.Format(" ORDER BY ElapsedMilliseconds DESC LIMIT {0}", count);
+
+            return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams)).ToArray();
         }
 
-        private async Task<HttpStatusResultDto[]> GetFastestRequests(int count)
+        private async Task<HttpStatusResultDto[]> GetFastestRequests(string method, string requestUrl, int count)
         {
-            var sql = string.Format("SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds ASC LIMIT {0}", count);
+            var sql = "SELECT * FROM HttpStatusResult";
 
-            return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql)).ToArray();
+            IDictionary<string, object> sqlParams;
+            var whereClause = CreateWhereClause(method, requestUrl, out sqlParams);
+
+            sql += whereClause;
+
+            sql += string.Format(" ORDER BY ElapsedMilliseconds ASC LIMIT {0}", count);
+
+            return (await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams)).ToArray();
         }
 
         private string CreateWhereClause(string method, string requestUrl, out IDictionary<string, object> sqlParams)
