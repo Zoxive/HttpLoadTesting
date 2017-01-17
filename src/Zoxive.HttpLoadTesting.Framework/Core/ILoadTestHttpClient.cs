@@ -12,6 +12,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         Task<HttpResponseMessage> Post(string relativePath, HttpContent content);
 
+        Task<HttpResponseMessage> Put(string relativePath, HttpContent content);
+
         Task<HttpResponseMessage> Get(string relativePath);
 
         Task<HttpResponseMessage> Delete(string relativePath);
