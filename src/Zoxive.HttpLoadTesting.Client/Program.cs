@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -41,7 +40,7 @@ namespace Zoxive.HttpLoadTesting.Client
             var loadTestExection = new LoadTestExecution(httpUsers, loadTests);
             Parallel.Invoke
             (
-                () => Start(loadTestExection, new KeystoneHttpStatusResultService()), async () =>
+                () => Start(loadTestExection, null), async () =>
                 {
                     // Wait for Kestrel to start...
                     // TODO callback? listen for ports?
@@ -61,6 +60,7 @@ namespace Zoxive.HttpLoadTesting.Client
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
+                .UseUrls("http://localhost:5000")
                 .ConfigureServices(services =>
                 {
                     ConfigureServices(services, httpStatusResultService);
