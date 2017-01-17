@@ -33,3 +33,4 @@ launchSettings.json
 /src/Zoxive.HttpLoadTesting.Client/node_modules
 /src/Zoxive.HttpLoadTesting.Client/wwwroot/scripts
 /src/Zoxive.HttpLoadTesting.Client/typings
+*.nupkg
