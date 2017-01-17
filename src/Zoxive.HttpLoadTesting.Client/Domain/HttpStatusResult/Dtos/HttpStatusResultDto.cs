@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
 
-namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos
+namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos
 {
     [Table("HttpStatusResult")]
     public class HttpStatusResultDto

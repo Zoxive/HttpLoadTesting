@@ -13,13 +13,16 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
             Method = result.RequestMessage.Method.Method;
         }
 
-        public HttpStatusResult(string method, long elapsedMilliseconds, string requestUrl, HttpStatusCode statusCode)
+        public HttpStatusResult(long id, string method, long elapsedMilliseconds, string requestUrl, HttpStatusCode statusCode)
         {
+            Id = id;
             Method = method;
             ElapsedMilliseconds = elapsedMilliseconds;
             RequestUrl = requestUrl;
             StatusCode = statusCode;
         }
+
+        public long Id { get; private set; }
 
         public string Method { get; private set; }
 

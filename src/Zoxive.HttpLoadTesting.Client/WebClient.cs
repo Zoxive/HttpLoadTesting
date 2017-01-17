@@ -8,7 +8,7 @@ namespace Zoxive.HttpLoadTesting.Client
 {
     public class WebClient
     {
-        public static void Run(ILoadTestExecution testExecution, IReadOnlyList<ISchedule> schedule)
+        public static void Run(ILoadTestExecution testExecution, IReadOnlyList<ISchedule> schedule, IHttpStatusResultService httpStatusResultService)
         {
             var cancellationSource = new CancellationTokenSource();
 
@@ -27,7 +27,7 @@ namespace Zoxive.HttpLoadTesting.Client
             (
                 options,
                 () => testExecution.Execute(schedule, cancellationSource.Token),
-                () => Program.Start(testExecution, cancellationSource.Token)
+                () => Program.Start(testExecution, httpStatusResultService, cancellationSource.Token)
             );
         }
     }

@@ -1,5 +1,5 @@
-﻿import { combineReducers } from "redux";
-import { IAction } from "~redux-thunk~redux";
+﻿import { combineReducers, Dispatch } from "redux";
+import State from "../../store/state";
 
 import { RECIEVE_ALL_ITERATIONS } from "../actions/iterations";
 
