@@ -44,6 +44,11 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
             return HttpClient.PostAsync(GetUrl(relativePath), content);
         }
 
+        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content)
+        {
+            return HttpClient.PutAsync(GetUrl(relativePath), content);
+        }
+
         public Task<HttpResponseMessage> Get(string relativePath)
         {
             return HttpClient.GetAsync(GetUrl(relativePath));
