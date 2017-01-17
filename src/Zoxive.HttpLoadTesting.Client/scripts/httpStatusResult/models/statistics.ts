@@ -8,8 +8,8 @@
     standardDeviation: number;
     averageDurationWithinDeviations: number;
     durationWithinDeviationsCount: number;
-    fastestRequestDurations: number[];
-    slowestRequestDurations: number[];
+    fastestRequests: any[];
+    slowestRequests: any[];
 }
 
 export default Statistics;

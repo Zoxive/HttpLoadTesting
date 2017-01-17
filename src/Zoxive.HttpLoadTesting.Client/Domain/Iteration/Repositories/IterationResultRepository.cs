@@ -92,7 +92,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
                     httpStatusResultDtos = new List<HttpStatusResultDto>();
                 }
 
-                var httpStatusResults = httpStatusResultDtos.Select(x => new Framework.Model.HttpStatusResult(x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode));
+                var httpStatusResults = httpStatusResultDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode));
 
                 return new UserIterationResult(iteration.BaseUrl, iteration.UserNumber, new TimeSpan(iteration.Elapsed), iteration.Iteration, iteration.TestName, httpStatusResults.ToList(), iteration.StartTick, iteration.EndTick, iteration.UserDelay, iteration.Exception);
             };

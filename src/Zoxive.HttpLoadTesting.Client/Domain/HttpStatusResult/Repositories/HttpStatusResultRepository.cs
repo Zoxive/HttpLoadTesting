@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -69,7 +70,15 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             var durations = (await _dbConnection.QueryAsync<long>(sql, sqlParams)).ToArray();
 
-            return _statisticsFactory.Create(method, requestUrl, durations, deviations);
+            const string slowestSql = "SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds DESC LIMIT 50";
+
+            var slowestRequests = (await _dbConnection.QueryAsync<HttpStatusResultDto>(slowestSql)).ToArray();
+
+            const string fastestSql = "SELECT * FROM HttpStatusResult ORDER BY ElapsedMilliseconds ASC LIMIT 50";
+
+            var fastestRequests = (await _dbConnection.QueryAsync<HttpStatusResultDto>(fastestSql)).ToArray();
+
+            return _statisticsFactory.Create(method, requestUrl, durations, deviations, slowestRequests, fastestRequests);
         }
 
         private string CreateWhereClause(string method, string requestUrl, out IDictionary<string, object> sqlParams)

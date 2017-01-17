@@ -21,8 +21,8 @@ export default function reducer(state: any, action: IAction): any
             standardDeviation: 0,
             averageDurationWithinStdDevs: 0,
             durationWithinStdDevsCount: 0,
-            fastestRequestDurations: <number[]>[],
-            slowestRequestDurations: <number[]>[]
+            fastestRequests: <any[]>[],
+            slowestRequests: <any[]>[]
         }
         state = {
             methods: [],

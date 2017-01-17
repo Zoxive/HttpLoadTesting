@@ -16,7 +16,6 @@ type StatisticProps =
 };
 
 export function HttpStatusResultStatistics(props: StatisticProps) {
-    console.log("props", props, "this", this);
     var methodOptions = props.methods.map(function(option: any) {
         return (
             <option key={option} value={option}>
@@ -33,15 +32,25 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
         )
     });
 
-    var fastestRequestDurations = props.statistics.fastestRequestDurations.map(function(item: any) {
+    var fastestRequestDurations = props.statistics.fastestRequests.map(function(item: any) {
         return (
-            <li>{item}</li>
+            <tr key={item.id}>
+                <td>{item.elapsedMilliseconds}</td>
+                <td>{item.method}</td>
+                <td>{item.requestUrl}</td>
+                <td>{item.statusCode}</td>
+            </tr>
         )
     });
 
-    var slowestRequestDurations = props.statistics.slowestRequestDurations.map(function(item: any) {
+    var slowestRequestDurations = props.statistics.slowestRequests.map(function(item: any) {
         return (
-            <li>{item}</li>
+            <tr key={item.id}>
+                <td>{item.elapsedMilliseconds}</td>
+                <td>{item.method}</td>
+                <td>{item.requestUrl}</td>
+                <td>{item.statusCode}</td>
+            </tr>
         )
     });
 
@@ -86,6 +95,8 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
     var requestsOutsideOfDeviations = props.statistics.durationCount - props.statistics.durationWithinDeviationsCount;
     var percentageOutsideOfDeviations = (requestsOutsideOfDeviations / props.statistics.durationCount) * 100.0;
     
+    
+
     return (
         <div>
             <div>--------Statistics Calculation Options--------</div>
@@ -119,14 +130,34 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
             <div>Percentage of Requests outside of {props.statistics.numberOfStandardDeviations} Std Devs from Avg: {percentageOutsideOfDeviations}% </div>
             <br/>
             <div>Slowest Request Durations (ms)</div>
-            <ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Duration (ms)</th>
+                        <th>Method</th>
+                        <th>Request Url</th>
+                        <th>Status Code</th>
+                    </tr>
+                </thead>
+                <tbody>
                 {slowestRequestDurations}
-            </ul>
+                </tbody>
+            </table>
             <br/>
             <div>Fastest Request Durations (ms)</div>
-            <ul>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Duration (ms)</th>
+                        <th>Method</th>
+                        <th>Request Url</th>
+                        <th>Status Code</th>
+                    </tr>
+                </thead>
+                <tbody>
                 {fastestRequestDurations}
-            </ul>
+                </tbody>
+            </table>
         </div>
     );
 }

@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 {
     public class HttpStatusResultStatisticsFactory : IHttpStatusResultStatisticsFactory
     {
-        public HttpStatusResultStatistics Create(string method, string requestUrl, long[] durationsDesc, int? deviations)
+        public HttpStatusResultStatistics Create(string method, string requestUrl, long[] durationsDesc, int? deviations, HttpStatusResultDto[] slowestRequestDtos, HttpStatusResultDto[] fastestRequestDtos)
         {
             if (!deviations.HasValue)
             {
@@ -25,15 +26,10 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
             var durationWithinDeviationsCount = durationsWithinDeviations.Count();
             var averageDurationWithinDeviations = durationsWithinDeviations.Average();
 
-            var numberToGet = 20;
-            if (durationCount < numberToGet)
-            {
-                numberToGet = durationCount;
-            }
-            var slowestRequests = durationsDesc.Take(numberToGet).ToArray();
-            var fastestRequests = durationsDesc.Skip(durationCount - numberToGet).Take(numberToGet).Reverse().ToArray();
+            var slowestRequests = slowestRequestDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode)).ToArray();
+            var fastestRequests = fastestRequestDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode)).ToArray();
 
-            return new HttpStatusResultStatistics(method, requestUrl, deviations.Value, averageDuration, durationCount, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount, fastestRequests, slowestRequests);
+            return new HttpStatusResultStatistics(method, requestUrl, deviations.Value, averageDuration, durationCount, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount, slowestRequests, fastestRequests);
         }
 
         public static double StandardDeviation(IEnumerable<long> values, double average)
