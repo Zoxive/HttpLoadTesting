@@ -24,6 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbededResource Include="wwwroot\index.html" />
+    <EmbededResource Include="wwwroot\scripts\app.js" />
+    <EmbededResource Include="wwwroot\scripts\app.js.map" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Zoxive.HttpLoadTesting.Framework\Zoxive.HttpLoadTesting.Framework.csproj" />
   </ItemGroup>
 
