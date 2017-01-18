@@ -71,10 +71,6 @@
     },
 
     "scripts": {
-        "prepack": [
-            "npm run release"
-        ],
-
         "prepublish": [
             "npm run release"
         ]
