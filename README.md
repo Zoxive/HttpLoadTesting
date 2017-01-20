@@ -4,6 +4,11 @@ HTTP Load testing when single HTTP endpoint is not enough.
 
 Allows you to write test scenarios.
 
+Install via nuget
+
+```Install-Package Zoxive.HttpLoadTesting.Client```
+
+
 ```csharp
 // Test
 public class ReadAPost : ILoadTest
