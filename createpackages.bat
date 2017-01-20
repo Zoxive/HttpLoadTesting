@@ -1,10 +1,12 @@
-del *.nupkg
+del nupkgs\*.nupkg
 
 cd /d src\Zoxive.HttpLoadTesting.Client
 CMD /C npm run release
 cd /d ../..
 
-c:\Utilities\nuget.exe pack src\Zoxive.HttpLoadTesting.Client\project.json
-c:\Utilities\nuget.exe pack src\Zoxive.HttpLoadTesting.Framework\project.json
+dotnet restore
 
-c:\Utilities\nuget.exe push *.nupkg -source "https://api.nuget.org/v3/index.json"
+dotnet pack src\Zoxive.HttpLoadTesting.Framework\Zoxive.HttpLoadTesting.Framework.csproj --configuration release --output ..\..\nupkgs
+dotnet pack src\Zoxive.HttpLoadTesting.Client\Zoxive.HttpLoadTesting.Client.csproj --configuration release --output ..\..\nupkgs
+
+c:\Utilities\nuget.exe push nupkgs\*.nupkg -source "https://api.nuget.org/v3/index.json"

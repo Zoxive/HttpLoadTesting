@@ -10,7 +10,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         public TestExecutionContext()
         {
-            _startingTick = Env.Tick;
+            _startingTick = Env.Milliseconds;
 
             Step = 0;
             _currentUsers = new List<User>();
@@ -18,7 +18,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         public int CurrentUsers => _currentUsers.Count;
 
-        private double TickSinceStarting => Env.Tick - _startingTick;
+        private double TickSinceStarting => Env.Milliseconds - _startingTick;
 
         public double TotalSeconds => TickSinceStarting / 1000;
 

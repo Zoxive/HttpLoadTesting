@@ -15,9 +15,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos
 
         public int Iteration { get; set; }
 
-        public int StartTick { get; set; }
+        public long StartTick { get; set; }
 
-        public int EndTick { get; set; }
+        public long EndTick { get; set; }
 
         public long UserDelay { get; set; }
 

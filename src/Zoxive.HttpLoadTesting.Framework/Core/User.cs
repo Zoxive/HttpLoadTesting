@@ -64,7 +64,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         private async Task<UserIterationResult> ExecuteTest(ILoadTest nextTest, IUserTestSpecificHttpClient userSpecificClient)
         {
             _userTime.Restart();
-            var startTick = Env.Tick;
+            var startTick = Stopwatch.GetTimestamp();
 
             Exception exception = null;
 
@@ -78,7 +78,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }
 
             _userTime.Stop();
-            var endTick = Env.Tick;
+
+            var endTick = startTick + _userTime.ElapsedTicks;
 
             return new UserIterationResult(_httpUser.BaseUrl, UserNumber, _userTime.Elapsed, Iteration, nextTest.Name, userSpecificClient.StatusResults(), startTick, endTick, userSpecificClient.UserDelay(), exception?.ToString());
         }
