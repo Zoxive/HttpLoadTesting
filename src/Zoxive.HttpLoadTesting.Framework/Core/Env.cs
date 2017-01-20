@@ -4,6 +4,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 {
     public class Env
     {
-        public static int Tick => Environment.TickCount & int.MaxValue;
+        public static int Milliseconds => Environment.TickCount & int.MaxValue;
     }
 }

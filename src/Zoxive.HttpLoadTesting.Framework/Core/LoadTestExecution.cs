@@ -34,7 +34,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             while (!done)
             {
-                var startTick = Env.Tick;
+                var startTick = Env.Milliseconds;
 
                 if (Canceled(token))
                 {
@@ -57,7 +57,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                     }
                 }
 
-                double tickSinceStart = Env.Tick - startTick;
+                double tickSinceStart = Env.Milliseconds - startTick;
 
                 if (!done && tickSinceStart < 1000)
                 {

@@ -28,8 +28,8 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
             var durationWithinDeviationsCount = durationsWithinDeviations.Count();
             var averageDurationWithinDeviations = Average(durationsWithinDeviations);
 
-            var slowestRequests = slowestRequestDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode)).ToArray();
-            var fastestRequests = fastestRequestDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode)).ToArray();
+            var slowestRequests = slowestRequestDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick)).ToArray();
+            var fastestRequests = fastestRequestDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick)).ToArray();
 
             var statusCodeCounts = requestsDesc.GroupBy(x => x.StatusCode).Select(g => new HttpStatusCodeCount(g.Key, g.Count())).OrderBy(x => x.StatusCode).ToArray();
 
