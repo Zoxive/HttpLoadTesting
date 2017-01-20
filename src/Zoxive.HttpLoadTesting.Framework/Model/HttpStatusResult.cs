@@ -1,19 +1,20 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 
 namespace Zoxive.HttpLoadTesting.Framework.Model
 {
     public class HttpStatusResult
     {
-        public HttpStatusResult(HttpResponseMessage result, long elapsedMilliseconds)
+        public HttpStatusResult(HttpResponseMessage result, long elapsedTicks)
         {
-            ElapsedMilliseconds = elapsedMilliseconds;
+            ElapsedMilliseconds = (double)elapsedTicks / TimeSpan.TicksPerMillisecond;
             StatusCode = result.StatusCode;
             RequestUrl = result.RequestMessage.RequestUri.ToString();
             Method = result.RequestMessage.Method.Method;
         }
 
-        public HttpStatusResult(long id, string method, long elapsedMilliseconds, string requestUrl, HttpStatusCode statusCode)
+        public HttpStatusResult(long id, string method, double elapsedMilliseconds, string requestUrl, HttpStatusCode statusCode)
         {
             Id = id;
             Method = method;
@@ -26,7 +27,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public string Method { get; private set; }
 
-        public long ElapsedMilliseconds { get; private set; }
+        public double ElapsedMilliseconds { get; private set; }
 
         public string RequestUrl { get; private set; }
 

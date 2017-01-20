@@ -14,7 +14,7 @@
     <PackageLicenseUrl>https://github.com/Zoxive/HttpLoadTesting/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Zoxive/HttpLoadTesting</RepositoryUrl>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dotnet5.6;portable-net45+win8</PackageTargetFallback>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,9 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbededResource Include="wwwroot\index.html" />
-    <EmbededResource Include="wwwroot\scripts\app.js" />
-    <EmbededResource Include="wwwroot\scripts\app.js.map" />
+    <EmbeddedResource Include="wwwroot\index.html" />
+    <EmbeddedResource Include="wwwroot\scripts\app.js" />
+    <EmbeddedResource Include="wwwroot\scripts\app.js.map" />
   </ItemGroup>
 
   <ItemGroup>

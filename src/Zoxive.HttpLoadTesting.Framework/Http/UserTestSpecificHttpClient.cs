@@ -96,7 +96,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
             var response = await doRequest();
 
-            _statusResults.Add(new HttpStatusResult(response, _stopWatch.ElapsedMilliseconds));
+            _statusResults.Add(new HttpStatusResult(response, _stopWatch.ElapsedTicks));
 
             _stopWatch.Stop();
 

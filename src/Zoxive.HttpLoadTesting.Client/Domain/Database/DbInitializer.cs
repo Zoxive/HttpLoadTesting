@@ -44,7 +44,7 @@ CREATE TABLE HttpStatusResult (
     Id                  INTEGER PRIMARY KEY,
     IterationId         INTEGER REFERENCES Iteration (Id) ON DELETE CASCADE,
     Method              VARCHAR,
-    ElapsedMilliseconds BIGINT,
+    ElapsedMilliseconds REAL, 
     RequestUrl          VARCHAR,
     StatusCode          INTEGER
 );
