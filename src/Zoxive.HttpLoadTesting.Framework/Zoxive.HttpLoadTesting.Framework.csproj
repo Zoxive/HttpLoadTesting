@@ -4,7 +4,7 @@
     <Description>HttpLoadTesting http load generator framework</Description>
     <AssemblyTitle>HttpLoadTesting.Framework</AssemblyTitle>
     <NeutralLanguage>en-us</NeutralLanguage>
-    <VersionPrefix>0.0.5</VersionPrefix>
+    <VersionPrefix>0.0.8</VersionPrefix>
     <Authors>Kyle Wascher</Authors>
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <AssemblyName>Zoxive.HttpLoadTesting.Framework</AssemblyName>
