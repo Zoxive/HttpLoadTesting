@@ -21,6 +21,11 @@ namespace Zoxive.HttpLoadTesting.Framework.Http.Json
             return httpClient.Post(relativePath, new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"));
         }
 
+        public static Task<HttpResponseMessage> Put(this ILoadTestHttpClient httpClient, string relativePath, IDictionary<string, object> content)
+        {
+            return httpClient.Put(relativePath, new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json"));
+        }
+
         private static HttpContent EmptyContent()
         {
             return new StringContent("{}", Encoding.UTF8, "application/json");
