@@ -17,7 +17,7 @@ namespace Zoxive.HttpLoadTesting.Examples.Examples
         {
             var schedule = new List<ISchedule>
             {
-                new AddUsers(totalUsers: 10, usersEvery: 2, seconds: 5),
+                new AddUsers(totalUsers: 2, usersEvery: 2, seconds: 5),
                 new Duration(0.25m)
             };
 
@@ -31,7 +31,14 @@ namespace Zoxive.HttpLoadTesting.Examples.Examples
                 new HttpUser("https://jsonplaceholder.typicode.com/")
                 {
                     AlterHttpClient = SetHttpClientProperties,
-                    AlterHttpClientHandler = SetHttpClientHandlerProperties
+                    AlterHttpClientHandler = SetHttpClientHandlerProperties,
+                    AlterHttpRequestMessage = SetHttpRequestHeaders
+                },
+                new HttpUser("https://jsonplaceholder.typicode.com/")
+                {
+                    AlterHttpClient = SetHttpClientProperties,
+                    AlterHttpClientHandler = SetHttpClientHandlerProperties,
+                    AlterHttpRequestMessage = SetHttpRequestHeadersUser2
                 }
             };
 
@@ -53,6 +60,16 @@ namespace Zoxive.HttpLoadTesting.Examples.Examples
         {
             httpClientHandler.AllowAutoRedirect = true;
             httpClientHandler.AutomaticDecompression = DecompressionMethods.Deflate;
+        }
+
+        public static void SetHttpRequestHeaders(HttpRequestMessage request)
+        {
+            request.Headers.Add("Awesome-Custom-Header", "request modified");
+        }
+
+        public static void SetHttpRequestHeadersUser2(HttpRequestMessage request)
+        {
+            request.Headers.Add("Awesome-Custom-Header", "request modified for user 2");
         }
     }
 }
