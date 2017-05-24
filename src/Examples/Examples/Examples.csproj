@@ -12,20 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**\*.cs" />
-    <EmbeddedResource Include="**\*.resx" />
-    <EmbeddedResource Include="compiler\resources\**\*" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Zoxive.HttpLoadTesting.Client\Zoxive.HttpLoadTesting.Client.csproj" />
     <ProjectReference Include="..\..\Zoxive.HttpLoadTesting.Framework\Zoxive.HttpLoadTesting.Framework.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App">
-      <Version>1.0.1</Version>
-    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
