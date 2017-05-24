@@ -41,22 +41,41 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         public Task<HttpResponseMessage> Post(string relativePath, HttpContent content)
         {
-            return HttpClient.PostAsync(GetUrl(relativePath), content);
+            var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(relativePath))
+            {
+                Content = content
+            };
+            return SendAsync(request);
         }
 
         public Task<HttpResponseMessage> Put(string relativePath, HttpContent content)
         {
-            return HttpClient.PutAsync(GetUrl(relativePath), content);
+            var request = new HttpRequestMessage(HttpMethod.Put, GetUrl(relativePath))
+            {
+                Content = content
+            };
+            return SendAsync(request);
         }
 
         public Task<HttpResponseMessage> Get(string relativePath)
         {
-            return HttpClient.GetAsync(GetUrl(relativePath));
+            var request = new HttpRequestMessage(HttpMethod.Get, GetUrl(relativePath));
+
+            return SendAsync(request);
         }
 
         public Task<HttpResponseMessage> Delete(string relativePath)
         {
-            return HttpClient.DeleteAsync(GetUrl(relativePath));
+            var request = new HttpRequestMessage(HttpMethod.Delete, GetUrl(relativePath));
+
+            return SendAsync(request);
+        }
+
+        private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
+        {
+            HttpUser.AlterHttpRequestMessage?.Invoke(request);
+
+            return HttpClient.SendAsync(request);
         }
 
         public IUserTestSpecificHttpClient GetClientForUser()
