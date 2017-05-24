@@ -44,7 +44,7 @@ namespace Zoxive.HttpLoadTesting.Examples.Examples
 
             var testExecution = new LoadTestExecution(users, tests);
 
-            WebClient.Run(testExecution, schedule, null);
+            Zoxive.HttpLoadTesting.Client.WebClient.Run(testExecution, schedule, null);
         }
 
         private static void SetHttpClientProperties(HttpClient httpClient)
