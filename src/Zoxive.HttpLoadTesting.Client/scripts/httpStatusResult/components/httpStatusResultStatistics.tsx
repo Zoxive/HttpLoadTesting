@@ -1,47 +1,55 @@
 ﻿import * as React from "react";
 import StatisticsState from "./../store/statisticsState";
-import { connect, Dispatch } from "react-redux";
+import { connect } from "react-redux";
+import { Dispatch } from "redux";
 import { Statistics } from "./../models/statistics";
 
 import { fetchStatistics } from "./../store/statisticsAction";
 import { fetchMethods } from "./../store/getRequestMethodsAction";
 import { fetchRequestUrls } from "./../store/getRequestUrlsAction";
 
-type StatisticProps =
+interface StatisticProps
 {
-    methods?: string[],
-    requestUrls?: string[],
-    statistics?: Statistics,
-    dispatch?: Dispatch<StatisticsState>
+    methods?: string[];
+    requestUrls?: string[];
+    statistics?: Statistics;
+    fetchRequestUrls?(method: string): void;
+    fetchStatistics?(method: string, requestUrl: string, stdDev: number): void;
+    fetchMethods?(method: string): void;
 };
 
-export function HttpStatusResultStatistics(props: StatisticProps) {
-    var methodOptions = props.methods.map(function(option: any) {
+export function HttpStatusResultStatistics(props: StatisticProps)
+{
+    var methodOptions = props.methods.map((option: any) =>
+    {
         return (
             <option key={option} value={option}>
                 {option}
             </option>
-        )
+        );
     });
 
-    var requestUrlOptions = props.requestUrls.map(function(option: any) {
+    var requestUrlOptions = props.requestUrls.map((option: any) =>
+    {
         return (
             <option key={option} value={option}>
                 {option}
             </option>
-        )
+        );
     });
 
-    var statusCodeCounts = props.statistics.statusCodeCounts.map(function(item: any) {
+    const statusCodeCounts = props.statistics.statusCodeCounts.map((item: any) =>
+    {
         return (
             <tr key={item.statusCode}>
                 <td>{item.statusCode} ({item.statusCodeName})</td>
                 <td>{item.count}</td>
             </tr>
-        )
+        );
     });
 
-    var fastestRequestDurations = props.statistics.fastestRequests.map(function(item: any) {
+    const fastestRequestDurations = props.statistics.fastestRequests.map((item: any) =>
+    {
         return (
             <tr key={item.id}>
                 <td>{item.elapsedMilliseconds}</td>
@@ -49,10 +57,11 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
                 <td>{item.requestUrl}</td>
                 <td>{item.statusCode}</td>
             </tr>
-        )
+        );
     });
 
-    var slowestRequestDurations = props.statistics.slowestRequests.map(function(item: any) {
+    const slowestRequestDurations = props.statistics.slowestRequests.map((item: any) =>
+    {
         return (
             <tr key={item.id}>
                 <td>{item.elapsedMilliseconds}</td>
@@ -60,10 +69,10 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
                 <td>{item.requestUrl}</td>
                 <td>{item.statusCode}</td>
             </tr>
-        )
+        );
     });
 
-    var methodChanged = function(e: any)
+    const methodChanged = (e: any) =>
     {
         if(e.target.value === props.statistics.method)
         {
@@ -72,11 +81,11 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
 
         props.statistics.method = e.target.value;
 
-        props.dispatch(fetchRequestUrls(props.statistics.method));
-        props.dispatch(fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations));
+        props.fetchRequestUrls(props.statistics.method);
+        props.fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations);
     };
 
-    var requestUrlChanged = function(e: any)
+    const requestUrlChanged = (e: any) =>
     {
         if(e.target.value === props.statistics.requestUrl)
         {
@@ -85,11 +94,11 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
 
         props.statistics.requestUrl = e.target.value;
 
-        props.dispatch(fetchMethods(props.statistics.requestUrl));
-        props.dispatch(fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations));
+        props.fetchMethods(props.statistics.requestUrl);
+        props.fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations);
     };
 
-    var numberOfStdDevsChanged = function(e: any)
+    const numberOfStdDevsChanged = (e: any) =>
     {
         if(e.target.value === props.statistics.numberOfStandardDeviations)
         {
@@ -98,29 +107,29 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
 
         props.statistics.numberOfStandardDeviations = e.target.value;
 
-        props.dispatch(fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations));
+        props.fetchStatistics(props.statistics.method, props.statistics.requestUrl, props.statistics.numberOfStandardDeviations);
     };
 
-    var requestsOutsideOfDeviations = props.statistics.durationCount - props.statistics.durationWithinDeviationsCount;
-    var percentageOutsideOfDeviations = (requestsOutsideOfDeviations / props.statistics.durationCount) * 100.0;
+    const requestsOutsideOfDeviations = props.statistics.durationCount - props.statistics.durationWithinDeviationsCount;
+    const percentageOutsideOfDeviations = (requestsOutsideOfDeviations / props.statistics.durationCount) * 100.0;
     
     return (
         <div>
             <h3>Statistics Calculation Options</h3>
             <div>Method: 
                 <select value={props.statistics.method || ""} onChange={methodChanged}>
-                    <option key='' value='' />
+                    <option key="" value="" />
                     {methodOptions}
                 </select>
             </div>
             <div>Request: 
                 <select value={props.statistics.requestUrl || ""} onChange={requestUrlChanged}>
-                    <option key='' value='' />
+                    <option key="" value="" />
                     {requestUrlOptions}
                 </select>
             </div>
             <div>Number of Std Devs: 
-                <input type='text' value={props.statistics.numberOfStandardDeviations} onChange={numberOfStdDevsChanged}>
+                <input type="text" value={props.statistics.numberOfStandardDeviations} onChange={numberOfStdDevsChanged}>
                 </input>
             </div>
             <br/>
@@ -182,7 +191,8 @@ export function HttpStatusResultStatistics(props: StatisticProps) {
     );
 }
 
-function mapStateToProps(state: any, props: StatisticProps): StatisticProps {
+function mapStateToProps(state: any, props: StatisticProps)
+{
     return {
         methods: state.statistics.methods,
         requestUrls: state.statistics.requestUrls,
@@ -190,4 +200,14 @@ function mapStateToProps(state: any, props: StatisticProps): StatisticProps {
     };
 }
 
-export default connect(mapStateToProps)(HttpStatusResultStatistics);
+// any sucks here but im running with it for now
+function mapDispatchToProps(dispatch: any)
+{
+    return {
+        fetchRequestUrls: (method: string) => dispatch(fetchRequestUrls(method)),
+        fetchStatistics: (method: string, requestUrl: string, stdDev: number) => dispatch(fetchStatistics(method, requestUrl, stdDev)),
+        fetchMethods: (method: string) => dispatch(fetchMethods(method)),
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(HttpStatusResultStatistics);

@@ -10,7 +10,8 @@ import HttpStatusResultStatistics from "./httpStatusResult/components/httpStatus
 
 var store = configureStore({});
 
-var LoadAll = () => {
+var LoadAll = () =>
+{
     store.dispatch(fetchAllIterations());
     store.dispatch(fetchStatistics("", "", 3));
     store.dispatch(fetchMethods(""));

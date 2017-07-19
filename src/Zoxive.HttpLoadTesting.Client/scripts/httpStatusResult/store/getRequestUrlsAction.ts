@@ -16,7 +16,7 @@ export function fetchRequestUrls(method: string)
 
     return (dispatch: Dispatch<State>, getState: () => State) =>
     {
-        var url = `/api/httpStatusResult/requestUrls` + queryString;
+        var url = `/api/httpStatusResult/requestUrls${queryString}`;
         return fetch(url)
             .then(response => response.json())
             .then(json => dispatch(receiveRequestUrls(json)));
