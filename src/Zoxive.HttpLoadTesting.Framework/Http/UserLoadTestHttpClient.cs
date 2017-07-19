@@ -8,21 +8,22 @@ using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Framework.Http
 {
-    public class UserTestSpecificHttpClient : IUserTestSpecificHttpClient
+    public class UserLoadTestHttpClient : IUserLoadTestHttpClient
     {
         private ILoadTestHttpClient _loadTestHttpClient;
 
         private List<HttpStatusResult> _statusResults = new List<HttpStatusResult>();
 
-        private long _userDelay;
         private Stopwatch _stopWatch;
 
-        public UserTestSpecificHttpClient(ILoadTestHttpClient loadTestHttpClient, IDictionary<string, object> testState)
+        public UserLoadTestHttpClient(ILoadTestHttpClient loadTestHttpClient, IDictionary<string, object> testState)
         {
             _loadTestHttpClient = loadTestHttpClient;
             TestState = testState;
             _stopWatch = new Stopwatch();
         }
+
+        public long UserDelay { get; private set; }
 
         // Stores anything you need for your tests specific to this user/httpclient
         public IDictionary<string, object> TestState { get; }
@@ -47,22 +48,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
             return LogStatusResult(() => _loadTestHttpClient.Delete(relativePath));
         }
 
-        public IUserTestSpecificHttpClient GetClientForUser()
-        {
-            return _loadTestHttpClient.GetClientForUser();
-        }
-
-        public Task DelayUserClick(int min = 500, int max = 1000)
-        {
-            return LogUserDelay(() => _loadTestHttpClient.DelayUserClick(min, max));
-        }
-
-        public Task DelayUserThink(int min = 500, int max = 3000)
-        {
-            return LogUserDelay(() => _loadTestHttpClient.DelayUserThink(min, max));
-        }
-
-        private async Task LogUserDelay(Func<Task> func)
+        public async Task LogUserDelay(Func<Task> func)
         {
             _stopWatch.Restart();
 
@@ -70,7 +56,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
             _stopWatch.Stop();
 
-            _userDelay += _stopWatch.ElapsedMilliseconds;
+            UserDelay += _stopWatch.ElapsedMilliseconds;
         }
 
         public void Dispose()
@@ -85,11 +71,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
             return _statusResults;
         }
 
-        public long UserDelay()
-        {
-            return _userDelay;
-        }
-
         private async Task<HttpResponseMessage> LogStatusResult(Func<Task<HttpResponseMessage>> doRequest)
         {
             _stopWatch.Restart();
@@ -97,9 +78,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
             var response = await doRequest();
 
-            _statusResults.Add(new HttpStatusResult(response, _stopWatch.ElapsedTicks, requestStartTick));
-
             _stopWatch.Stop();
+
+            _statusResults.Add(new HttpStatusResult(response, _stopWatch.ElapsedTicks, requestStartTick));
 
             return response;
         }

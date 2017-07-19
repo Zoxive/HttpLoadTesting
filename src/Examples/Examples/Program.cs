@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Zoxive.HttpLoadTesting.Client;
-using Zoxive.HttpLoadTesting.Examples.Examples.Tests;
+using Examples.Tests;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Core.Schedules;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
-namespace Zoxive.HttpLoadTesting.Examples.Examples
+namespace Examples
 {
     public class Program
     {

@@ -78,19 +78,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
             return HttpClient.SendAsync(request);
         }
 
-        public IUserTestSpecificHttpClient GetClientForUser()
+        public IUserLoadTestHttpClient GetClientForUser()
         {
-            return new UserTestSpecificHttpClient(this, TestState);
-        }
-
-        public Task DelayUserClick(int min = 500, int max = 1000)
-        {
-            return Task.Delay(Rand.Random(min, max));
-        }
-
-        public Task DelayUserThink(int min = 500, int max = 3000)
-        {
-            return Task.Delay(Rand.Random(min, max));
+            return new UserLoadTestHttpClient(this, TestState);
         }
 
         private Uri GetUrl(string relativePath)

@@ -13,6 +13,7 @@ using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Core.Schedules;
+using Zoxive.HttpLoadTesting.Framework.Http;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client
@@ -128,7 +129,7 @@ namespace Zoxive.HttpLoadTesting.Client
             return Task.CompletedTask;
         }
 
-        public async Task Execute(ILoadTestHttpClient loadTestHttpClient)
+        public async Task Execute(IUserLoadTestHttpClient loadTestHttpClient)
         {
             await loadTestHttpClient.Get("");
 

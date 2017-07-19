@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Zoxive.HttpLoadTesting.Framework.Http;
 
 namespace Zoxive.HttpLoadTesting.Framework.Core
 {
@@ -6,8 +7,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     {
         string Name { get; }
 
-        Task Initialize(ILoadTestHttpClient loadTestHttpClient);
+        Task Initialize(ILoadTestHttpClient loadLoadTestHttpClient);
 
-        Task Execute(ILoadTestHttpClient loadTestHttpClient);
+        Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient);
     }
 }

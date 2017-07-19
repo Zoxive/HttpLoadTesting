@@ -51,7 +51,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             var task = ExecuteTest(nextTest, userSpecificClient);
 
-            await task.ContinueWith<Task>((task1, o) => 
+            await task.ContinueWith((task1, o) => 
             {
                 iterationResult(task.Result);
 
@@ -61,7 +61,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }, null, _cancellationToken.Token);
         }
 
-        private async Task<UserIterationResult> ExecuteTest(ILoadTest nextTest, IUserTestSpecificHttpClient userSpecificClient)
+        private async Task<UserIterationResult> ExecuteTest(ILoadTest nextTest, IUserLoadTestHttpClient userLoadClient)
         {
             _userTime.Restart();
             var startTick = Stopwatch.GetTimestamp();
@@ -70,7 +70,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             try
             {
-                await nextTest.Execute(userSpecificClient);
+                await nextTest.Execute(userLoadClient);
             }
             catch (Exception ex)
             {
@@ -81,7 +81,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             var endTick = startTick + _userTime.ElapsedTicks;
 
-            return new UserIterationResult(_httpUser.BaseUrl, UserNumber, _userTime.Elapsed, Iteration, nextTest.Name, userSpecificClient.StatusResults(), startTick, endTick, userSpecificClient.UserDelay(), exception?.ToString());
+            return new UserIterationResult(_httpUser.BaseUrl, UserNumber, _userTime.Elapsed, Iteration, nextTest.Name, userLoadClient.StatusResults(), startTick, endTick, userLoadClient.UserDelay, exception?.ToString());
         }
 
         public void Stop()

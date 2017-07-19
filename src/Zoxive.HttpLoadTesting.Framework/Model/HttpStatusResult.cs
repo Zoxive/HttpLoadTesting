@@ -25,15 +25,15 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
             RequestStartTick = requestStartTick;
         }
 
-        public long Id { get; private set; }
+        public long Id { get; }
 
-        public string Method { get; private set; }
+        public string Method { get; }
 
-        public double ElapsedMilliseconds { get; private set; }
+        public double ElapsedMilliseconds { get; }
 
-        public string RequestUrl { get; private set; }
+        public string RequestUrl { get; }
 
-        public HttpStatusCode StatusCode { get; private set; }
+        public HttpStatusCode StatusCode { get; }
 
         public long RequestStartTick { get; }
     }
