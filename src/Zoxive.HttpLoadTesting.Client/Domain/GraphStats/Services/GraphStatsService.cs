@@ -15,7 +15,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
             _connection = connection;
         }
 
-        public async Task<IEnumerable<GraphStatDto>> Get(int groups = 60)
+        public async Task<IEnumerable<GraphStatDto>> Get(int groups)
         {
             var groupSize = await _connection.QueryFirstAsync<GraphStatsGroupDto>($@"
 SELECT

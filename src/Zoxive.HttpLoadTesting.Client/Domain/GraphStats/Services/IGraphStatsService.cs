@@ -5,6 +5,6 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
 {
     public interface IGraphStatsService
     {
-        Task<IEnumerable<GraphStatDto>> Get(int groups = 60);
+        Task<IEnumerable<GraphStatDto>> Get(int groups);
     }
 }

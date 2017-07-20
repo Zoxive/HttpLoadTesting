@@ -4,7 +4,7 @@
   "compilerOptions": {
     "noImplicitAny": true,
     "noEmitOnError": true,
-    "removeComments": false,
+    "removeComments": true,
     "sourceMap": true,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,

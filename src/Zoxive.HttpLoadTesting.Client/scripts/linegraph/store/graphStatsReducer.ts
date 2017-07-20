@@ -22,7 +22,7 @@ export default function graphStatsReducer(state: GraphStatsState, action: IActio
     {
         case RECIEVE_GRAPH_STATS:
             const graphStats = action as IActionGraphStats;
-            return xtend(state, { stats: graphStats.graphStats });
+            return xtend(state, { stats: graphStats.graphStats, groupSize: graphStats.groupSize });
     }
 
     return state;
