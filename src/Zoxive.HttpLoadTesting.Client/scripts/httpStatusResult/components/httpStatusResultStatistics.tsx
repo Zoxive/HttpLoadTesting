@@ -1,7 +1,6 @@
 ﻿import * as React from "react";
 import StatisticsState from "./../store/statisticsState";
 import { connect } from "react-redux";
-import { Dispatch } from "redux";
 import { Statistics } from "./../models/statistics";
 
 import { fetchStatistics } from "./../store/statisticsAction";

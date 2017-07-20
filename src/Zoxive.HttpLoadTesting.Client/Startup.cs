@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -33,13 +35,10 @@ namespace Zoxive.HttpLoadTesting.Client
             {
                 var path = context.Request.Path.Value;
 
-                if (path == "/scripts/app.js")
+                if (EmbededScripts.Contains(path))
                 {
-                    await ResourcesOrRealThing.Stream("wwwroot/scripts/app.js", context.Response, "text/javascript");
-                }
-                else if (path == "/scripts/app.js.map")
-                {
-                    await ResourcesOrRealThing.Stream("wwwroot/scripts/app.js.map", context.Response, "text/javascript");
+                    var streamPath = "wwwroot" + path;
+                    await ResourcesOrRealThing.Stream(streamPath, context.Response, "text/javascript");
                 }
                 else
                 {
@@ -47,5 +46,13 @@ namespace Zoxive.HttpLoadTesting.Client
                 }
             });
         }
+
+        private static readonly HashSet<string> EmbededScripts = new HashSet<string>(new []
+        {
+            "/scripts/bundle.js",
+            "/scripts/bundle.js.map",
+            "/scripts/bundle.vendor.js",
+            "/scripts/bundle.vendor.js.map"
+        }, StringComparer.OrdinalIgnoreCase);
     }
 }

@@ -1,6 +1,7 @@
 ﻿import * as React from "react";
 import { render } from "react-dom";
 import { Provider } from "react-redux";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import configureStore from "./store/configure";
 import { fetchAllIterations } from "./store/actions/iterations";
 import { fetchStatistics } from "./httpStatusResult/store/statisticsAction";
@@ -34,6 +35,8 @@ function AppHome()
 
 render(
     <Provider store={store}>
-        <AppHome />
+        <Router>
+            <AppHome />
+        </Router>
     </Provider>
 , document.getElementById("react"));

@@ -25,8 +25,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\index.html" />
-    <EmbeddedResource Include="wwwroot\scripts\app.js" />
-    <EmbeddedResource Include="wwwroot\scripts\app.js.map" />
+    <EmbeddedResource Include="wwwroot\scripts\bundle.js" />
+    <EmbeddedResource Include="wwwroot\scripts\bundle.js.map" />
+    <EmbeddedResource Include="wwwroot\scripts\bundle.vendor.js" />
+    <EmbeddedResource Include="wwwroot\scripts\bundle.vendor.js.map" />
   </ItemGroup>
 
   <ItemGroup>

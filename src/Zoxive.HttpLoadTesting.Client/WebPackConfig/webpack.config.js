@@ -2,11 +2,16 @@
 var paths = require("./paths");
 var config =
 {
-    entry: paths.web_client.entry,
+    entry:
+    {
+        app: paths.web_client.entry,
+        // ADD Every "dependancies" entry from package.json here
+        vendor: ["react", "react-dom"]
+    },
     output:
     {
         path: paths.web_client.output,
-        filename: "app.js",
+        filename: "bundle.js",
         sourceMapFilename: "[file].map"
     },
     module:
@@ -30,7 +35,9 @@ var config =
         {
             "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
             "__DEV__": process.env.NODE_ENV !== "production"
-        })
+        }),
+        new webpack.optimize.CommonsChunkPlugin({ name: "vendor", filename: "bundle.vendor.js" }),
+        new webpack.optimize.ModuleConcatenationPlugin()
     ],
     resolve:
     {
