@@ -13,10 +13,12 @@ render(
         <Router>
             <div>
                 <ul>
-                    <li><Link to="/">Statistics</Link></li>
+                    <li><Link to="/">Home</Link></li>
+                    <li><Link to="/stats">Statistics</Link></li>
                     <li><Link to="/linegraph">Line Graph</Link></li>
                 </ul>
-                <Route exact path="/" component={HttpStatusResultStatistics} />
+                <Route exact path="/" component={() => <div><h1>Home</h1></div>}/>
+                <Route path="/stats" component={HttpStatusResultStatistics} />
                 <Route path="/linegraph" component={LineGraph} />
             </div>
         </Router>

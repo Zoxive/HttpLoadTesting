@@ -68,6 +68,10 @@
     </DotNetCliToolReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain\GraphStats\Models\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
     <ApplicationIcon />
