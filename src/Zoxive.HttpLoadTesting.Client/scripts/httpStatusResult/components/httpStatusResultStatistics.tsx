@@ -224,7 +224,7 @@ function mapDispatchToProps(dispatch: any)
         fetchAllIterations: () => dispatch(fetchAllIterations()),
         fetchRequestUrls: (method: string) => dispatch(fetchRequestUrls(method)),
         fetchStatistics: (method: string, requestUrl: string, stdDev: number) => dispatch(fetchStatistics(method, requestUrl, stdDev)),
-        fetchMethods: (method: string) => dispatch(fetchMethods(method)),
+        fetchMethods: (method: string) => dispatch(fetchMethods(method))
     };
 }
 

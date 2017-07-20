@@ -1,6 +1,6 @@
-export function createQueryString(parameters: any) : string
+export default function createQueryString(parameters: any) : string
 {
-    var queryString = "";
+    let queryString = "";
 
     if(parameters.length === 0)
     {
@@ -20,7 +20,7 @@ export function createQueryString(parameters: any) : string
         }
         else
         {
-            queryString += "&"
+            queryString += "&";
         }
 
         queryString += key + "=" + encodeURIComponent(parameters[key]);

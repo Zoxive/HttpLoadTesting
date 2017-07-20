@@ -2,7 +2,7 @@
 import State from "../../store/state";
 import Statistics from "../models/statistics";
 
-import { createQueryString } from "./../utils/urlUtils";
+import createQueryString from "./../utils/urlUtils";
 
 export const RECEIVE_STATISTICS = "RECEIVE_STATISTICS";
 

@@ -70,7 +70,6 @@
 
   <ItemGroup>
     <Folder Include="Domain\GraphStats\Models\" />
-    <Folder Include="scripts\linegraph\store\" />
   </ItemGroup>
 
   <PropertyGroup>

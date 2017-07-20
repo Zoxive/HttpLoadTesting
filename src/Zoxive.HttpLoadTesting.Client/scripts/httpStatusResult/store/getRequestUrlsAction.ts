@@ -1,7 +1,7 @@
 ﻿import { Dispatch } from "redux";
 import State from "../../store/state";
 
-import { createQueryString } from "./../utils/urlUtils";
+import createQueryString from "./../utils/urlUtils";
 
 export const RECEIVE_REQUEST_URLS = "RECEIVE_REQUEST_URLS";
 
