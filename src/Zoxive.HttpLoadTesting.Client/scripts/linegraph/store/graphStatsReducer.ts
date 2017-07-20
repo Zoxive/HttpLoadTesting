@@ -34,6 +34,7 @@ export default function graphStatsReducer(state: GraphStatsState, action: IActio
             }
 
             // to array and sort by grp
+            // TODO make server side add emptys and sort
             const arr = Array.from(graphStatsMap.values())
                 .sort((a, b) => a.grp - b.grp);
 

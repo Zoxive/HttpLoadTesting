@@ -23,11 +23,12 @@ export function LineGraph(props: ILineGraphConnectedProps & ILineGraphDispatchPr
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip viewBox={{ x: 0, y: 0, width: 1600, height: 800 }} />
                     <Legend chartWidth={1600} chartHeight={800} />
-                    <Line type="monotone" dataKey="requests" points={null} name="Requests" unit=" count" dot={{ stroke: 'red'}} /* yAxisId="right" */ />
-                    <Line type="monotone" dataKey="avg" points={null} name="AVG" unit="ms" />
-                    <Line type="monotone" dataKey="min" points={null} name="MIN" unit="ms" />
-                    <Line type="monotone" dataKey="max" points={null} name="MAX" unit="ms" />
-                    <Line type="monotone" dataKey="std" points={null} name="STD" unit="ms" />
+                    <Line type="monotone" dataKey="requests" points={null} name="Requests" unit=" count" stroke="blue" yAxisId="right" />
+                    <Line type="monotone" dataKey="avg" points={null} name="AVG" unit="ms" stroke="orange" />
+                    <Line type="monotone" dataKey="users" points={null} name="Users" unit=" users" stroke="purple" />
+                    <Line type="monotone" dataKey="min" points={null} name="MIN" unit="ms" stroke="green" />
+                    <Line type="monotone" dataKey="max" points={null} name="MAX" unit="ms" stroke="red" />
+                    <Line type="monotone" dataKey="std" points={null} name="STD" unit="ms" stroke="gray" />
                 </LineChart>
             </div>
         </div>
