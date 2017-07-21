@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>HttpLoadTesting http load generator web client</Description>
     <AssemblyTitle>Zoxive.HttpLoadTesting.Client</AssemblyTitle>
-    <Version>0.0.11</Version>
+    <Version>0.0.12</Version>
     <Authors>Kyle Wascher</Authors>
     <TargetFrameworks>net462;netcoreapp1.0</TargetFrameworks>
     <WarningsAsErrors>true</WarningsAsErrors>
@@ -15,6 +15,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Zoxive/HttpLoadTesting</RepositoryUrl>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <ItemGroup>
