@@ -16,6 +16,13 @@ export function LineGraph(props: ILineGraphConnectedProps & ILineGraphDispatchPr
         <div>
             <h1>LineGraph</h1>
 
+            <br />
+            <label>Data Points</label>&nbsp;
+            <input type="text" value={props.groupSize} onChange={(e) => props.fetchGraphStats(parseInt(e.target.value))} />
+            <br/>
+            <a onClick={() => props.fetchGraphStats(props.groupSize)}>Refresh</a>
+            <br />
+
             <div>
                 <LineChart width={1600} height={800} data={props.stats} >
                     <XAxis/>
