@@ -23,7 +23,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         public async Task Execute(IReadOnlyList<ISchedule> schedule, CancellationToken? token = null)
         {
-            Console.WriteLine("Loaded {0} Tests.", _httpUsers.SelectMany(u => u.Tests).Distinct());
+            Console.WriteLine("Loaded {0} Tests.", _httpUsers.SelectMany(u => u.Tests).Distinct().Count());
 
             var context = new TestExecutionContext();
 
