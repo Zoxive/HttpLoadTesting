@@ -16,6 +16,7 @@
     <RepositoryUrl>https://github.com/Zoxive/HttpLoadTesting</RepositoryUrl>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -65,7 +66,7 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools">
-      <Version>1.0.0-msbuild1-final</Version>
+      <Version>1.0.0</Version>
     </DotNetCliToolReference>
   </ItemGroup>
 
