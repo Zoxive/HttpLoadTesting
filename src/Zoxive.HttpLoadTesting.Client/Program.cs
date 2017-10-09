@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -6,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Zoxive.HttpLoadTesting.Client.Domain.Database;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
@@ -35,7 +35,7 @@ namespace Zoxive.HttpLoadTesting.Client
             var schedule = new List<ISchedule>
             {
                 new AddUsers(2, 2, 0),
-                new Duration(0.01m)
+                new Duration(0.1m)
             };
 
             var loadTestExection = new LoadTestExecution(httpUsers, loadTests);
@@ -94,19 +94,16 @@ namespace Zoxive.HttpLoadTesting.Client
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService)
         {
-            services.TryAddSingleton<IDbConnection>(new SqliteConnection("Data Source=test.db"));
+            var now = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
 
-            if (httpStatusResultService == null)
-            {
-                httpStatusResultService = new HttpStatusResultNullService();
-            }
+            services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source=Test_{now}.db"));
 
-            var httpStatusResultStatisticsFactory = new HttpStatusResultStatisticsFactory();
+            services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
+            services.AddSingleton<IIterationResultRepository, IterationResultRepository>();
+            services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
+            services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
-            services.TryAddSingleton<IIterationResultRepository>(provider => new IterationResultRepository(provider.GetService<IDbConnection>()));
-            services.TryAddSingleton<IHttpStatusResultStatisticsFactory>(provider => httpStatusResultStatisticsFactory);
-            services.TryAddSingleton<IHttpStatusResultService>(provider => httpStatusResultService);
-            services.TryAddSingleton<IHttpStatusResultRepository>(provider => new HttpStatusResultRepository(provider.GetService<IDbConnection>(), httpStatusResultStatisticsFactory, httpStatusResultService));
+            Domain.GraphStats.ConfigureGraphStats.ConfigureServices(services);
         }
 
         private static UserIterationFinished LogIteration(IIterationResultRepository iterationResultRepository)

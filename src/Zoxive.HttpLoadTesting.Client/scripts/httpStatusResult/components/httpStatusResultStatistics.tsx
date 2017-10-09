@@ -3,6 +3,7 @@ import StatisticsState from "./../store/statisticsState";
 import { connect } from "react-redux";
 import { Statistics } from "./../models/statistics";
 
+import { fetchAllIterations } from "./../../store/actions/iterations";
 import { fetchStatistics } from "./../store/statisticsAction";
 import { fetchMethods } from "./../store/getRequestMethodsAction";
 import { fetchRequestUrls } from "./../store/getRequestUrlsAction";
@@ -12,6 +13,7 @@ interface StatisticProps
     methods?: string[];
     requestUrls?: string[];
     statistics?: Statistics;
+    fetchAllIterations(): void;
     fetchRequestUrls?(method: string): void;
     fetchStatistics?(method: string, requestUrl: string, stdDev: number): void;
     fetchMethods?(method: string): void;
@@ -111,9 +113,25 @@ export function HttpStatusResultStatistics(props: StatisticProps)
 
     const requestsOutsideOfDeviations = props.statistics.durationCount - props.statistics.durationWithinDeviationsCount;
     const percentageOutsideOfDeviations = (requestsOutsideOfDeviations / props.statistics.durationCount) * 100.0;
+
+    var LoadAll = () =>
+    {
+        props.fetchAllIterations();
+        props.fetchStatistics("", "", 3);
+        props.fetchMethods("");
+        props.fetchRequestUrls("");
+    };
+
+    if (methodOptions.length === 0)
+    {
+        LoadAll();
+    }
     
     return (
         <div>
+            <a onClick={LoadAll}>Click to Load Stats</a>
+            <br/>
+            <br/>
             <h3>Statistics Calculation Options</h3>
             <div>Method: 
                 <select value={props.statistics.method || ""} onChange={methodChanged}>
@@ -203,9 +221,10 @@ function mapStateToProps(state: any, props: StatisticProps)
 function mapDispatchToProps(dispatch: any)
 {
     return {
+        fetchAllIterations: () => dispatch(fetchAllIterations()),
         fetchRequestUrls: (method: string) => dispatch(fetchRequestUrls(method)),
         fetchStatistics: (method: string, requestUrl: string, stdDev: number) => dispatch(fetchStatistics(method, requestUrl, stdDev)),
-        fetchMethods: (method: string) => dispatch(fetchMethods(method)),
+        fetchMethods: (method: string) => dispatch(fetchMethods(method))
     };
 }
 

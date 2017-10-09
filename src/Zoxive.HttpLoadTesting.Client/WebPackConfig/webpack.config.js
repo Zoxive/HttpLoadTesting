@@ -1,12 +1,12 @@
 ﻿var webpack = require("webpack");
 var paths = require("./paths");
+var pkg = require("../package.json");
 var config =
 {
     entry:
     {
         app: paths.web_client.entry,
-        // ADD Every "dependancies" entry from package.json here
-        vendor: ["react", "react-dom"]
+        vendor: Object.keys(pkg.dependencies)
     },
     output:
     {
