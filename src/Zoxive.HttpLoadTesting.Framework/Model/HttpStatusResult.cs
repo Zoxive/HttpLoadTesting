@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 
@@ -6,9 +7,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 {
     public class HttpStatusResult
     {
-        public HttpStatusResult(HttpResponseMessage result, long elapsedTicks, long requestStartTick)
+        public HttpStatusResult(HttpResponseMessage result, double elapsedMilliseconds, long requestStartTick)
         {
-            ElapsedMilliseconds = (double)elapsedTicks / TimeSpan.TicksPerMillisecond;
+            ElapsedMilliseconds = elapsedMilliseconds;
             StatusCode = result.StatusCode;
             RequestUrl = result.RequestMessage.RequestUri.ToString();
             Method = result.RequestMessage.Method.Method;

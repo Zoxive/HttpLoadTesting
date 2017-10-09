@@ -27,13 +27,13 @@ namespace Examples
 
             var users = new List<IHttpUser>
             {
-                new HttpUser("https://jsonplaceholder.typicode.com/")
+                new HttpUser("https://jsonplaceholder.typicode.com/", tests)
                 {
                     AlterHttpClient = SetHttpClientProperties,
                     AlterHttpClientHandler = SetHttpClientHandlerProperties,
                     AlterHttpRequestMessage = SetHttpRequestHeaders
                 },
-                new HttpUser("https://jsonplaceholder.typicode.com/")
+                new HttpUser("https://jsonplaceholder.typicode.com/", tests)
                 {
                     AlterHttpClient = SetHttpClientProperties,
                     AlterHttpClientHandler = SetHttpClientHandlerProperties,
@@ -41,7 +41,7 @@ namespace Examples
                 }
             };
 
-            var testExecution = new LoadTestExecution(users, tests);
+            var testExecution = new LoadTestExecution(users);
 
             Zoxive.HttpLoadTesting.Client.WebClient.Run(testExecution, schedule, null);
         }

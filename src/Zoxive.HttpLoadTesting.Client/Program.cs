@@ -23,13 +23,13 @@ namespace Zoxive.HttpLoadTesting.Client
         public static void Main(string[] args)
         {
 #if DEBUG
-            var httpUsers = new List<IHttpUser>
-            {
-                new HttpUser("http://localhost")
-            };
             var loadTests = new List<ILoadTest>
             {
                 new LocalhostHit()
+            };
+            var httpUsers = new List<IHttpUser>
+            {
+                new HttpUser("http://localhost", loadTests)
             };
 
             var schedule = new List<ISchedule>
@@ -38,7 +38,7 @@ namespace Zoxive.HttpLoadTesting.Client
                 new Duration(0.1m)
             };
 
-            var loadTestExection = new LoadTestExecution(httpUsers, loadTests);
+            var loadTestExection = new LoadTestExecution(httpUsers);
             Parallel.Invoke
             (
                 () => Start(loadTestExection, null), async () =>
