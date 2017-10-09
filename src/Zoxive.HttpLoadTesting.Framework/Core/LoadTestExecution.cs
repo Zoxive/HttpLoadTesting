@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -12,19 +13,17 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     public class LoadTestExecution : ILoadTestExecution
     {
         private readonly IReadOnlyList<IHttpUser> _httpUsers;
-        private readonly IReadOnlyList<ILoadTest> _loadTests;
 
         public event UserIterationFinished UserIterationFinished;
 
-        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers, IReadOnlyList<ILoadTest> loadTests)
+        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers)
         {
             _httpUsers = httpUsers;
-            _loadTests = loadTests;
         }
 
         public async Task Execute(IReadOnlyList<ISchedule> schedule, CancellationToken? token = null)
         {
-            Console.WriteLine("Loaded {0} Tests.", _loadTests.Count);
+            Console.WriteLine("Loaded {0} Tests.", _httpUsers.SelectMany(u => u.Tests).Distinct());
 
             var context = new TestExecutionContext();
 
@@ -123,7 +122,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                 await Task.Run(async () =>
                 {
-                    var user = new User(userNum, _loadTests, httpUser);
+                    var user = new User(userNum, httpUser);
 
                      Console.WriteLine($"Initializing User {userNum}");
 

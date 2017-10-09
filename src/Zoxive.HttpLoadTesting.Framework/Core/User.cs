@@ -21,10 +21,10 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         public int UserNumber { get; }
 
-        public User(int userNum, IReadOnlyList<ILoadTest> loadTests, IHttpUser httpUser)
+        public User(int userNum, IHttpUser httpUser)
         {
             UserNumber = userNum;
-            _loadTests = loadTests;
+            _loadTests = httpUser.Tests;
             _httpUser = httpUser;
 
             _loadTestHttpClient = new LoadTestHttpClient(httpUser);

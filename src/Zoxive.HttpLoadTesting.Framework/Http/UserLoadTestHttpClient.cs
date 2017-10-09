@@ -80,7 +80,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
             _stopWatch.Stop();
 
-            _statusResults.Add(new HttpStatusResult(response, _stopWatch.ElapsedTicks, requestStartTick));
+            _statusResults.Add(new HttpStatusResult(response, _stopWatch.Elapsed.TotalMilliseconds, requestStartTick));
 
             return response;
         }
