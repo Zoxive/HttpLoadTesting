@@ -4,7 +4,7 @@
     <Description>HttpLoadTesting http load generator framework</Description>
     <AssemblyTitle>HttpLoadTesting.Framework</AssemblyTitle>
     <NeutralLanguage>en-us</NeutralLanguage>
-    <Version>0.0.13</Version>
+    <Version>0.0.14</Version>
     <Authors>Kyle Wascher</Authors>
     <TargetFramework>netstandard1.3</TargetFramework>
     <AssemblyName>Zoxive.HttpLoadTesting.Framework</AssemblyName>
@@ -15,7 +15,7 @@
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <AssemblyVersion>0.0.12.0</AssemblyVersion>
+    <AssemblyVersion>0.0.14.0</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
