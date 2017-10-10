@@ -71,7 +71,7 @@ public class Program
         // This is essentually the HTTP Connection each simulated user will use. Round robin style
         var users = new List<IHttpUser>
         {
-            new HttpUser("https://jsonplaceholder.typicode.com/")
+            new HttpUser("https://jsonplaceholder.typicode.com/", tests)
             {
                 // Specify any properties i need on HttpClient. Like header values!
                 AlterHttpClient = SetHttpClientProperties,
@@ -80,7 +80,7 @@ public class Program
             }
         };
 
-        var testExecution = new LoadTestExecution(users, tests);
+        var testExecution = new LoadTestExecution(users);
         
         // Run the Tests!
         WebClient.Run(testExecution, schedule);
