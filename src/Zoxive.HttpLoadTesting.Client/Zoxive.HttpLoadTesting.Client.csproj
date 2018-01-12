@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>HttpLoadTesting http load generator web client</Description>
     <AssemblyTitle>Zoxive.HttpLoadTesting.Client</AssemblyTitle>
-    <Version>0.0.14</Version>
+    <Version>0.0.15</Version>
     <Authors>Kyle Wascher</Authors>
     <TargetFrameworks>net462;netcoreapp1.0</TargetFrameworks>
     <WarningsAsErrors>true</WarningsAsErrors>

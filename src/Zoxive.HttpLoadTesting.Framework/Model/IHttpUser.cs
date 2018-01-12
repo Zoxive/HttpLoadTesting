@@ -11,7 +11,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         IReadOnlyList<ILoadTest> Tests { get; }
 
-        Action<HttpClientHandler> AlterHttpClientHandler { get; set; }
+        Func<HttpMessageHandler> CreateHttpMessageHandler { get; set; }
 
         Action<HttpClient> AlterHttpClient { get; set; }
 

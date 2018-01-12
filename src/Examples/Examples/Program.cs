@@ -30,13 +30,13 @@ namespace Examples
                 new HttpUser("https://jsonplaceholder.typicode.com/", tests)
                 {
                     AlterHttpClient = SetHttpClientProperties,
-                    AlterHttpClientHandler = SetHttpClientHandlerProperties,
+                    CreateHttpMessageHandler = SetHttpClientHandlerProperties,
                     AlterHttpRequestMessage = SetHttpRequestHeaders
                 },
                 new HttpUser("https://jsonplaceholder.typicode.com/", tests)
                 {
                     AlterHttpClient = SetHttpClientProperties,
-                    AlterHttpClientHandler = SetHttpClientHandlerProperties,
+                    CreateHttpMessageHandler = SetHttpClientHandlerProperties,
                     AlterHttpRequestMessage = SetHttpRequestHeadersUser2
                 }
             };
@@ -55,10 +55,13 @@ namespace Examples
             httpClient.DefaultRequestHeaders.Add("Connection", "keep-alive");
         }
 
-        public static void SetHttpClientHandlerProperties(HttpClientHandler httpClientHandler)
+        private static HttpMessageHandler SetHttpClientHandlerProperties()
         {
-            httpClientHandler.AllowAutoRedirect = true;
-            httpClientHandler.AutomaticDecompression = DecompressionMethods.Deflate;
+            return new HttpClientHandler
+            {
+                AllowAutoRedirect = true,
+                AutomaticDecompression = DecompressionMethods.Deflate
+            };
         }
 
         public static void SetHttpRequestHeaders(HttpRequestMessage request)

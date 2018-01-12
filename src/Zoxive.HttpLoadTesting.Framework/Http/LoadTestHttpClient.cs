@@ -23,9 +23,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         private HttpClient CreateHttpClient()
         {
-            var handler = new HttpClientHandler();
-
-            HttpUser.AlterHttpClientHandler?.Invoke(handler);
+            var handler = HttpUser.CreateHttpMessageHandler?.Invoke() ?? new HttpClientHandler();
 
             var client = new HttpClient(handler)
             {
