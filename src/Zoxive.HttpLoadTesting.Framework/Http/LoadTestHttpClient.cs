@@ -37,56 +37,45 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         public IDictionary<string, object> TestState { get; }
 
-        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content, IDictionary<string, string> headers = null)
+        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(relativePath))
             {
                 Content = content
             };
-            return SendAsync(request, headers);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content, IDictionary<string, string> headers = null)
+        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Put, GetUrl(relativePath))
             {
                 Content = content
             };
-            return SendAsync(request, headers);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        public Task<HttpResponseMessage> Get(string relativePath, IDictionary<string, string> headers = null)
+        public Task<HttpResponseMessage> Get(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, GetUrl(relativePath));
 
-            return SendAsync(request, headers);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        public Task<HttpResponseMessage> Delete(string relativePath, IDictionary<string, string> headers = null)
+        public Task<HttpResponseMessage> Delete(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Delete, GetUrl(relativePath));
 
-            return SendAsync(request, headers);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, IDictionary<string, string> headers = null)
+        private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             HttpUser.AlterHttpRequestMessage?.Invoke(request);
 
-            AddHeadersToRequest(request, headers);
+            alterHttpRequestMessagePerRequest?.Invoke(request);
 
             return HttpClient.SendAsync(request);
-        }
-
-        private static void AddHeadersToRequest(HttpRequestMessage request, IDictionary<string, string> headers)
-        {
-            if (headers == null) 
-                return;
-
-            foreach (var kvp in headers)
-            {
-                request.Headers.Add(kvp.Key, kvp.Value);
-            }
         }
 
         public IUserLoadTestHttpClient GetClientForUser()
