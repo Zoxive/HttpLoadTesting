@@ -37,43 +37,56 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         public IDictionary<string, object> TestState { get; }
 
-        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content)
+        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content, IDictionary<string, string> headers = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(relativePath))
             {
                 Content = content
             };
-            return SendAsync(request);
+            return SendAsync(request, headers);
         }
 
-        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content)
+        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content, IDictionary<string, string> headers = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Put, GetUrl(relativePath))
             {
                 Content = content
             };
-            return SendAsync(request);
+            return SendAsync(request, headers);
         }
 
-        public Task<HttpResponseMessage> Get(string relativePath)
+        public Task<HttpResponseMessage> Get(string relativePath, IDictionary<string, string> headers = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, GetUrl(relativePath));
 
-            return SendAsync(request);
+            return SendAsync(request, headers);
         }
 
-        public Task<HttpResponseMessage> Delete(string relativePath)
+        public Task<HttpResponseMessage> Delete(string relativePath, IDictionary<string, string> headers = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Delete, GetUrl(relativePath));
 
-            return SendAsync(request);
+            return SendAsync(request, headers);
         }
 
-        private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
+        private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, IDictionary<string, string> headers = null)
         {
             HttpUser.AlterHttpRequestMessage?.Invoke(request);
 
+            AddHeadersToRequest(request, headers);
+
             return HttpClient.SendAsync(request);
+        }
+
+        private static void AddHeadersToRequest(HttpRequestMessage request, IDictionary<string, string> headers)
+        {
+            if (headers == null) 
+                return;
+
+            foreach (var kvp in headers)
+            {
+                request.Headers.Add(kvp.Key, kvp.Value);
+            }
         }
 
         public IUserLoadTestHttpClient GetClientForUser()

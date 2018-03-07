@@ -28,24 +28,24 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
         // Stores anything you need for your tests specific to this user/httpclient
         public IDictionary<string, object> TestState { get; }
 
-        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content)
+        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content, IDictionary<string, string> headers = null)
         {
-            return LogStatusResult(() => _loadTestHttpClient.Post(relativePath, content));
+            return LogStatusResult(() => _loadTestHttpClient.Post(relativePath, content, headers));
         }
 
-        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content)
+        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content, IDictionary<string, string> headers = null)
         {
-            return LogStatusResult(() => _loadTestHttpClient.Put(relativePath, content));
+            return LogStatusResult(() => _loadTestHttpClient.Put(relativePath, content, headers));
         }
 
-        public Task<HttpResponseMessage> Get(string relativePath)
+        public Task<HttpResponseMessage> Get(string relativePath, IDictionary<string, string> headers = null)
         {
-            return LogStatusResult(() => _loadTestHttpClient.Get(relativePath));
+            return LogStatusResult(() => _loadTestHttpClient.Get(relativePath, headers));
         }
 
-        public Task<HttpResponseMessage> Delete(string relativePath)
+        public Task<HttpResponseMessage> Delete(string relativePath, IDictionary<string, string> headers = null)
         {
-            return LogStatusResult(() => _loadTestHttpClient.Delete(relativePath));
+            return LogStatusResult(() => _loadTestHttpClient.Delete(relativePath, headers));
         }
 
         public async Task LogUserDelay(Func<Task> func)
