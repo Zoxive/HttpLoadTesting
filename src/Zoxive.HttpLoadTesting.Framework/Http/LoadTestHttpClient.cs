@@ -37,41 +37,43 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         public IDictionary<string, object> TestState { get; }
 
-        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content)
+        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, GetUrl(relativePath))
             {
                 Content = content
             };
-            return SendAsync(request);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content)
+        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Put, GetUrl(relativePath))
             {
                 Content = content
             };
-            return SendAsync(request);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        public Task<HttpResponseMessage> Get(string relativePath)
+        public Task<HttpResponseMessage> Get(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, GetUrl(relativePath));
 
-            return SendAsync(request);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        public Task<HttpResponseMessage> Delete(string relativePath)
+        public Task<HttpResponseMessage> Delete(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Delete, GetUrl(relativePath));
 
-            return SendAsync(request);
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
-        private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
+        private Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             HttpUser.AlterHttpRequestMessage?.Invoke(request);
+
+            alterHttpRequestMessagePerRequest?.Invoke(request);
 
             return HttpClient.SendAsync(request);
         }

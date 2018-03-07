@@ -9,12 +9,12 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     {
         IDictionary<string, object> TestState { get; }
 
-        Task<HttpResponseMessage> Post(string relativePath, HttpContent content);
+        Task<HttpResponseMessage> Post(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null);
 
-        Task<HttpResponseMessage> Put(string relativePath, HttpContent content);
+        Task<HttpResponseMessage> Put(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null);
 
-        Task<HttpResponseMessage> Get(string relativePath);
+        Task<HttpResponseMessage> Get(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null);
 
-        Task<HttpResponseMessage> Delete(string relativePath);
+        Task<HttpResponseMessage> Delete(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null);
     }
 }
