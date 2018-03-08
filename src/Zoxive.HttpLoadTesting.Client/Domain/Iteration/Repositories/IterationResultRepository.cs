@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
-using Dapper.Contrib.Extensions;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -102,8 +101,8 @@ VALUES
 
         public async Task<IReadOnlyDictionary<int, UserIterationResult>> GetAll()
         {
-            var iterations = await _dbConnection.GetAllAsync<IterationDto>();
-            var httpStatusResults = (await _dbConnection.GetAllAsync<HttpStatusResultDto>()).GroupBy(x => x.IterationId).ToDictionary(x => x.Key, y => y.AsList());
+            var iterations = await _dbConnection.QueryAsync<IterationDto>("SELECT * FROM Iteration");
+            var httpStatusResults = (await _dbConnection.QueryAsync<HttpStatusResultDto>("SELECT * FROM HttpStatusResult")).GroupBy(x => x.IterationId).ToDictionary(x => x.Key, y => y.AsList());
 
             return iterations.ToDictionary(x => x.Id, ToModel(httpStatusResults));
         }

@@ -55,9 +55,6 @@
     <PackageReference Include="Dapper">
       <Version>1.50.4</Version>
     </PackageReference>
-    <PackageReference Include="Dapper.Contrib">
-      <Version>1.50.4</Version>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
