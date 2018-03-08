@@ -32,7 +32,7 @@ CREATE TABLE Iteration (
             dbConnection.Execute(@"
 CREATE TABLE HttpStatusResult (
     Id                  INTEGER PRIMARY KEY,
-    IterationId         INTEGER REFERENCES Iteration (Id) ON DELETE CASCADE,
+    IterationId         INTEGER,
     Method              VARCHAR,
     ElapsedMilliseconds REAL, 
     RequestUrl          VARCHAR,
