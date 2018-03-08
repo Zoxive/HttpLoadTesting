@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <Version>0.0.12</Version>
-    <TargetFrameworks>netcoreapp1.0;net462</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;net462</TargetFrameworks>
     <ApplicationIcon />
     <OutputTypeEx>exe</OutputTypeEx>
     <StartupObject />
@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Zoxive.HttpLoadTesting.Client\Zoxive.HttpLoadTesting.Client.csproj" />
-    <ProjectReference Include="..\..\Zoxive.HttpLoadTesting.Framework\Zoxive.HttpLoadTesting.Framework.csproj" />
   </ItemGroup>
 
 </Project>

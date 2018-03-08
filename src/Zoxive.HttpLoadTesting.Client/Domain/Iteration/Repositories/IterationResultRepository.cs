@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Dapper;
-using Dapper.Contrib.Extensions;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -36,13 +36,19 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
                 UserDelay = iterationResult.UserDelay
             };
 
+            const string sql = @"INSERT INTO
+[Iteration] ([Iteration], [BaseUrl], [DidError], [Elapsed], [StartTick], [EndTick], [Exception], [TestName], [UserNumber], [UserDelay])
+values
+(@Iteration, @BaseUrl, @DidError, @Elapsed, @StartTick, @EndTick, @Exception, @TestName, @UserNumber, @UserDelay);
+SELECT last_insert_rowid()";
+
             _dbConnection.Open();
 
-            using (var transaction = _dbConnection.BeginTransaction())
+            try
             {
-                var iterationId = await _dbConnection.InsertAsync(iterationDto);
+                var iterationId = await _dbConnection.ExecuteAsync(sql, iterationDto);
 
-                var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto()
+                var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
                 {
                     IterationId = iterationId,
                     ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
@@ -52,16 +58,51 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
                     RequestStartTick = httpStatusResult.RequestStartTick
                 });
 
-                await _dbConnection.InsertAsync(inserts);
-
-                transaction.Commit();
+                await InsertHttpStatusResults(inserts, iterationResult.StatusResults.Count);
             }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count)
+        {
+            var args = new Dictionary<string, object>();
+
+            var stringBuilder = new StringBuilder();
+            var i = 0;
+            foreach (var dto in inserts)
+            {
+                stringBuilder.Append($"(@IterationId{i}, @ElapsedMilliseconds{i}, @Method{i}, @RequestUrl{i}, @StatusCode{i}, @RequestStartTick{i})");
+                if (i < count - 1)
+                    stringBuilder.AppendLine(", ");
+
+                args[$"IterationId{i}"] = dto.IterationId;
+                args[$"ElapsedMilliseconds{i}"] = dto.ElapsedMilliseconds;
+                args[$"Method{i}"] = dto.Method;
+                args[$"RequestUrl{i}"] = dto.RequestUrl;
+                args[$"StatusCode{i}"] = dto.StatusCode;
+                args[$"RequestStartTick{i}"] = dto.RequestStartTick;
+
+                i++;
+            }
+
+            var sql = $@"INSERT INTO HttpStatusResult 
+([IterationId], [ElapsedMilliseconds], [Method], [RequestUrl], [StatusCode], [RequestStartTick])
+VALUES
+{stringBuilder}";
+
+            var cmd = new CommandDefinition(sql, args);
+
+            return _dbConnection.ExecuteAsync(cmd);
         }
 
         public async Task<IReadOnlyDictionary<int, UserIterationResult>> GetAll()
         {
-            var iterations = await _dbConnection.GetAllAsync<IterationDto>();
-            var httpStatusResults = (await _dbConnection.GetAllAsync<HttpStatusResultDto>()).GroupBy(x => x.IterationId).ToDictionary(x => x.Key, y => y.AsList());
+            var iterations = await _dbConnection.QueryAsync<IterationDto>("SELECT * FROM Iteration");
+            var httpStatusResults = (await _dbConnection.QueryAsync<HttpStatusResultDto>("SELECT * FROM HttpStatusResult")).GroupBy(x => x.IterationId).ToDictionary(x => x.Key, y => y.AsList());
 
             return iterations.ToDictionary(x => x.Id, ToModel(httpStatusResults));
         }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -12,9 +11,6 @@ using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Core;
-using Zoxive.HttpLoadTesting.Framework.Core.Schedules;
-using Zoxive.HttpLoadTesting.Framework.Http;
-using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client
 {
@@ -22,40 +18,10 @@ namespace Zoxive.HttpLoadTesting.Client
     {
         public static void Main(string[] args)
         {
-#if DEBUG
-            var loadTests = new List<ILoadTest>
-            {
-                new LocalhostHit()
-            };
-            var httpUsers = new List<IHttpUser>
-            {
-                new HttpUser("http://localhost", loadTests)
-            };
-
-            var schedule = new List<ISchedule>
-            {
-                new AddUsers(2, 2, 0),
-                new Duration(0.1m)
-            };
-
-            var loadTestExection = new LoadTestExecution(httpUsers);
-            Parallel.Invoke
-            (
-                () => Start(loadTestExection, null), async () =>
-                {
-                    // Wait for Kestrel to start...
-                    // TODO callback? listen for ports?
-                    await Task.Delay(1000);
-
-                    await loadTestExection.Execute(schedule);
-                }
-            );
-#else
-            Start(null, null);
-#endif
+            StartAsync(null, null).GetAwaiter().GetResult();
         }
 
-        internal static void Start(ILoadTestExecution loadTestExecution, IHttpStatusResultService httpStatusResultService, CancellationToken? cancellationToken = null)
+        internal static Task StartAsync(ILoadTestExecution loadTestExecution, IHttpStatusResultService httpStatusResultService, CancellationToken? cancellationToken = null)
         {
             var host = new WebHostBuilder()
                 .UseKestrel()
@@ -72,12 +38,10 @@ namespace Zoxive.HttpLoadTesting.Client
 
             if (cancellationToken.HasValue)
             {
-                host.Run(cancellationToken.Value);
+                return host.RunAsync(cancellationToken.Value);
             }
-            else
-            {
-                host.Run();
-            }
+
+            return host.RunAsync();
         }
 
         private static void InitializeWithServices(ILoadTestExecution loadTestExecution, IServiceCollection services)
@@ -115,23 +79,4 @@ namespace Zoxive.HttpLoadTesting.Client
             };
         }
     }
-
-#if DEBUG
-    public class LocalhostHit : ILoadTest
-    {
-        public string Name => "LocalhostHit";
-
-        public Task Initialize(ILoadTestHttpClient loadTestHttpClient)
-        {
-            return Task.CompletedTask;
-        }
-
-        public async Task Execute(IUserLoadTestHttpClient loadTestHttpClient)
-        {
-            await loadTestHttpClient.Get("");
-
-            //await Task.Delay(50);
-        }
-    }
-#endif
 }
