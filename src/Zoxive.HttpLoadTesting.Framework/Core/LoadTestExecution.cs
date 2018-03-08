@@ -65,13 +65,11 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }
         }
 
-        private static void Shutdown(TestExecutionContext context)
+        private static void Shutdown(ITestExecutionContextInternal context)
         {
             Console.WriteLine("Stopping Users");
             RemoveUsers(context.CurrentUsers, context);
             Console.WriteLine("Users Stopped");
-
-            context.Finished();
 
             Console.WriteLine();
 

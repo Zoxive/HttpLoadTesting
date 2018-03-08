@@ -14,7 +14,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         {
             _startingTick = Env.Milliseconds;
 
-            Step = 0;
             _currentUsers = new List<User>();
             _usersInitializing = 0;
         }
@@ -35,8 +34,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                 }
             }
         }
-
-        public int Step { get; private set; }
 
         public void UserInitialized(User newUser)
         {
@@ -67,16 +64,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                 var initializing = Interlocked.Increment(ref _usersInitializing);
                 return _currentUsers.Count + initializing;
             }
-        }
-
-        public void NewStep()
-        {
-            Step++;
-        }
-
-        public void Finished()
-        {
-            //
         }
     }
 }
