@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Zoxive.HttpLoadTesting.Client\Zoxive.HttpLoadTesting.Client.csproj" />
-    <ProjectReference Include="..\..\Zoxive.HttpLoadTesting.Framework\Zoxive.HttpLoadTesting.Framework.csproj" />
   </ItemGroup>
 
 </Project>
