@@ -40,13 +40,13 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
 [Iteration] ([Iteration], [BaseUrl], [DidError], [Elapsed], [StartTick], [EndTick], [Exception], [TestName], [UserNumber], [UserDelay])
 values
 (@Iteration, @BaseUrl, @DidError, @Elapsed, @StartTick, @EndTick, @Exception, @TestName, @UserNumber, @UserDelay);
-SELECT last_insert_rowid()";
+SELECT last_insert_rowid();";
 
             _dbConnection.Open();
 
             try
             {
-                var iterationId = await _dbConnection.ExecuteAsync(sql, iterationDto);
+                var iterationId = await _dbConnection.ExecuteScalarAsync<int>(sql, iterationDto);
 
                 var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
                 {
