@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Zoxive.HttpLoadTesting.Framework.Core
+﻿namespace Zoxive.HttpLoadTesting.Framework.Core
 {
     internal interface ITestExecutionContextInternal : ITestExecutionContext
     {
-        void ModifyUsers(Action<IList<User>> func);
+        int UserInitializing();
+
+        void UserInitialized(User newUser);
+
+        void RemoveUsers(int count);
     }
 }

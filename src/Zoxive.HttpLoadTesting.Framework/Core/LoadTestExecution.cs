@@ -65,13 +65,11 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }
         }
 
-        private static void Shutdown(TestExecutionContext context)
+        private static void Shutdown(ITestExecutionContextInternal context)
         {
             Console.WriteLine("Stopping Users");
             RemoveUsers(context.CurrentUsers, context);
             Console.WriteLine("Users Stopped");
-
-            context.Finished();
 
             Console.WriteLine();
 
@@ -110,26 +108,28 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             return result.ScheduleComplete;
         }
 
-        private async Task AddNewUsers(int usersChanged, ITestExecutionContextInternal context)
+        private Task AddNewUsers(int usersChanged, ITestExecutionContextInternal context)
         {
             Console.WriteLine("Adding {0} Users", usersChanged);
 
+            var addUserTasks = new List<Task>();
+
             for (var i = 0; i < usersChanged; i++)
             {
-                var userNum = context.CurrentUsers + 1;
-
-                var httpUser = GetNextHttpUser(userNum);
-
-                await Task.Run(async () =>
+                var addUserTask = Task.Run(async () =>
                 {
+                    var userNum = context.UserInitializing();
+
+                    var httpUser = GetNextHttpUser(userNum);
+
                     var user = new User(userNum, httpUser);
 
-                     Console.WriteLine($"Initializing User {userNum}");
+                    Console.WriteLine($"Initializing User {userNum}");
 
                     try
                     {
                         await user.Initialize();
-                        context.ModifyUsers(list => list.Add(user));
+                        context.UserInitialized(user);
 
                         Console.WriteLine($"Added User {userNum}");
                     }
@@ -142,7 +142,11 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                     await user.Run(result => UserIterationFinished?.Invoke(result));
                 });
+
+                addUserTasks.Add(addUserTask);
             }
+
+            return Task.WhenAll(addUserTasks);
         }
 
         private IHttpUser GetNextHttpUser(int userNum)
@@ -155,16 +159,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         {
             Console.WriteLine("Removing {0} Users", usersChanged);
 
-            for (var i = 0; i < usersChanged; i++)
-            {
-                context.ModifyUsers(list =>
-                {
-                    var user = list[list.Count - 1];
-                    user.Stop();
-
-                    list.Remove(user);
-                });
-            }
+            context.RemoveUsers(usersChanged);
         }
     }
 }
