@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Description>HttpLoadTesting http load generator web client</Description>
     <AssemblyTitle>Zoxive.HttpLoadTesting.Client</AssemblyTitle>
-    <Version>0.0.16</Version>
+    <Version>0.0.17</Version>
     <Authors>Kyle Wascher</Authors>
-    <TargetFrameworks>net462;netcoreapp1.0</TargetFrameworks>
+    <TargetFrameworks>net462;netcoreapp2.0</TargetFrameworks>
     <WarningsAsErrors>true</WarningsAsErrors>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <AssemblyName>Zoxive.HttpLoadTesting.Client</AssemblyName>
