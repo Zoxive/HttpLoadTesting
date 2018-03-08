@@ -18,17 +18,10 @@ namespace Zoxive.HttpLoadTesting.Client
                 args.Cancel = true;
             });
 
-            var options = new ParallelOptions
-            {
-                CancellationToken = cancellationSource.Token 
-            };
+            var executeTests = testExecution.Execute(schedule, cancellationSource.Token);
+            var webUi = Program.StartAsync(testExecution, httpStatusResultService, cancellationSource.Token);
 
-            Parallel.Invoke
-            (
-                options,
-                () => testExecution.Execute(schedule, cancellationSource.Token),
-                () => Program.Start(testExecution, httpStatusResultService, cancellationSource.Token)
-            );
+            Task.WaitAll(executeTests, webUi);
         }
     }
 }
