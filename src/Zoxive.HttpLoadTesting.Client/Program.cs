@@ -11,18 +11,16 @@ using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Core;
+using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client
 {
     public class Program
     {
-        public static void Main(string[] args)
+        internal static Task StartAsync(ILoadTestExecution loadTestExecution, IHttpStatusResultService httpStatusResultService, CancellationToken cancellationToken, ClientOptions options)
         {
-            StartAsync(null, null).GetAwaiter().GetResult();
-        }
+            Console.WriteLine($"Using DatbaseFile: {options.DatabaseFile}");
 
-        internal static Task StartAsync(ILoadTestExecution loadTestExecution, IHttpStatusResultService httpStatusResultService, CancellationToken? cancellationToken = null)
-        {
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
@@ -30,18 +28,13 @@ namespace Zoxive.HttpLoadTesting.Client
                 .UseUrls("http://localhost:5000")
                 .ConfigureServices(services =>
                 {
-                    ConfigureServices(services, httpStatusResultService);
+                    ConfigureServices(services, httpStatusResultService, options.DatabaseFile);
 
                     InitializeWithServices(loadTestExecution, services);
                 })
                 .Build();
 
-            if (cancellationToken.HasValue)
-            {
-                return host.RunAsync(cancellationToken.Value);
-            }
-
-            return host.RunAsync();
+            return host.RunAsync(cancellationToken);
         }
 
         private static void InitializeWithServices(ILoadTestExecution loadTestExecution, IServiceCollection services)
@@ -56,11 +49,9 @@ namespace Zoxive.HttpLoadTesting.Client
             DbInitializer.Initialize(sp.GetService<IDbConnection>());
         }
 
-        private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService)
+        private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
         {
-            var now = DateTime.Now.ToString("yyyy_MM_dd_HH_mm_ss");
-
-            services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source=Test_{now}.db"));
+            services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source={databaseFile}"));
 
             services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
             services.AddSingleton<IIterationResultRepository, IterationResultRepository>();

@@ -1,10 +1,11 @@
-﻿using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
+﻿using System.Collections.Generic;
+using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 {
     public interface IHttpStatusResultStatisticsFactory
     {
-        HttpStatusResultStatistics Create(string method, string requestUrl, HttpStatusResultDto[] durationsDesc, int? deviations, HttpStatusResultDto[] slowestRequestDtos, HttpStatusResultDto[] fastestRequestDtos);
+        HttpStatusResultStatistics Create(string method, string requestUrl, IEnumerable<HttpStatusResultDto> durationsDesc, int? deviations, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos);
     }
 }

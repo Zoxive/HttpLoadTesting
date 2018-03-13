@@ -1,0 +1,104 @@
+﻿@page
+@model LineGraphModel
+@{
+    ViewData["Title"] = "LineGraph";
+}
+
+<h2>LineGraph</h2>
+
+<form method="get">
+    <div class="inline">
+        Period in minutes:
+        <input name="period" type="text" value="@Model.GroupMinutes"/>
+    </div>
+    <div class="inline">
+        Frequency:
+        <input type="text" name="frequency" value="@Model.Frequency"/>
+    </div>
+    
+    <button type="submit">Go</button>
+</form>
+
+<canvas id="myChart"></canvas>
+
+<script type="text/javascript">
+    
+var chartColors = {
+	red: 'rgb(255, 99, 132)',
+	orange: 'rgb(255, 159, 64)',
+	yellow: 'rgb(255, 205, 86)',
+	green: 'rgb(75, 192, 192)',
+	blue: 'rgb(54, 162, 235)',
+	purple: 'rgb(153, 102, 255)',
+	grey: 'rgb(201, 203, 207)'
+};
+
+var data = 
+{
+    labels: [],
+    datasets: [],
+};
+    
+@{
+    var requests = new List<int>();
+    var avg = new List<decimal>();
+    var users = new List<int>();
+    var min = new List<decimal>();
+    var max = new List<decimal>();
+    var std = new List<double>();
+
+
+    foreach (var row in Model.GraphStatus)
+    {
+        min.Add(row.Min);
+        max.Add(row.Max);
+        avg.Add(row.Avg);
+        requests.Add(row.Requests);
+        users.Add(row.Users);
+        std.Add(row.Std);
+    }
+}
+
+data.labels = new Array(@Model.GraphStatus.Count).fill(1).map((x, y) => (x + y - 1) * @Model.GroupMinutes);
+    
+add([@string.Join(", ", requests)], chartColors.blue, "Requests");
+add([@string.Join(", ", max)], chartColors.red, "Max");
+add([@string.Join(", ", std)], chartColors.yellow, "Std");
+add([@string.Join(", ", min)], chartColors.green, "Min");
+add([@string.Join(", ", avg)], chartColors.orange, "Avg");
+add([@string.Join(", ", users)], chartColors.purple, "Users");
+    
+function add(row, color, name)
+{
+    data.datasets.push
+    (
+        {
+            label: name,
+            backgroundColor: color,
+            borderColor: color,
+            data: row,
+            fill: false
+        }
+    );
+}
+var ctx = document.getElementById("myChart").getContext("2d");
+    
+var options = {
+    type: 'line',
+    data: data,
+    options: {
+        responsive: true,
+        tooltips: {
+            position: "nearest",
+            mode: 'index',
+            intersect: false,
+        },
+        hover: {
+            mode: 'nearest',
+            intersect: true
+        },
+    }
+};
+
+var chart = new Chart(ctx, options);
+</script>

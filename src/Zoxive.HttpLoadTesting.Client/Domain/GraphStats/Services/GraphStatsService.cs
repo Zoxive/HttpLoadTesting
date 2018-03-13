@@ -15,37 +15,39 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
             _connection = connection;
         }
 
-        public async Task<IEnumerable<GraphStatDto>> Get(int groups)
+        public async Task<IEnumerable<GraphStatDto>> Get(decimal period, long frequency)
         {
-            var groupSize = await _connection.QueryFirstAsync<GraphStatsGroupDto>($@"
+            var minuteMilliseconds = Math.Round(period * 60000);
+
+            var min = await _connection.QueryFirstAsync<long>($@"
 SELECT
-MIN(RequestStartTick) as Min,
-ROUND(CAST(MAX(RequestStartTick) - MIN(RequestStartTick) as float) / {groups}.0) as Size  FROM HttpStatusResult
+MIN(RequestStartTick) as Min
+FROM HttpStatusResult
 ");
 
             var sql = $@"
 SELECT 
 
-Grp,
+Minute,
 COUNT(Id) as Requests,
 COUNT(DISTINCT UserNumber) as Users,
 AVG(ElapsedMilliseconds) as Avg,
 MIN(ElapsedMilliseconds) as Min,
 MAX(ElapsedMilliseconds) as Max,
 SUM(ElapsedMilliseconds * ElapsedMilliseconds) / COUNT(Id) - AVG(ElapsedMilliseconds) * AVG(ElapsedMilliseconds) AS Variance
-
 FROM
 (
     SELECT *,
-    CAST((RequestStartTick - {groupSize.Min}) as Integer) / {groupSize.Size} as Grp,
+    (RequestStartTick - {min}) / ({frequency} / 1000) AS MsFromStart,
+    ((RequestStartTick - {min}) / ({frequency} / 1000)) / {minuteMilliseconds} as Minute,
     UserNumber
     FROM HttpStatusResult
 
     INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
 ) t
-group by t.Grp
+group by t.Minute
 
-order by Grp
+order by Minute
 ";
 
             var result = await _connection.QueryAsync<GraphStatDto>(sql);
@@ -54,16 +56,9 @@ order by Grp
         }
     }
 
-    public class GraphStatsGroupDto
-    {
-        public long Min { get; set; }
-
-        public long Size { get; set; }
-    }
-
     public class GraphStatDto
     {
-        public int Grp { get; set; }
+        public int Minute { get; set; }
 
         public int Requests { get; set; }
 

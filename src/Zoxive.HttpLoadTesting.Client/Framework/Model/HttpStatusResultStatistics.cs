@@ -1,10 +1,12 @@
-﻿namespace Zoxive.HttpLoadTesting.Framework.Model
+﻿using System.Collections.Generic;
+
+namespace Zoxive.HttpLoadTesting.Framework.Model
 {
     public class HttpStatusResultStatistics
     {
         public HttpStatusResultStatistics(string method, string requestUrl, long numberOfStandardDeviations,
             double averageDuration, long durationCount, double standardDeviation, double averageDurationWithinDeviations,
-            long durationWithinDeviationsCount, HttpStatusCodeCount[] statusCodeCounts,  HttpStatusResult[] slowestRequests, HttpStatusResult[] fastestRequests)
+            long durationWithinDeviationsCount, IEnumerable<HttpStatusCodeCount> statusCodeCounts, IEnumerable<HttpStatusResult> slowestRequests, IEnumerable<HttpStatusResult> fastestRequests)
         {
             Method = method;
             RequestUrl = requestUrl;
@@ -17,9 +19,16 @@
             StatusCodeCounts = statusCodeCounts;
             FastestRequests = fastestRequests;
             SlowestRequests = slowestRequests;
+
+            RequestsOutsideOfDeviations = DurationCount - DurationWithinDeviationsCount;
+            PercentageOutsideOfDeviations = DurationCount == 0? 0 : RequestsOutsideOfDeviations / DurationCount * 100.0;
         }
 
-        public string Method { get; private set; }
+        public double PercentageOutsideOfDeviations { get; }
+
+        public long RequestsOutsideOfDeviations { get; }
+
+        public string Method { get; }
 
         public string RequestUrl { get; private set; }
 
@@ -35,10 +44,10 @@
 
         public long DurationWithinDeviationsCount { get; private set; }
 
-        public HttpStatusCodeCount[] StatusCodeCounts { get; private set; }
+        public IEnumerable<HttpStatusCodeCount> StatusCodeCounts { get; private set; }
 
-        public HttpStatusResult[] FastestRequests { get; private set; }
+        public IEnumerable<HttpStatusResult> FastestRequests { get; private set; }
 
-        public HttpStatusResult[] SlowestRequests { get; private set; }
+        public IEnumerable<HttpStatusResult> SlowestRequests { get; private set; }
     }
 }

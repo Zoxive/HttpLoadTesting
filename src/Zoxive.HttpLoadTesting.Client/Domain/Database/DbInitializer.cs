@@ -10,6 +10,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
         {
             dbConnection.Open();
 
+            if (IterationTableExists(dbConnection))
+                return;
+
             dbConnection.Execute("DROP TABLE IF EXISTS Iteration;");
             dbConnection.Execute("DROP TABLE IF EXISTS HttpStatusResult;");
 

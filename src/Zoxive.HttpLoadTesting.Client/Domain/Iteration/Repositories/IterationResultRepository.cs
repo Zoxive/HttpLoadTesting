@@ -134,7 +134,7 @@ VALUES
                     httpStatusResultDtos = new List<HttpStatusResultDto>();
                 }
 
-                var httpStatusResults = httpStatusResultDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick));
+                var httpStatusResults = httpStatusResultDtos.Select(x => new HttpLoadTesting.Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick));
 
                 return new UserIterationResult(iteration.BaseUrl, iteration.UserNumber, new TimeSpan(iteration.Elapsed), iteration.Iteration, iteration.TestName, httpStatusResults.ToList(), iteration.StartTick, iteration.EndTick, iteration.UserDelay, iteration.Exception);
             };
