@@ -58,7 +58,10 @@ SELECT last_insert_rowid();";
                     RequestStartTick = httpStatusResult.RequestStartTick
                 });
 
-                await InsertHttpStatusResults(inserts, iterationResult.StatusResults.Count);
+                foreach (var batch in inserts.Batch(100))
+                {
+                    await InsertHttpStatusResults(batch, iterationResult.StatusResults.Count);
+                }
             }
             catch (Exception e)
             {
@@ -128,8 +131,7 @@ VALUES
         {
             return iteration =>
             {
-                List<HttpStatusResultDto> httpStatusResultDtos;
-                if (!httpStatusResultsDictionary.TryGetValue(iteration.Id, out httpStatusResultDtos))
+                if (!httpStatusResultsDictionary.TryGetValue(iteration.Id, out var httpStatusResultDtos))
                 {
                     httpStatusResultDtos = new List<HttpStatusResultDto>();
                 }

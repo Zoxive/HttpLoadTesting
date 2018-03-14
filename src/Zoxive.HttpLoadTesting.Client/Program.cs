@@ -51,7 +51,9 @@ namespace Zoxive.HttpLoadTesting.Client
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
         {
-            services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source={databaseFile}"));
+            services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source={databaseFile};cache=shared"));
+            // todo use memory then save to file?
+            //services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source=:memory:"));
 
             services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
             services.AddSingleton<IIterationResultRepository, IterationResultRepository>();

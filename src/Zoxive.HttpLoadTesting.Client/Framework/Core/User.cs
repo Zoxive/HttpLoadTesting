@@ -81,7 +81,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             var endTick = startTick + _userTime.ElapsedTicks;
 
-            return new UserIterationResult(_httpUser.BaseUrl, UserNumber, _userTime.Elapsed, Iteration, nextTest.Name, userLoadClient.StatusResults(), startTick, endTick, userLoadClient.UserDelay, exception?.ToString());
+            var statusResults = userLoadClient.StatusResults();
+            return new UserIterationResult(_httpUser.BaseUrl, UserNumber, _userTime.Elapsed, Iteration, nextTest.Name, statusResults, startTick, endTick, userLoadClient.UserDelay, exception?.ToString());
         }
 
         public void Stop()

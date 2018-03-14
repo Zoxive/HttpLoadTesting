@@ -16,24 +16,25 @@ namespace Examples
         {
             var schedule = new List<ISchedule>
             {
-                new AddUsers(totalUsers: 2, usersEvery: 2, seconds: 5),
-                new Duration(0.25m)
+                new AddUsers(totalUsers: 1, usersEvery: 1, seconds: 1),
+                new Duration(2m)
             };
 
             var tests = new List<ILoadTest>
             {
-                new ReadAPostCreateAComment()
+                //new ReadAPostCreateAComment()
+                new LocalhostHit()
             };
 
             var users = new List<IHttpUser>
             {
-                new HttpUser("https://jsonplaceholder.typicode.com/", tests)
+                new HttpUser("http://localhost", tests)
                 {
                     AlterHttpClient = SetHttpClientProperties,
                     CreateHttpMessageHandler = SetHttpClientHandlerProperties,
                     AlterHttpRequestMessage = SetHttpRequestHeaders
                 },
-                new HttpUser("https://jsonplaceholder.typicode.com/", tests)
+                new HttpUser("http://localhost", tests)
                 {
                     AlterHttpClient = SetHttpClientProperties,
                     CreateHttpMessageHandler = SetHttpClientHandlerProperties,

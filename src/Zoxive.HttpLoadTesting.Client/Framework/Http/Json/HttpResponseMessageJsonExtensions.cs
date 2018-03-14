@@ -29,9 +29,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http.Json
 
                 var o = serializer.Deserialize(reader);
 
-                var result = o as JToken;
-
-                if (result == null)
+                if (!(o is JToken result))
                 {
                     throw new Exception("Failed Converting HTTP Response to JSON");
                 }

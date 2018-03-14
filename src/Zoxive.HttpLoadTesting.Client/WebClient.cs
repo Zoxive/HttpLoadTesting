@@ -41,17 +41,20 @@ namespace Zoxive.HttpLoadTesting.Client
             Run(testExecution, schedule, httpStatusResultService, clientOptions);
         }
 
-        private static Task TestStartup(Func<Task> runTests, ClientOptions clientOptions)
+        private static async Task TestStartup(Func<Task> runTests, ClientOptions clientOptions)
         {
             // TODO allow user to say if viewing
             if (clientOptions.Viewing)
             {
                 Console.WriteLine("Viewing Existing Data..");
-                return Task.CompletedTask;
+                return;
             }
 
+            // Wait for Initialize to finish.. wish we had a callback
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
             Console.WriteLine("Running Tests..");
-            return runTests();
+            await runTests();
         }
     }
 }
