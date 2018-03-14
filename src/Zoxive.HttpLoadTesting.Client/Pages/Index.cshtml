@@ -1,0 +1,111 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Stats";
+}
+
+<div>
+    <h3>Statistics Calculation Options</h3>
+    <form method="get">
+        <div>Method: 
+            <select name="method">
+                <option key="" value="" />
+                @foreach (var method in Model.Methods)
+                {
+                    <option selected="@(method == Model.Stats.Method)">@method</option>
+                }
+            </select>
+        </div>
+        <div>Request: 
+            <select name="requestUrl">
+                <option key="" value="" />
+                @foreach (var requestUrls in Model.RequestUrls.Take(100))
+                {
+                    <option selected="@(requestUrls == Model.Stats.RequestUrl)">@requestUrls</option>
+                }
+            </select>
+        </div>
+        <div>Number of Std Devs: 
+            <input name="deviations" type="text" value="@Model.Stats.NumberOfStandardDeviations"/>
+        </div>
+        
+        <button type="submit">Go</button>
+    </form>
+    <br/>
+    <h3>Result Statistics</h3>
+    <div>Average Duration: @Model.Stats.AverageDuration ms</div>
+    <div>Number of Requests: @Model.Stats.DurationCount</div>
+    <br/>
+    <div>Standard Deviation: @Model.Stats.StandardDeviation ms</div>
+    <br/>
+    <div>Average Duration of Requests within @Model.Stats.NumberOfStandardDeviations Std Devs of Avg: @Model.Stats.AverageDurationWithinDeviations ms</div>
+    <div>Number of Requests within @Model.Stats.NumberOfStandardDeviations Std Devs of Avg: @Model.Stats.DurationWithinDeviationsCount </div>
+    <br/>
+    <div>Number of Requests outside of @Model.Stats.NumberOfStandardDeviations Std Devs from Avg: @Model.Stats.RequestsOutsideOfDeviations </div>
+    <div>Percentage of Requests outside of @Model.Stats.NumberOfStandardDeviations Std Devs from Avg: @Model.Stats.PercentageOutsideOfDeviations% </div>
+    <br/>
+    <h3>Status Code Counts</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Status Code</th>
+                <th>Count</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.Stats.StatusCodeCounts)
+        {
+            <tr>
+                <td>@((int)item.StatusCode) (@item.StatusCode)</td>
+                <td>@item.Count</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <br/>
+    <h3>Slowest Request Durations</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Duration (ms)</th>
+                <th>Method</th>
+                <th>Request Url</th>
+                <th>Status Code</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.Stats.SlowestRequests)
+        {
+            <tr>
+                <td>@item.ElapsedMilliseconds</td>
+                <td>@item.Method</td>
+                <td>@item.RequestUrl</td>
+                <td>@((int)item.StatusCode) (@item.StatusCode)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <br/>
+    <h3>Fastest Request Durations</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Duration (ms)</th>
+                <th>Method</th>
+                <th>Request Url</th>
+                <th>Status Code</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.Stats.FastestRequests)
+        {
+            <tr>
+                <td>@item.ElapsedMilliseconds</td>
+                <td>@item.Method</td>
+                <td>@item.RequestUrl</td>
+                <td>@((int)item.StatusCode) (@item.StatusCode)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

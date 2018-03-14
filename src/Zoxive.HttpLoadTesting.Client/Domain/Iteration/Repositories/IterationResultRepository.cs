@@ -58,7 +58,10 @@ SELECT last_insert_rowid();";
                     RequestStartTick = httpStatusResult.RequestStartTick
                 });
 
-                await InsertHttpStatusResults(inserts, iterationResult.StatusResults.Count);
+                foreach (var batch in inserts.Batch(100))
+                {
+                    await InsertHttpStatusResults(batch, iterationResult.StatusResults.Count);
+                }
             }
             catch (Exception e)
             {
@@ -128,13 +131,12 @@ VALUES
         {
             return iteration =>
             {
-                List<HttpStatusResultDto> httpStatusResultDtos;
-                if (!httpStatusResultsDictionary.TryGetValue(iteration.Id, out httpStatusResultDtos))
+                if (!httpStatusResultsDictionary.TryGetValue(iteration.Id, out var httpStatusResultDtos))
                 {
                     httpStatusResultDtos = new List<HttpStatusResultDto>();
                 }
 
-                var httpStatusResults = httpStatusResultDtos.Select(x => new Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick));
+                var httpStatusResults = httpStatusResultDtos.Select(x => new HttpLoadTesting.Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick));
 
                 return new UserIterationResult(iteration.BaseUrl, iteration.UserNumber, new TimeSpan(iteration.Elapsed), iteration.Iteration, iteration.TestName, httpStatusResults.ToList(), iteration.StartTick, iteration.EndTick, iteration.UserDelay, iteration.Exception);
             };
