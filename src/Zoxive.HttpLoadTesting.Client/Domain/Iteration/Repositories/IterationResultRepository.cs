@@ -60,7 +60,7 @@ SELECT last_insert_rowid();";
 
                 foreach (var batch in inserts.Batch(100))
                 {
-                    await InsertHttpStatusResults(batch, iterationResult.StatusResults.Count);
+                    await InsertHttpStatusResults(batch, batch.Count);
                 }
             }
             catch (Exception e)
