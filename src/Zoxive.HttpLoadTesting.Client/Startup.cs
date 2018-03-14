@@ -54,6 +54,7 @@ namespace Zoxive.HttpLoadTesting.Client
                     assemblies.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("Microsoft.AspNetCore.Razor")).Location));
                     assemblies.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("Microsoft.AspNetCore.Html.Abstractions")).Location));
                     assemblies.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Text.Encodings.Web")).Location));
+                    assemblies.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Net.Primitives")).Location));
                     assemblies.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("netstandard")).Location));
 
                     context.Compilation = context.Compilation.AddReferences(assemblies);
