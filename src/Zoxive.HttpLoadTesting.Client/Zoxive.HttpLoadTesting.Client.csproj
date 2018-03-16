@@ -59,6 +59,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Remove="Pages\_Filters.cshtml" />
     <None Remove="Pages\_ViewImports.cshtml" />
   </ItemGroup>
 

@@ -18,6 +18,7 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 
         public HttpStatusResultStatistics Stats;
         public HttpStatusResultDistincts Distincts;
+        public Filters Filters { get; set; }
 
         public async Task OnGetAsync([FromQuery] Filters filters)
         {
@@ -27,23 +28,28 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
             await Task.WhenAll(distincts, stats);
 
             Distincts = distincts.Result;
+            Filters = filters;
             Stats = stats.Result;
         }
     }
 
     public class Filters
     {
+        public int Count = 50;
+
         public Filters()
         {
             
         }
 
-        protected Filters(string method, string requestUrl, int? deviations, int? statusCode)
+        protected Filters(string method, string requestUrl, int? deviations, int? statusCode, decimal? period, long? frequency)
         {
             Method = method;
             RequestUrl = requestUrl;
             Deviations = deviations;
             StatusCode = statusCode;
+            Period = period;
+            Frequency = frequency;
         }
 
         public string Method { get; set; }
@@ -54,21 +60,23 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 
         public int? StatusCode { get; set;}
 
-        public int Count = 50;
+        public decimal? Period { get; set; }
+
+        public long? Frequency { get; set; }
 
         public Filters NullMethod()
         {
-            return new Filters(null, RequestUrl, Deviations, StatusCode);
+            return new Filters(null, RequestUrl, Deviations, StatusCode, Period, Frequency);
         }
 
         public Filters NullRequestUrl()
         {
-            return new Filters(Method, null, Deviations, StatusCode);
+            return new Filters(Method, null, Deviations, StatusCode, Period, Frequency);
         }
 
         public Filters NullStatusCodeUrl()
         {
-            return new Filters(Method, RequestUrl, Deviations, null);
+            return new Filters(Method, RequestUrl, Deviations, null, Period, Frequency);
         }
     }
 }

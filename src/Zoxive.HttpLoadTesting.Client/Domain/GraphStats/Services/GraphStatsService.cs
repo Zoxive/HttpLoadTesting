@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Zoxive.HttpLoadTesting.Client.Pages;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
 {
@@ -15,9 +16,16 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
             _connection = connection;
         }
 
-        public async Task<IEnumerable<GraphStatDto>> Get(decimal period, long frequency)
+        public async Task<IEnumerable<GraphStatDto>> Get(Filters filters)
         {
-            var minuteMilliseconds = Math.Round(period * 60000);
+            if (!filters.Period.HasValue)
+                throw new ArgumentNullException("Filter.Period must have a value");
+            if (!filters.Frequency.HasValue)
+                throw new ArgumentNullException("Filter.Frequence must have a value");
+
+            var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
+
+            var frequency = filters.Frequency;
 
             var min = await _connection.QueryFirstAsync<long>($@"
 SELECT
