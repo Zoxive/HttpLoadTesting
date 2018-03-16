@@ -10,7 +10,7 @@
         <div>Method: 
             <select name="method">
                 <option key="" value="" />
-                @foreach (var method in Model.Methods)
+                @foreach (var method in Model.Distincts.Methods)
                 {
                     <option selected="@(method == Model.Stats.Method)">@method</option>
                 }
@@ -19,9 +19,18 @@
         <div>Request: 
             <select name="requestUrl">
                 <option key="" value="" />
-                @foreach (var requestUrls in Model.RequestUrls.Take(100))
+                @foreach (var requestUrls in Model.Distincts.RequestUrls.Take(100))
                 {
                     <option selected="@(requestUrls == Model.Stats.RequestUrl)">@requestUrls</option>
+                }
+            </select>
+        </div>
+        <div>StatusCode: 
+            <select name="statusCode">
+                <option key="" value="" />
+                @foreach (var statusCode in Model.Distincts.StatusCodes)
+                {
+                    <option selected="@(statusCode == Model.Stats.StatusCode)">@statusCode</option>
                 }
             </select>
         </div>

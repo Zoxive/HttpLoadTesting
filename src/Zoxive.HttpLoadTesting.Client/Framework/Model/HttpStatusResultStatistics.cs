@@ -4,12 +4,13 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 {
     public class HttpStatusResultStatistics
     {
-        public HttpStatusResultStatistics(string method, string requestUrl, long numberOfStandardDeviations,
+        public HttpStatusResultStatistics(string method, string requestUrl, int? statusCode, long numberOfStandardDeviations,
             double averageDuration, long durationCount, double standardDeviation, double averageDurationWithinDeviations,
             long durationWithinDeviationsCount, IEnumerable<HttpStatusCodeCount> statusCodeCounts, IEnumerable<HttpStatusResult> slowestRequests, IEnumerable<HttpStatusResult> fastestRequests)
         {
             Method = method;
             RequestUrl = requestUrl;
+            StatusCode = statusCode;
             NumberOfStandardDeviations = numberOfStandardDeviations;
             AverageDuration = averageDuration;
             DurationCount = durationCount;
@@ -31,6 +32,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
         public string Method { get; }
 
         public string RequestUrl { get; private set; }
+
+        public int? StatusCode { get; }
 
         public long NumberOfStandardDeviations { get; private set; }
 

@@ -8,7 +8,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 {
     public class HttpStatusResultStatisticsFactory : IHttpStatusResultStatisticsFactory
     {
-        public HttpStatusResultStatistics Create(string method, string requestUrl, IEnumerable<HttpStatusResultDto> requestsDesc, int? deviations, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos)
+        public HttpStatusResultStatistics Create(string method, string requestUrl, int? statusCode, IEnumerable<HttpStatusResultDto> requestsDesc, int? deviations, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos)
         {
             if (!deviations.HasValue)
             {
@@ -33,7 +33,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 
             var statusCodeCounts = requestsDesc.GroupBy(x => x.StatusCode).Select(g => new HttpStatusCodeCount(g.Key, g.Count())).OrderBy(x => x.StatusCode);
 
-            return new HttpStatusResultStatistics(method, requestUrl, deviations.Value, averageDuration, durationCount, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount, statusCodeCounts, slowestRequests, fastestRequests);
+            return new HttpStatusResultStatistics(method, requestUrl, statusCode, deviations.Value, averageDuration, durationCount, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount, statusCodeCounts, slowestRequests, fastestRequests);
         }
 
         public static double Average(double[] values)

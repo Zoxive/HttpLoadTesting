@@ -1,37 +1,31 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
-using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
+using Zoxive.HttpLoadTesting.Client.Framework.Model;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly IIterationResultRepository _iterationResultRepository;
         private readonly IHttpStatusResultRepository _httpStatusResultRepository;
 
-        public IndexModel(IIterationResultRepository iterationResultRepository, IHttpStatusResultRepository httpStatusResultRepository)
+        public IndexModel(IHttpStatusResultRepository httpStatusResultRepository)
         {
-            _iterationResultRepository = iterationResultRepository;
             _httpStatusResultRepository = httpStatusResultRepository;
         }
 
         public HttpStatusResultStatistics Stats;
-        public IEnumerable<string> Methods;
-        public IEnumerable<string> RequestUrls;
+        public HttpStatusResultDistincts Distincts;
 
-        public async Task OnGetAsync(string method = null, string requestUrl = null, int? deviations = null)
+        public async Task OnGetAsync(string method = null, string requestUrl = null, int? deviations = null, int? statusCode = null)
         {
-            var requestUrls = _httpStatusResultRepository.GetDistinctRequestUrls(method);
-            var methods = _httpStatusResultRepository.GetDistinctMethods(requestUrl);
-            var stats = _httpStatusResultRepository.GetStatistics(method, requestUrl, deviations);
+            var distincts = _httpStatusResultRepository.GetDistincts(method, requestUrl, statusCode);
+            var stats = _httpStatusResultRepository.GetStatistics(method, requestUrl, deviations, statusCode);
 
-            await Task.WhenAll(requestUrls, methods, stats);
+            await Task.WhenAll(distincts, stats);
 
-            RequestUrls = requestUrls.Result;
-            Methods = methods.Result;
+            Distincts = distincts.Result;
             Stats = stats.Result;
         }
     }

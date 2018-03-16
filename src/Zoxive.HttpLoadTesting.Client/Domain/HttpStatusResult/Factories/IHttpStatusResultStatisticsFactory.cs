@@ -6,6 +6,6 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 {
     public interface IHttpStatusResultStatisticsFactory
     {
-        HttpStatusResultStatistics Create(string method, string requestUrl, IEnumerable<HttpStatusResultDto> durationsDesc, int? deviations, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos);
+        HttpStatusResultStatistics Create(string method, string requestUrl, int? statusCode, IEnumerable<HttpStatusResultDto> durationsDesc, int? deviations, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos);
     }
 }
