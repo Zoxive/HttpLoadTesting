@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>HttpLoadTesting http load generator web client</Description>
     <AssemblyTitle>Zoxive.HttpLoadTesting.Client</AssemblyTitle>
-    <Version>0.0.21</Version>
+    <Version>0.0.22</Version>
     <Authors>Kyle Wascher</Authors>
     <TargetFramework>netstandard2.0</TargetFramework>
     <WarningsAsErrors>true</WarningsAsErrors>
@@ -59,6 +59,7 @@
   </ItemGroup>
   
   <ItemGroup>
+    <None Remove="Pages\_Filters.cshtml" />
     <None Remove="Pages\_ViewImports.cshtml" />
   </ItemGroup>
 

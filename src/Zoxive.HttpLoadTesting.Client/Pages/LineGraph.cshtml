@@ -7,13 +7,16 @@
 <h2>LineGraph</h2>
 
 <form method="get">
+    
+    @Html.Partial("_Filters", new FiltersModel(Model.Filters, Model.Distincts))
+
     <div class="inline">
         Period in minutes:
-        <input name="period" type="text" value="@Model.GroupMinutes"/>
+        <input name="period" type="text" value="@Model.Filters.Period"/>
     </div>
     <div class="inline">
         Frequency:
-        <input type="text" name="frequency" value="@Model.Frequency"/>
+        <input type="text" name="frequency" value="@Model.Filters.Frequency"/>
     </div>
     
     <button type="submit">Go</button>
@@ -59,7 +62,7 @@ var data =
     }
 }
 
-data.labels = new Array(@Model.GraphStatus.Count).fill(1).map((x, y) => (x + y - 1) * @Model.GroupMinutes);
+data.labels = new Array(@Model.GraphStatus.Count).fill(1).map((x, y) => (x + y - 1) * @Model.Filters.Period);
     
 add([@string.Join(", ", requests)], chartColors.blue, "Requests");
 add([@string.Join(", ", max)], chartColors.red, "Max");
