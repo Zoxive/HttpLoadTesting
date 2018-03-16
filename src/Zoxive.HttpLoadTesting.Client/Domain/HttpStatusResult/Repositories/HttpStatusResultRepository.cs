@@ -117,7 +117,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
 
-        private string CreateWhereClause(Filters filters, out IDictionary<string, object> sqlParams)
+        public string CreateWhereClause(Filters filters, out IDictionary<string, object> sqlParams)
         {
             sqlParams = new Dictionary<string, object>();
 

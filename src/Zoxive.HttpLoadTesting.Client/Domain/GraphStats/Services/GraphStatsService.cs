@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Pages;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
@@ -10,10 +11,12 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
     public class GraphStatsService : IGraphStatsService
     {
         private readonly IDbConnection _connection;
+        private readonly IHttpStatusResultRepository _httpStatusRepository;
 
-        public GraphStatsService(IDbConnection connection)
+        public GraphStatsService(IDbConnection connection, IHttpStatusResultRepository httpStatusRepository)
         {
             _connection = connection;
+            _httpStatusRepository = httpStatusRepository;
         }
 
         public async Task<IEnumerable<GraphStatDto>> Get(Filters filters)
@@ -27,11 +30,14 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
 
             var frequency = filters.Frequency;
 
+            var httpStatusWhere = _httpStatusRepository.CreateWhereClause(filters, out var sqlParams);
+
             var min = await _connection.QueryFirstAsync<long>($@"
 SELECT
 MIN(RequestStartTick) as Min
 FROM HttpStatusResult
-");
+{httpStatusWhere}
+", sqlParams);
 
             var sql = $@"
 SELECT 
@@ -50,15 +56,15 @@ FROM
     ((RequestStartTick - {min}) / ({frequency} / 1000)) / {minuteMilliseconds} as Minute,
     UserNumber
     FROM HttpStatusResult
-
     INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
+    {httpStatusWhere}
 ) t
 group by t.Minute
 
 order by Minute
 ";
 
-            var result = await _connection.QueryAsync<GraphStatDto>(sql);
+            var result = await _connection.QueryAsync<GraphStatDto>(sql, sqlParams);
 
             return result;
         }
