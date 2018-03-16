@@ -35,9 +35,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
             var min = await _connection.QueryFirstAsync<long>($@"
 SELECT
 MIN(RequestStartTick) as Min
-FROM HttpStatusResult
-{httpStatusWhere}
-", sqlParams);
+FROM HttpStatusResult");
 
             var sql = $@"
 SELECT 
@@ -85,9 +83,7 @@ order by Minute
             var min = await _connection.QueryFirstAsync<long>($@"
 SELECT
 MIN(RequestStartTick) as Min
-FROM HttpStatusResult
-{httpStatusWhere}
-", sqlParams);
+FROM HttpStatusResult");
 
             var sql = $@"
 SELECT 
