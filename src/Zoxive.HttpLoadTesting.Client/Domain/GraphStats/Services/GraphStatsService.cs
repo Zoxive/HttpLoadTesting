@@ -35,9 +35,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
             var min = await _connection.QueryFirstAsync<long>($@"
 SELECT
 MIN(RequestStartTick) as Min
-FROM HttpStatusResult
-{httpStatusWhere}
-", sqlParams);
+FROM HttpStatusResult");
 
             var sql = $@"
 SELECT 
@@ -68,6 +66,50 @@ order by Minute
 
             return result;
         }
+
+        public async Task<IEnumerable<StatusCodeStatDto>> GetStatusCodes(Filters filters)
+        {
+            if (!filters.Period.HasValue)
+                throw new ArgumentNullException("Filter.Period must have a value");
+            if (!filters.Frequency.HasValue)
+                throw new ArgumentNullException("Filter.Frequence must have a value");
+
+            var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
+
+            var frequency = filters.Frequency;
+
+            var httpStatusWhere = _httpStatusRepository.CreateWhereClause(filters, out var sqlParams);
+
+            var min = await _connection.QueryFirstAsync<long>($@"
+SELECT
+MIN(RequestStartTick) as Min
+FROM HttpStatusResult");
+
+            var sql = $@"
+SELECT 
+
+Minute,
+COUNT(Id) as Requests,
+StatusCode as StatusCode
+FROM
+(
+    SELECT *,
+    (RequestStartTick - {min}) / ({frequency} / 1000) AS MsFromStart,
+    ((RequestStartTick - {min}) / ({frequency} / 1000)) / {minuteMilliseconds} as Minute,
+    UserNumber
+    FROM HttpStatusResult
+    INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
+    {httpStatusWhere}
+) t
+group by t.Minute, t.StatusCode
+
+order by Minute
+";
+
+            var result = await _connection.QueryAsync<StatusCodeStatDto>(sql, sqlParams);
+
+            return result;
+        }
     }
 
     public class GraphStatDto
@@ -88,4 +130,13 @@ order by Minute
 
         public double Std => Math.Sqrt(Variance);
     }
-}
+
+    public class StatusCodeStatDto
+    {
+        public int Minute { get; set; }
+
+        public int Requests { get; set; }
+
+        public int StatusCode { get; set; }
+    }
+    }

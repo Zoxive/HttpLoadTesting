@@ -1,0 +1,181 @@
+﻿@page
+@model StatusCodesModel
+@{
+    ViewData["Title"] = "StatusCodes";
+}
+
+<h2>LineGraph</h2>
+
+<form method="get">
+    
+    @Html.Partial("_Filters", new FiltersModel(Model.Filters, Model.Distincts))
+
+    <div class="inline">
+        Period in minutes:
+        <input name="period" type="text" value="@Model.Filters.Period"/>
+    </div>
+    <div class="inline">
+        Frequency:
+        <input type="text" name="frequency" value="@Model.Filters.Frequency"/>
+    </div>
+    
+    <button type="submit">Go</button>
+</form>
+
+<canvas id="myChart"></canvas>
+
+<script type="text/javascript">
+
+var chartColors = {
+	blue: 'rgb(54, 162, 235)',
+	coral: 'rgb(255, 127, 80)',
+	darkBlue: 'rgb(0, 0, 153)',
+    darkGreen: 'rgb(0, 100, 0)',
+    darkRed: 'rgb(139, 0, 0)',
+    greenYellow: 'rgb(173, 255, 47)',
+	grey: 'rgb(201, 203, 207)',
+	magenta: 'rgb(255, 0, 255)',
+    midnightBlue: 'rgb(25, 25, 112)',
+	orange: 'rgb(255, 159, 64)',
+	purple: 'rgb(128, 0, 128)',
+	red: 'rgb(255, 0, 0)',
+	saddleBrown: 'rgb(139, 69, 19)',
+    salmon: '(250, 128, 114)',
+	sandyBrown: 'rgb(244, 164, 96)',
+	seaGreen: 'rgb(46, 139, 87)',
+	skyBlue: 'rgb(135, 206, 235)',
+    springGreen: 'rgb(0, 255, 127)',
+    tan: 'rgb(210, 180, 140)',
+	yellow: 'rgb(255, 205, 86)'
+};
+
+var data =
+{
+    labels: [],
+    datasets: [],
+};
+
+@{
+    var countsByStatusCode = new Dictionary<int, List<int>>();
+
+    var statuses = Model.GraphStatus.Select(x => x.StatusCode).Distinct();
+    foreach (var statusCode in statuses)
+    {
+        countsByStatusCode.Add(statusCode, new List<int>());
+    }
+
+    var minuteGroups = Model.GraphStatus.GroupBy(x => x.Minute, x => (x.StatusCode, x.Requests)).OrderBy(x => x.Key);
+    foreach (var group in minuteGroups)
+    {
+        foreach (var statusCodeRequests in group)
+        {
+            countsByStatusCode[statusCodeRequests.Item1].Add(statusCodeRequests.Item2);
+        }
+
+        var statusCodesInThisMinute = group.Select(x => x.Item1);
+        foreach (var statusCode in countsByStatusCode.Keys)
+        {
+            if (statusCodesInThisMinute.Contains(statusCode))
+            {
+                continue;
+            }
+
+            countsByStatusCode[statusCode].Add(0);
+        }
+    }
+}
+
+data.labels = new Array(@minuteGroups.Count()).fill(1).map((x, y) => (x + y - 1) * @Model.Filters.Period);
+
+@foreach (var kvp in countsByStatusCode)
+{
+    var statusCode = kvp.Key;
+    @:add([@string.Join(", ", kvp.Value)], getChartColor(@statusCode), @string.Format("{0}", statusCode));
+}
+
+function getChartColor(statusCode)
+{
+    switch (statusCode)
+    {
+        case 200: // Success
+            return chartColors.seaGreen;
+        case 201: // Created
+            return chartColors.greenYellow;
+        case 202: // Accepted
+            return chartColors.springGreen;
+        case 206: // Partial
+            return chartColors.darkGreen;
+
+        case 304:
+            return chartColors.pink;
+
+        case 400: // Bad Request
+            return chartColors.blue;
+        case 401: // Unauthorized
+            return chartColors.saddleBrown;
+        case 403: // Forbidden
+            return chartColors.sandyBrown;
+        case 404: // Not Found
+            return chartColors.skyBlue;
+        case 405: // Method Not Allowed
+            return chartColors.midnightBlue;
+        case 408: // Request Timed Out
+            return chartColors.tan;
+        case 409: // Conflict
+            return chartColors.purple;
+        case 429: // Rate exceeded
+            return chartColors.magenta;
+
+        case 500: // Internal Server Error
+            return chartColors.red;
+        case 503: // Service Unavailable
+            return chartColors.salmon;
+        case 504: // Gateway Timeout
+            return chartColors.coral;
+        case 598:
+            return chartColors.darkRed;
+        case 599:
+            return chartColors.orange;
+    }
+
+    var r = Math.floor(Math.random() * 255);
+    var g = Math.floor(Math.random() * 255);
+    var b = Math.floor(Math.random() * 255);
+
+    return "rgb(" + r + ", " + g + ", " + b + ")";
+}
+
+function add(row, color, name)
+{
+    data.datasets.push
+    (
+        {
+            label: name,
+            backgroundColor: color,
+            borderColor: color,
+            data: row,
+            fill: false
+        }
+    );
+}
+var ctx = document.getElementById("myChart").getContext("2d");
+
+var options = {
+    type: 'line',
+    data: data,
+    options: {
+        responsive: true,
+        tooltips: {
+            position: "nearest",
+            mode: 'index',
+            intersect: false,
+        },
+        hover: {
+            mode: 'nearest',
+            intersect: true
+        },
+    }
+};
+
+var chart = new Chart(ctx, options);
+</script>
