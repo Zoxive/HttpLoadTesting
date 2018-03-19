@@ -30,8 +30,6 @@ namespace Zoxive.HttpLoadTesting.Client
             ClientOptions options
         )
         {
-            Console.WriteLine($"Using DatbaseFile: {options.DatabaseFile}");
-
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())

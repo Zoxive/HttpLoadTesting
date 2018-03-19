@@ -22,6 +22,8 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            Console.WriteLine($"Using DatabaseFile: {_clientOptions.DatabaseFile}");
+
             // TODO allow user to say if viewing
             if (_clientOptions.Viewing)
             {
