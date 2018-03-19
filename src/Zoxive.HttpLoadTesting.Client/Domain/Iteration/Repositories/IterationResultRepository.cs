@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
@@ -20,7 +21,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
             _dbConnection = (Microsoft.Data.Sqlite.SqliteConnection)dbConnection.Connection;
         }
 
-        public async Task Save(UserIterationResult iterationResult)
+        public async Task Save(UserIterationResult iterationResult, CancellationToken stoppingToken)
         {
             var iterationDto = new IterationDto
             {
@@ -43,13 +44,15 @@ values
 SELECT last_insert_rowid();";
 
             if (_dbConnection.State != ConnectionState.Open)
-                await _dbConnection.OpenAsync();
+                await _dbConnection.OpenAsync(stoppingToken);
 
             using (var transaction = _dbConnection.BeginTransaction())
             {
                 try
                 {
-                    var iterationId = await _dbConnection.ExecuteScalarAsync<int>(sql, iterationDto, transaction);
+                    var cmd = new CommandDefinition(sql, iterationDto, transaction, cancellationToken: stoppingToken);
+
+                    var iterationId = await _dbConnection.ExecuteScalarAsync<int>(cmd);
 
                     var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
                     {
@@ -63,21 +66,20 @@ SELECT last_insert_rowid();";
 
                     foreach (var batch in inserts.Batch(100))
                     {
-                        await InsertHttpStatusResults(batch, batch.Count, transaction);
+                        await InsertHttpStatusResults(batch, batch.Count, transaction, stoppingToken);
                     }
 
                     transaction.Commit();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     transaction?.Rollback();
-                    Console.WriteLine(e);
                     throw;
                 }
             }
         }
 
-        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count, IDbTransaction transaction)
+        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count, IDbTransaction transaction, CancellationToken stoppingToken)
         {
             var args = new Dictionary<string, object>();
 
@@ -104,7 +106,7 @@ SELECT last_insert_rowid();";
 VALUES
 {stringBuilder}";
 
-            var cmd = new CommandDefinition(sql, args, transaction);
+            var cmd = new CommandDefinition(sql, args, transaction, cancellationToken: stoppingToken);
 
             return _dbConnection.ExecuteAsync(cmd);
         }

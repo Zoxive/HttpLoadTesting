@@ -54,7 +54,7 @@ namespace Zoxive.HttpLoadTesting.Client
         private static void InitializeWithServices(ILoadTestExecution loadTestExecution, IServiceCollection services)
         {
             var sp = services.BuildServiceProvider();
-            var saveIterationResult = sp.GetRequiredService<ISaveIterationResult>();
+            var saveIterationResult = sp.GetRequiredService<IEnumerable<ISaveIterationResult>>();
             if (loadTestExecution != null)
             {
                 loadTestExecution.UserIterationFinished += LogIteration(saveIterationResult);
@@ -82,18 +82,28 @@ namespace Zoxive.HttpLoadTesting.Client
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
             services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
-            var backgroundService = new SaveIterationResultBackgroundService(iterationResultRepository, writerConnection, databaseFile);
+            var inMemorySave = new SaveIterationResultBackgroundService(iterationResultRepository, "InMemory");
+            var fileSave = new FileSaveIterationResult(databaseFile);
 
             services.AddSingleton<IHostedService, ExecuteTestsService>();
-            services.AddSingleton<IHostedService>(backgroundService);
-            services.AddSingleton<ISaveIterationResult>(backgroundService);
+            services.AddSingleton<IHostedService>(inMemorySave);
+            services.AddSingleton<IHostedService>(fileSave);
+
+            services.AddSingleton<ISaveIterationResult>(inMemorySave);
+            services.AddSingleton<ISaveIterationResult>(fileSave);
 
             Domain.GraphStats.ConfigureGraphStats.ConfigureServices(services);
         }
 
-        private static UserIterationFinished LogIteration(ISaveIterationResult iterationResultRepository)
+        private static UserIterationFinished LogIteration(IEnumerable<ISaveIterationResult> iterationResultRepository)
         {
-            return iterationResultRepository.Queue;
+            return result =>
+            {
+                foreach (var repository in iterationResultRepository)
+                {
+                    repository.Queue(result);
+                }
+            };
         }
     }
 

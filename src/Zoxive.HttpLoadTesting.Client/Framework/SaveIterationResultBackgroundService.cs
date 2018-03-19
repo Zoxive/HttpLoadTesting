@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.IO;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Dapper;
 using Microsoft.Data.Sqlite;
 using Zoxive.HttpLoadTesting.Client.Domain.Database;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
@@ -14,15 +13,15 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
     public class SaveIterationResultBackgroundService : BackgroundService, ISaveIterationResult
     {
         private readonly IIterationResultRepository _iterationResultRepository;
-        private readonly string _databaseFile;
+        private readonly string _name;
         private ConcurrentQueue<UserIterationResult> _queue = new ConcurrentQueue<UserIterationResult>();
-        private readonly SqliteConnection _inmemoryConnection;
+        private Stopwatch _sw;
 
-        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, SqliteConnection inmemoryConnection, string databaseFile)
+        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, string name)
         {
             _iterationResultRepository = iterationResultRepository;
-            _inmemoryConnection = inmemoryConnection;
-            _databaseFile = databaseFile;
+            _name = name;
+            _sw = new Stopwatch();
         }
 
         public void Queue(UserIterationResult result)
@@ -41,45 +40,64 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                 }
                 else
                 {
-                    for (var i = 0; i < count; i++)
-                    {
-                        if (_queue.TryDequeue(out var result))
-                        {
-                            await _iterationResultRepository.Save(result);
-                        }
-                    }
+                    Console.WriteLine($"Writing {_queue.Count} into {_name}");
+                    await SaveFromQueue(stoppingToken);
                 }
             }
         }
 
-        public override async Task StopAsync(CancellationToken cancellationToken)
+        private async Task SaveFromQueue(CancellationToken stoppingToken, bool runAll = false)
         {
-            // TODO SAVE MEMORY DATABASE to file
-            Console.WriteLine("Saving database to file...");
-            
-            var path = Path.Combine(Directory.GetCurrentDirectory(), _databaseFile);
+            if (!runAll)
+                _sw.Reset();
 
-            // touch file
-            using (File.Create(path))
+            var count = _queue.Count;
+            for (var i = 0; i < count; i++)
             {
+                if (_queue.TryDequeue(out var result))
+                {
+                    try
+                    {
+                        await _iterationResultRepository.Save(result, stoppingToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // Eat it
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"{_name} - {e.Message}");
+                    }
+
+                    var elapsedMilliseconds = _sw.ElapsedMilliseconds;
+
+                    if (runAll == false && elapsedMilliseconds > 2000)
+                        break;
+
+                    if (runAll && elapsedMilliseconds > 1000)
+                    {
+                        Console.WriteLine($"{_queue.Count} remaining..");
+                    }
+                }
             }
 
-            await _inmemoryConnection.ExecuteAsync($"ATTACH '{path}' AS FILE");
+            if (!runAll)
+                _sw.Stop();
+        }
 
-            DbInitializer.Initialize(new Db(_inmemoryConnection), "FILE");
-
-            var r = await _inmemoryConnection.ExecuteAsync("INSERT INTO FILE.Iteration SELECT * FROM main.Iteration");
-            var rr = await _inmemoryConnection.ExecuteAsync("INSERT INTO FILE.HttpStatusResult SELECT * FROM main.HttpStatusResult");
-
-            var t = await _inmemoryConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM File.Iteration");
-
-            //await _inmemoryConnection.ExecuteAsync($"DETACH DATABASE FILE");
-
-            _inmemoryConnection.Dispose();
-
-            Console.WriteLine($"Done saving. {path} {t}");
-
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
             await base.StopAsync(cancellationToken);
+
+            // Make sure we insert the remaining things
+            if (_queue.Count > 0)
+            {
+                Console.WriteLine($"There are still items in queue {_name} {_queue.Count}");
+
+                await SaveFromQueue(default(CancellationToken), runAll: true);
+
+                Console.WriteLine("Done.");
+            }
         }
 
         public override void Dispose()
@@ -92,5 +110,20 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
     public interface ISaveIterationResult
     {
         void Queue(UserIterationResult result);
+    }
+
+    public class FileSaveIterationResult : SaveIterationResultBackgroundService
+    {
+        public FileSaveIterationResult(string databaseFile) : base(CreateFileRepository(databaseFile), nameof(FileSaveIterationResult))
+        {
+        }
+
+        private static IterationResultRepository CreateFileRepository(string databaseFile)
+        {
+            var fileDb = new Db(new SqliteConnection($"Data Source={databaseFile};cache=shared"));
+            var fileResultRepository = new IterationResultRepository(fileDb);
+            DbInitializer.Initialize(fileDb);
+            return fileResultRepository;
+        }
     }
 }

@@ -27,9 +27,10 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             _loadTests = httpUser.Tests;
             _httpUser = httpUser;
 
-            _loadTestHttpClient = new LoadTestHttpClient(httpUser);
-
             _cancellationToken = new CancellationTokenSource();
+
+            _loadTestHttpClient = new LoadTestHttpClient(httpUser, _cancellationToken.Token);
+
             _userTime = new Stopwatch();
             Iteration = 0;
         }
@@ -66,6 +67,10 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         public async Task Run(Action<UserIterationResult> iterationResult)
         {
+            // Stop Executing
+            if (_cancellationToken.IsCancellationRequested)
+                return;
+
             var nextTest = GetNextTest(++Iteration);
 
             var userSpecificClient = _loadTestHttpClient.GetClientForUser();
