@@ -19,7 +19,7 @@ namespace Zoxive.HttpLoadTesting.Client
                 cancelEventArgs.Cancel = true;
             });
 
-            var t = new Timer(_ => { cancellationSource.Cancel(); }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(0));
+            //var t = new Timer(_ => { cancellationSource.Cancel(); }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(0));
 
             var webUi = Program.StartAsync(testExecution, schedule, httpStatusResultService, cancellationSource.Token, clientOptions);
 
