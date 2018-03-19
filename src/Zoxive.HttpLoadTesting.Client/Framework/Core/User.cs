@@ -37,10 +37,31 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         public async Task Initialize()
         {
             var initializeEachTest = _loadTests
-                .Select(test => test.Initialize(_loadTestHttpClient))
+                .Select(RetryInitialize)
                 .ToArray();
 
             await Task.WhenAll(initializeEachTest);
+        }
+
+        private Task RetryInitialize(ILoadTest test)
+        {
+            var count = 0;
+            while (true)
+            {
+                try
+                {
+                    return test.Initialize(_loadTestHttpClient);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Initialize User FAILED. for Test {test.Name}");
+                    Console.WriteLine(e);
+                    count++;
+
+                    if (count > 1)
+                        throw;
+                }
+            }
         }
 
         public async Task Run(Action<UserIterationResult> iterationResult)

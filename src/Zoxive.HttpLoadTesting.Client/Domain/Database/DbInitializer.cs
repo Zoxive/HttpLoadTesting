@@ -12,6 +12,8 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
 
             dbConnection.Open();
 
+            dbConnection.Execute("PRAGMA read_uncommitted = true;");
+
             if (IterationTableExists(dbConnection))
                 return;
 

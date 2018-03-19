@@ -53,10 +53,6 @@ namespace Zoxive.HttpLoadTesting.Client
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
         {
-            /*
-            var writerConnection = new SqliteConnection($"Data Source={databaseFile};cache=shared");
-            var readerConnection = new SqliteConnection($"Data Source={databaseFile};cache=shared");
-            */
             var writerConnection = new SqliteConnection($"Data Source={databaseFile};mode=memory;cache=shared");
             var readerConnection = new SqliteConnection($"Data Source={databaseFile};mode=memory;cache=shared");
 
@@ -72,7 +68,7 @@ namespace Zoxive.HttpLoadTesting.Client
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
             services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
-            var backgroundService = new SaveIterationResultBackgroundService(iterationResultRepository);
+            var backgroundService = new SaveIterationResultBackgroundService(iterationResultRepository, readerConnection, databaseFile);
 
             services.AddSingleton<IHostedService>(backgroundService);
             services.AddSingleton<ISaveIterationResult>(backgroundService);
