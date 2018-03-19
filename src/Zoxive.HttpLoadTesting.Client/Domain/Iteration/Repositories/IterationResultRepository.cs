@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -16,12 +17,14 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
     {
         private readonly Microsoft.Data.Sqlite.SqliteConnection _dbConnection;
 
+        private readonly object _obj = new object();
+
         public IterationResultRepository(IDbWriter dbConnection)
         {
             _dbConnection = (Microsoft.Data.Sqlite.SqliteConnection)dbConnection.Connection;
         }
 
-        public async Task Save(UserIterationResult iterationResult, CancellationToken stoppingToken)
+        public async Task Save(UserIterationResult iterationResult)
         {
             var iterationDto = new IterationDto
             {
@@ -44,13 +47,14 @@ values
 SELECT last_insert_rowid();";
 
             if (_dbConnection.State != ConnectionState.Open)
-                await _dbConnection.OpenAsync(stoppingToken);
+                await _dbConnection.OpenAsync();
 
-            using (var transaction = _dbConnection.BeginTransaction())
+            using (MonitorLock.CreateLock(_obj, _dbConnection.ConnectionString))
             {
+                await RawExecuteAsync("BEGIN TRANSACTION");
                 try
                 {
-                    var cmd = new CommandDefinition(sql, iterationDto, transaction, cancellationToken: stoppingToken);
+                    var cmd = new CommandDefinition(sql, iterationDto);
 
                     var iterationId = await _dbConnection.ExecuteScalarAsync<int>(cmd);
 
@@ -66,20 +70,30 @@ SELECT last_insert_rowid();";
 
                     foreach (var batch in inserts.Batch(100))
                     {
-                        await InsertHttpStatusResults(batch, batch.Count, transaction, stoppingToken);
+                        await InsertHttpStatusResults(batch, batch.Count);
                     }
 
-                    transaction.Commit();
+                    await RawExecuteAsync("COMMIT TRANSACTION");
                 }
                 catch (Exception)
                 {
-                    transaction?.Rollback();
+                    await RawExecuteAsync("ROLLBACK TRANSACTION");
                     throw;
                 }
             }
         }
 
-        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count, IDbTransaction transaction, CancellationToken stoppingToken)
+        private async Task RawExecuteAsync(string sql)
+        {
+            using (var cmd = _dbConnection.CreateCommand())
+            {
+                cmd.CommandText = sql;
+
+                await cmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        private async Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count)
         {
             var args = new Dictionary<string, object>();
 
@@ -106,9 +120,36 @@ SELECT last_insert_rowid();";
 VALUES
 {stringBuilder}";
 
-            var cmd = new CommandDefinition(sql, args, transaction, cancellationToken: stoppingToken);
+            var cmd = new CommandDefinition(sql, args);
 
-            return _dbConnection.ExecuteAsync(cmd);
+            await _dbConnection.ExecuteAsync(cmd);
+        }
+    }
+
+    public class MonitorLock : IDisposable
+    {
+        public static MonitorLock CreateLock(object value, string name)
+        {
+            return new MonitorLock(value, name);
+        }
+
+        private readonly object _l;
+        private readonly string _name;
+
+        protected MonitorLock(object l, string name)
+        {
+            _l = l;
+            _name = name;
+
+            if (!Monitor.TryEnter(_l, 100))
+            {
+                Console.WriteLine($"Lock {_l} attempt by {name} and failed");
+            }
+        }
+
+        public void Dispose()
+        {
+            Monitor.Exit(_l);
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.Data.Sqlite;
 using Zoxive.HttpLoadTesting.Client.Domain.Database;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
@@ -40,7 +41,6 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                 }
                 else
                 {
-                    Console.WriteLine($"Writing {_queue.Count} into {_name}");
                     await SaveFromQueue(stoppingToken);
                 }
             }
@@ -48,17 +48,27 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         private async Task SaveFromQueue(CancellationToken stoppingToken, bool runAll = false)
         {
-            if (!runAll)
-                _sw.Reset();
+            _sw.Restart();
+
+            Stopwatch runAllStopwatch = null;
+            if (runAll)
+            {
+                runAllStopwatch = new Stopwatch();
+                runAllStopwatch?.Restart();
+            }
 
             var count = _queue.Count;
+            Console.WriteLine($"Writing {count} into {_name}");
             for (var i = 0; i < count; i++)
             {
+                if (stoppingToken.IsCancellationRequested)
+                    return;
+
                 if (_queue.TryDequeue(out var result))
                 {
                     try
                     {
-                        await _iterationResultRepository.Save(result, stoppingToken);
+                        await _iterationResultRepository.Save(result);
                     }
                     catch (TaskCanceledException)
                     {
@@ -69,20 +79,25 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                         Console.WriteLine($"{_name} - {e.Message}");
                     }
 
+                    /*
                     var elapsedMilliseconds = _sw.ElapsedMilliseconds;
-
                     if (runAll == false && elapsedMilliseconds > 2000)
-                        break;
-
-                    if (runAll && elapsedMilliseconds > 1000)
                     {
+                        Console.WriteLine($"Stopped writing after 2 seconds, inserted {i}");
+                        break;
+                    }
+                    */
+
+                    if (runAll && runAllStopwatch.ElapsedMilliseconds > 1000)
+                    {
+                        runAllStopwatch.Restart();
                         Console.WriteLine($"{_queue.Count} remaining..");
                     }
                 }
             }
 
-            if (!runAll)
-                _sw.Stop();
+            _sw.Stop();
+            runAllStopwatch?.Stop();
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -118,11 +133,17 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         {
         }
 
-        private static IterationResultRepository CreateFileRepository(string databaseFile)
+        public static IterationResultRepository CreateFileRepository(string databaseFile)
         {
-            var fileDb = new Db(new SqliteConnection($"Data Source={databaseFile};cache=shared"));
+            //var fileDb = new Db(new SqliteConnection($"Data Source={databaseFile};cache=shared"));
+            var connection = new SqliteConnection($"Data Source={databaseFile}");
+            var fileDb = new Db(connection);
             var fileResultRepository = new IterationResultRepository(fileDb);
             DbInitializer.Initialize(fileDb);
+
+            connection.Execute("PRAGMA synchronous = OFF;");
+            connection.Execute("PRAGMA journal_mode = MEMORY;");
+
             return fileResultRepository;
         }
     }

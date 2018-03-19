@@ -82,15 +82,15 @@ namespace Zoxive.HttpLoadTesting.Client
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
             services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
-            var inMemorySave = new SaveIterationResultBackgroundService(iterationResultRepository, "InMemory");
-            var fileSave = new FileSaveIterationResult(databaseFile);
-
             services.AddSingleton<IHostedService, ExecuteTestsService>();
-            services.AddSingleton<IHostedService>(inMemorySave);
-            services.AddSingleton<IHostedService>(fileSave);
 
-            services.AddSingleton<ISaveIterationResult>(inMemorySave);
+            var fileSave = new FileSaveIterationResult(databaseFile);
+            services.AddSingleton<IHostedService>(fileSave);
             services.AddSingleton<ISaveIterationResult>(fileSave);
+
+            var inMemorySave = new SaveIterationResultBackgroundService(iterationResultRepository, "InMemory");
+            services.AddSingleton<ISaveIterationResult>(inMemorySave);
+            services.AddSingleton<IHostedService>(inMemorySave);
 
             Domain.GraphStats.ConfigureGraphStats.ConfigureServices(services);
         }
