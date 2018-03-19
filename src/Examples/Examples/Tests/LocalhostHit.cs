@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Zoxive.HttpLoadTesting.Framework.Core;
+using Zoxive.HttpLoadTesting.Framework.Extensions;
 using Zoxive.HttpLoadTesting.Framework.Http;
 
 namespace Examples.Tests
@@ -14,17 +14,11 @@ namespace Examples.Tests
             return Task.CompletedTask;
         }
 
-        public Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient)
+        public async Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient)
         {
-            const int num = 100;
-            var requests = new List<Task>();
+            //await loadLoadTestHttpClient.DelayUserClick();
 
-            for (var i = 0; i < num; i++)
-            {
-                requests.Add(loadLoadTestHttpClient.Get(""));
-            }
-
-            return Task.WhenAll(requests);
+            await loadLoadTestHttpClient.Get("");
         }
     }
 }

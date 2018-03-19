@@ -44,33 +44,39 @@ SELECT last_insert_rowid();";
 
             _dbConnection.Open();
 
-            try
+            using (var transaction = _dbConnection.BeginTransaction())
             {
-                var iterationId = await _dbConnection.ExecuteScalarAsync<int>(sql, iterationDto);
-
-                var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
+                try
                 {
-                    IterationId = iterationId,
-                    ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
-                    Method = httpStatusResult.Method,
-                    RequestUrl = httpStatusResult.RequestUrl,
-                    StatusCode = httpStatusResult.StatusCode,
-                    RequestStartTick = httpStatusResult.RequestStartTick
-                });
+                    var iterationId = await _dbConnection.ExecuteScalarAsync<int>(sql, iterationDto, transaction);
 
-                foreach (var batch in inserts.Batch(100))
-                {
-                    await InsertHttpStatusResults(batch, batch.Count);
+                    var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
+                    {
+                        IterationId = iterationId,
+                        ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
+                        Method = httpStatusResult.Method,
+                        RequestUrl = httpStatusResult.RequestUrl,
+                        StatusCode = httpStatusResult.StatusCode,
+                        RequestStartTick = httpStatusResult.RequestStartTick
+                    });
+
+                    foreach (var batch in inserts.Batch(100))
+                    {
+                        await InsertHttpStatusResults(batch, batch.Count, transaction);
+                    }
+
+                    transaction.Commit();
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
+                catch (Exception e)
+                {
+                    transaction?.Rollback();
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
         }
 
-        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count)
+        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count, IDbTransaction transaction)
         {
             var args = new Dictionary<string, object>();
 
@@ -97,49 +103,9 @@ SELECT last_insert_rowid();";
 VALUES
 {stringBuilder}";
 
-            var cmd = new CommandDefinition(sql, args);
+            var cmd = new CommandDefinition(sql, args, transaction);
 
             return _dbConnection.ExecuteAsync(cmd);
-        }
-
-        public async Task<IReadOnlyDictionary<int, UserIterationResult>> GetAll()
-        {
-            var iterations = await _dbConnection.QueryAsync<IterationDto>("SELECT * FROM Iteration");
-            var httpStatusResults = (await _dbConnection.QueryAsync<HttpStatusResultDto>("SELECT * FROM HttpStatusResult")).GroupBy(x => x.IterationId).ToDictionary(x => x.Key, y => y.AsList());
-
-            return iterations.ToDictionary(x => x.Id, ToModel(httpStatusResults));
-        }
-
-        public Task<IEnumerable<UserIterationResult>> GetUserResults(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<UserIterationResult>> GetTestResults(string testName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IDictionary<string, int>> GetTestNames()
-        {
-            var testNames = await _dbConnection.QueryAsync<TestNamesDto>("select TestName, count(Id) as Count from Iteration group by TestName");
-
-            return testNames.ToDictionary(x => x.TestName, x => x.Count);
-        }
-
-        private static Func<IterationDto, UserIterationResult> ToModel(Dictionary<int, List<HttpStatusResultDto>> httpStatusResultsDictionary)
-        {
-            return iteration =>
-            {
-                if (!httpStatusResultsDictionary.TryGetValue(iteration.Id, out var httpStatusResultDtos))
-                {
-                    httpStatusResultDtos = new List<HttpStatusResultDto>();
-                }
-
-                var httpStatusResults = httpStatusResultDtos.Select(x => new HttpLoadTesting.Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick));
-
-                return new UserIterationResult(iteration.BaseUrl, iteration.UserNumber, new TimeSpan(iteration.Elapsed), iteration.Iteration, iteration.TestName, httpStatusResults.ToList(), iteration.StartTick, iteration.EndTick, iteration.UserDelay, iteration.Exception);
-            };
         }
     }
 }
