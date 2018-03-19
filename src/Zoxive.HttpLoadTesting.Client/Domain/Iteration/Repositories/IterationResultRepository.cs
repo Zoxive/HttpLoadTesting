@@ -13,11 +13,11 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
 {
     public class IterationResultRepository : IIterationResultRepository
     {
-        private readonly IDbConnection _dbConnection;
+        private readonly Microsoft.Data.Sqlite.SqliteConnection _dbConnection;
 
         public IterationResultRepository(IDbWriter dbConnection)
         {
-            _dbConnection = dbConnection.Connection;
+            _dbConnection = (Microsoft.Data.Sqlite.SqliteConnection)dbConnection.Connection;
         }
 
         public async Task Save(UserIterationResult iterationResult)
@@ -42,7 +42,8 @@ values
 (@Iteration, @BaseUrl, @DidError, @Elapsed, @StartTick, @EndTick, @Exception, @TestName, @UserNumber, @UserDelay);
 SELECT last_insert_rowid();";
 
-            _dbConnection.Open();
+            if (_dbConnection.State != ConnectionState.Open)
+                await _dbConnection.OpenAsync();
 
             using (var transaction = _dbConnection.BeginTransaction())
             {

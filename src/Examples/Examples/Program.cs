@@ -18,11 +18,11 @@ namespace Examples
             {
                 /*
                 new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
-                new Duration(2m),
+                new Duration(0.2m),
                 new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
-                new Duration(2m),
+                new Duration(0.2m),
                 new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
-                new Duration(2m),
+                new Duration(0.2m),
                 new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
                 new Duration(2m),
                 */
