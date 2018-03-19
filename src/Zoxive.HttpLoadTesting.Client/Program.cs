@@ -4,6 +4,7 @@ using System.Data;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,23 +60,17 @@ namespace Zoxive.HttpLoadTesting.Client
             {
                 loadTestExecution.UserIterationFinished += LogIteration(saveIterationResult);
             }
-
-            DbInitializer.Initialize(sp.GetService<IDbWriter>());
         }
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
         {
-            var connectionString = $"Data Source={databaseFile};mode=memory;cache=shared";
+            var connectionString = $"Data Source={databaseFile};cache=shared";
 
-            var writerConnection = new SqliteConnection(connectionString);
             var readerConnection = new SqliteConnection(connectionString);
 
-            var dbWriter = new Db(writerConnection);
-
-            services.AddSingleton<IDbWriter>(dbWriter);
             services.AddSingleton<IDbReader>(new Db(readerConnection));
 
-            var iterationResultRepository = new IterationResultRepository(dbWriter);
+            var iterationResultRepository = CreateFileRepository(databaseFile);
 
             services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
             services.AddSingleton<IIterationResultRepository>(iterationResultRepository);
@@ -84,15 +79,25 @@ namespace Zoxive.HttpLoadTesting.Client
 
             services.AddSingleton<IHostedService, ExecuteTestsService>();
 
-            var fileSave = new FileSaveIterationResult(databaseFile);
-            services.AddSingleton<IHostedService>(fileSave);
-            services.AddSingleton<ISaveIterationResult>(fileSave);
-
-            var inMemorySave = new SaveIterationResultBackgroundService(iterationResultRepository, "InMemory");
+            var inMemorySave = new SaveIterationResultBackgroundService(iterationResultRepository, "File");
             services.AddSingleton<ISaveIterationResult>(inMemorySave);
             services.AddSingleton<IHostedService>(inMemorySave);
 
             Domain.GraphStats.ConfigureGraphStats.ConfigureServices(services);
+        }
+
+        public static IterationResultRepository CreateFileRepository(string databaseFile)
+        {
+            var connection = new SqliteConnection($"Data Source={databaseFile};cache=shared");
+            var fileDb = new Db(connection);
+
+            var fileResultRepository = new IterationResultRepository(fileDb);
+            DbInitializer.Initialize(fileDb);
+
+            connection.Execute("PRAGMA synchronous = OFF;");
+            connection.Execute("PRAGMA journal_mode = MEMORY;");
+
+            return fileResultRepository;
         }
 
         private static UserIterationFinished LogIteration(IEnumerable<ISaveIterationResult> iterationResultRepository)

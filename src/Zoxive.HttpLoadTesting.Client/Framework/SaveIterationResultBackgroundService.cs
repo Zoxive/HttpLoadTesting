@@ -3,9 +3,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Dapper;
-using Microsoft.Data.Sqlite;
-using Zoxive.HttpLoadTesting.Client.Domain.Database;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -58,7 +55,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             }
 
             var count = _queue.Count;
-            Console.WriteLine($"Writing {count} into {_name}");
+            //Console.WriteLine($"Writing {count} into {_name}");
             for (var i = 0; i < count; i++)
             {
                 if (stoppingToken.IsCancellationRequested)
@@ -125,26 +122,5 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
     public interface ISaveIterationResult
     {
         void Queue(UserIterationResult result);
-    }
-
-    public class FileSaveIterationResult : SaveIterationResultBackgroundService
-    {
-        public FileSaveIterationResult(string databaseFile) : base(CreateFileRepository(databaseFile), nameof(FileSaveIterationResult))
-        {
-        }
-
-        public static IterationResultRepository CreateFileRepository(string databaseFile)
-        {
-            //var fileDb = new Db(new SqliteConnection($"Data Source={databaseFile};cache=shared"));
-            var connection = new SqliteConnection($"Data Source={databaseFile}");
-            var fileDb = new Db(connection);
-            var fileResultRepository = new IterationResultRepository(fileDb);
-            DbInitializer.Initialize(fileDb);
-
-            connection.Execute("PRAGMA synchronous = OFF;");
-            connection.Execute("PRAGMA journal_mode = MEMORY;");
-
-            return fileResultRepository;
-        }
     }
 }
