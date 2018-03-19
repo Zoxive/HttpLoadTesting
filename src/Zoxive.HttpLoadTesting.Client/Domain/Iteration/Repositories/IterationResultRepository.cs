@@ -15,9 +15,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
     {
         private readonly IDbConnection _dbConnection;
 
-        public IterationResultRepository(IDbConnection dbConnection)
+        public IterationResultRepository(IDbWriter dbConnection)
         {
-            _dbConnection = dbConnection;
+            _dbConnection = dbConnection.Connection;
         }
 
         public async Task Save(UserIterationResult iterationResult)

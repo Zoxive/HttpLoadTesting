@@ -46,14 +46,16 @@ namespace Zoxive.HttpLoadTesting.Client
                 loadTestExecution.UserIterationFinished += LogIteration(iterationResultRepository);
             }
 
-            DbInitializer.Initialize(sp.GetService<IDbConnection>());
+            DbInitializer.Initialize(sp.GetService<IDbWriter>());
         }
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
         {
-            services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source={databaseFile};cache=shared"));
-            // todo use memory then save to file?
-            //services.AddSingleton<IDbConnection>(new SqliteConnection($"Data Source=:memory:"));
+            var writerConnection = new SqliteConnection($"Data Source={databaseFile};mode=memory;cache=shared");
+            var readerConnection = new SqliteConnection($"Data Source={databaseFile};mode=memory;cache=shared");
+
+            services.AddSingleton<IDbWriter>(new Db(writerConnection));
+            services.AddSingleton<IDbReader>(new Db(readerConnection));
 
             services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
             services.AddSingleton<IIterationResultRepository, IterationResultRepository>();
@@ -71,5 +73,25 @@ namespace Zoxive.HttpLoadTesting.Client
                 Task.Run(() => iterationResultRepository.Save(iterationResult));
             };
         }
+    }
+
+    public class Db : IDbWriter, IDbReader
+    {
+        public Db(IDbConnection connection)
+        {
+            Connection = connection;
+        }
+
+        public IDbConnection Connection { get; }
+    }
+
+    public interface IDbWriter
+    {
+        IDbConnection Connection { get; }
+    }
+
+    public interface IDbReader
+    {
+        IDbConnection Connection { get; }
     }
 }

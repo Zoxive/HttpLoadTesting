@@ -6,8 +6,10 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
     public static class DbInitializer
     {
         // TODO would be nice to have a dotnetcore compatible migrator.
-        public static void Initialize(IDbConnection dbConnection)
+        public static void Initialize(IDbWriter db)
         {
+            var dbConnection = db.Connection;
+
             dbConnection.Open();
 
             if (IterationTableExists(dbConnection))

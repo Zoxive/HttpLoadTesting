@@ -13,9 +13,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
         private readonly IDbConnection _connection;
         private readonly IHttpStatusResultRepository _httpStatusRepository;
 
-        public GraphStatsService(IDbConnection connection, IHttpStatusResultRepository httpStatusRepository)
+        public GraphStatsService(IDbReader connection, IHttpStatusResultRepository httpStatusRepository)
         {
-            _connection = connection;
+            _connection = connection.Connection;
             _httpStatusRepository = httpStatusRepository;
         }
 
