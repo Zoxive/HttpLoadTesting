@@ -56,6 +56,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                 catch (Exception e)
                 {
                     Console.WriteLine($"Initialize User FAILED. for Test {test.Name}");
+                    Console.WriteLine("User will not be added.");
                     Console.WriteLine(e);
                     count++;
 

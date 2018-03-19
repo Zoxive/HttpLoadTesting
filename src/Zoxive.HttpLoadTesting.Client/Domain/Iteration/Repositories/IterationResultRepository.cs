@@ -93,7 +93,7 @@ SELECT last_insert_rowid();";
             }
         }
 
-        private async Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count)
+        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count)
         {
             var args = new Dictionary<string, object>();
 
@@ -122,7 +122,7 @@ VALUES
 
             var cmd = new CommandDefinition(sql, args);
 
-            await _dbConnection.ExecuteAsync(cmd);
+            return _dbConnection.ExecuteAsync(cmd);
         }
     }
 

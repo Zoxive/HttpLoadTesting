@@ -13,13 +13,11 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         private readonly IIterationResultRepository _iterationResultRepository;
         private readonly string _name;
         private ConcurrentQueue<UserIterationResult> _queue = new ConcurrentQueue<UserIterationResult>();
-        private Stopwatch _sw;
 
         public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, string name)
         {
             _iterationResultRepository = iterationResultRepository;
             _name = name;
-            _sw = new Stopwatch();
         }
 
         public void Queue(UserIterationResult result)
@@ -45,7 +43,6 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         private async Task SaveFromQueue(CancellationToken stoppingToken, bool runAll = false)
         {
-            _sw.Restart();
 
             Stopwatch runAllStopwatch = null;
             if (runAll)
@@ -55,7 +52,6 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             }
 
             var count = _queue.Count;
-            //Console.WriteLine($"Writing {count} into {_name}");
             for (var i = 0; i < count; i++)
             {
                 if (stoppingToken.IsCancellationRequested)
@@ -67,23 +63,10 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                     {
                         await _iterationResultRepository.Save(result);
                     }
-                    catch (TaskCanceledException)
-                    {
-                        // Eat it
-                    }
                     catch (Exception e)
                     {
                         Console.WriteLine($"{_name} - {e.Message}");
                     }
-
-                    /*
-                    var elapsedMilliseconds = _sw.ElapsedMilliseconds;
-                    if (runAll == false && elapsedMilliseconds > 2000)
-                    {
-                        Console.WriteLine($"Stopped writing after 2 seconds, inserted {i}");
-                        break;
-                    }
-                    */
 
                     if (runAll && runAllStopwatch.ElapsedMilliseconds > 1000)
                     {
@@ -93,7 +76,6 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                 }
             }
 
-            _sw.Stop();
             runAllStopwatch?.Stop();
         }
 
