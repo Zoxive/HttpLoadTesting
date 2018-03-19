@@ -13,13 +13,22 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         private readonly ILoadTestExecution _loadTestExecution;
         private readonly IReadOnlyList<ISchedule> _schedules;
         private readonly ISaveIterationResult _saveIterationResult;
+        private readonly ICancelTokenReference _cancelTokenReference;
 
-        public ExecuteTestsService(ClientOptions clientOptions, ILoadTestExecution loadTestExecution, IReadOnlyList<ISchedule> schedules, ISaveIterationResult saveIterationResult)
+        public ExecuteTestsService
+        (
+            ClientOptions clientOptions,
+            ILoadTestExecution loadTestExecution,
+            IReadOnlyList<ISchedule> schedules,
+            ISaveIterationResult saveIterationResult,
+            ICancelTokenReference cancelTokenReference
+        )
         {
             _clientOptions = clientOptions;
             _loadTestExecution = loadTestExecution;
             _schedules = schedules;
             _saveIterationResult = saveIterationResult;
+            _cancelTokenReference = cancelTokenReference;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,7 +46,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
             _loadTestExecution.UserIterationFinished += LogIteration(_saveIterationResult);
 
-            return _loadTestExecution.Execute(_schedules, stoppingToken);
+            return _loadTestExecution.Execute(_schedules, _cancelTokenReference.Token);
         }
 
         private static UserIterationFinished LogIteration(ISaveIterationResult iterationResultRepository)

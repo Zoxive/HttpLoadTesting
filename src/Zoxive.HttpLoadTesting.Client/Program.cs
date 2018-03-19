@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -38,13 +39,40 @@ namespace Zoxive.HttpLoadTesting.Client
                 {
                     ConfigureServices(services, httpStatusResultService, options.DatabaseFile);
 
+                    services.AddSingleton<ICancelTokenReference>(new CancelTokenReference(cancellationToken));
+
                     services.AddSingleton(loadTestExecution);
                     services.AddSingleton(schedules);
                     services.AddSingleton(options);
                 })
                 .Build();
 
-            return host.RunAsync(cancellationToken);
+            var stopWebUi = new CancellationTokenSource();
+
+            cancellationToken.Register(Cancel(stopWebUi));
+
+            return host.RunAsync(stopWebUi.Token);
+        }
+
+        private static Action Cancel(CancellationTokenSource cancellationSource)
+        {
+            return () =>
+            {
+                Console.CancelKeyPress += ((sender, cancelEventArgs) =>
+                {
+                    cancellationSource.Cancel();
+                    cancelEventArgs.Cancel = true;
+                });
+
+                var previous = Console.ForegroundColor;
+
+                Console.ForegroundColor = ConsoleColor.Red;
+
+                Console.WriteLine("CANCELING");
+                Console.WriteLine("Press ctrl+c again to stop the webui");
+
+                Console.ForegroundColor = previous;
+            };
         }
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
@@ -86,6 +114,21 @@ namespace Zoxive.HttpLoadTesting.Client
         }
 
         
+    }
+
+    public class CancelTokenReference : ICancelTokenReference
+    {
+        public CancellationToken Token { get; }
+
+        public CancelTokenReference(CancellationToken token)
+        {
+            Token = token;
+        }
+    }
+
+    public interface ICancelTokenReference
+    {
+        CancellationToken Token { get; }
     }
 
     public class Db : IDbWriter, IDbReader
