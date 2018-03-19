@@ -16,8 +16,19 @@ namespace Examples
         {
             var schedule = new List<ISchedule>
             {
-                new AddUsers(totalUsers: 1, usersEvery: 1, seconds: 1),
-                new Duration(2m)
+                /*
+                new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
+                new Duration(0.2m),
+                new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
+                new Duration(0.2m),
+                new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
+                new Duration(0.2m),
+                new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
+                new Duration(2m),
+                */
+                //new AddUsers(totalUsers: 30, usersEvery: 50, seconds: 1),
+                new AddUsers(totalUsers: 300, usersEvery: 50, seconds: 1),
+                new Duration(2m),
             };
 
             var tests = new List<ILoadTest>

@@ -19,15 +19,11 @@ namespace Zoxive.HttpLoadTesting.Client
                 cancelEventArgs.Cancel = true;
             });
 
-            Task RunTests()
-            {
-                return testExecution.Execute(schedule, cancellationSource.Token);
-            }
+            //var t = new Timer(_ => { cancellationSource.Cancel(); }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(0));
 
-            var executeTests = TestStartup(RunTests, clientOptions);
-            var webUi = Program.StartAsync(testExecution, httpStatusResultService, cancellationSource.Token, clientOptions);
+            var webUi = Program.StartAsync(testExecution, schedule, httpStatusResultService, cancellationSource.Token, clientOptions);
 
-            Task.WaitAll(executeTests, webUi);
+            Task.WaitAll(webUi);
         }
 
         public static void Run(ILoadTestExecution testExecution, IReadOnlyList<ISchedule> schedule, IHttpStatusResultService httpStatusResultService, string[] args)
@@ -39,22 +35,6 @@ namespace Zoxive.HttpLoadTesting.Client
             var clientOptions = new ClientOptions(config.GetValue<string>("databaseFile"));
 
             Run(testExecution, schedule, httpStatusResultService, clientOptions);
-        }
-
-        private static async Task TestStartup(Func<Task> runTests, ClientOptions clientOptions)
-        {
-            // TODO allow user to say if viewing
-            if (clientOptions.Viewing)
-            {
-                Console.WriteLine("Viewing Existing Data..");
-                return;
-            }
-
-            // Wait for Initialize to finish.. wish we had a callback
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
-            Console.WriteLine("Running Tests..");
-            await runTests();
         }
     }
 }

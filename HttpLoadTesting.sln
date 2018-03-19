@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zoxive.HttpLoadTesting.Clie
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "src\Examples\Examples\Examples.csproj", "{79B98E50-0B5C-42DD-9871-14FFC297802B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnterpriseQuoting.Performance.Tests", "..\..\TFSGIT\KeystoneGIT\performance\EnterpriseQuoting.Performance.Tests\EnterpriseQuoting.Performance.Tests.csproj", "{1902465F-79EA-4C04-B2C1-0F586176DAEC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,18 @@ Global
 		{79B98E50-0B5C-42DD-9871-14FFC297802B}.Release|x64.Build.0 = Release|Any CPU
 		{79B98E50-0B5C-42DD-9871-14FFC297802B}.Release|x86.ActiveCfg = Release|Any CPU
 		{79B98E50-0B5C-42DD-9871-14FFC297802B}.Release|x86.Build.0 = Release|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Debug|x64.Build.0 = Debug|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Debug|x86.Build.0 = Debug|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Release|x64.ActiveCfg = Release|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Release|x64.Build.0 = Release|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Release|x86.ActiveCfg = Release|Any CPU
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +69,7 @@ Global
 		{3890A95D-0020-4CB4-8689-D9D00F76E54D} = {2E89F711-CA54-41CB-B523-5A411098658C}
 		{E49F56FD-BEA9-4FD8-9A66-8A173FC974EE} = {2E89F711-CA54-41CB-B523-5A411098658C}
 		{79B98E50-0B5C-42DD-9871-14FFC297802B} = {3890A95D-0020-4CB4-8689-D9D00F76E54D}
+		{1902465F-79EA-4C04-B2C1-0F586176DAEC} = {3890A95D-0020-4CB4-8689-D9D00F76E54D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {283E9BC8-FB8B-4837-9D58-C149EC3ED4D4}

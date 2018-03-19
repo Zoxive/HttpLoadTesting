@@ -27,9 +27,10 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             _loadTests = httpUser.Tests;
             _httpUser = httpUser;
 
-            _loadTestHttpClient = new LoadTestHttpClient(httpUser);
-
             _cancellationToken = new CancellationTokenSource();
+
+            _loadTestHttpClient = new LoadTestHttpClient(httpUser, _cancellationToken.Token);
+
             _userTime = new Stopwatch();
             Iteration = 0;
         }
@@ -37,14 +38,45 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         public async Task Initialize()
         {
             var initializeEachTest = _loadTests
-                .Select(test => test.Initialize(_loadTestHttpClient))
+                .Select(RetryInitialize)
                 .ToArray();
 
             await Task.WhenAll(initializeEachTest);
         }
 
+        private async Task RetryInitialize(ILoadTest test)
+        {
+            var count = 0;
+            while (true)
+            {
+                try
+                {
+                    await test.Initialize(_loadTestHttpClient);
+                    break;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Initialize User {UserNumber} Failed. for Test {test.Name}");
+                    Console.WriteLine(e);
+                    count++;
+
+                    if (count > 1)
+                    {
+                        Console.WriteLine("User will not be added.");
+                        throw;
+                    }
+
+                    Console.WriteLine("Trying again.");
+                }
+            }
+        }
+
         public async Task Run(Action<UserIterationResult> iterationResult)
         {
+            // Stop Executing
+            if (_cancellationToken.IsCancellationRequested)
+                return;
+
             var nextTest = GetNextTest(++Iteration);
 
             var userSpecificClient = _loadTestHttpClient.GetClientForUser();

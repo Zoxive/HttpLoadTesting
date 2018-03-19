@@ -18,9 +18,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
         private readonly IHttpStatusResultStatisticsFactory _statisticsFactory;
         private readonly IHttpStatusResultService _service;
 
-        public HttpStatusResultRepository(IDbConnection dbConnection, IHttpStatusResultStatisticsFactory statisticsFactory, IHttpStatusResultService service)
+        public HttpStatusResultRepository(IDbReader dbConnection, IHttpStatusResultStatisticsFactory statisticsFactory, IHttpStatusResultService service)
         {
-            _dbConnection = dbConnection;
+            _dbConnection = dbConnection.Connection;
             _statisticsFactory = statisticsFactory;
             _service = service;
         }

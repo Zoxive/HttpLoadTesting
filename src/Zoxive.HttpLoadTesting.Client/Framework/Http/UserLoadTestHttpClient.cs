@@ -68,21 +68,25 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         public IReadOnlyList<HttpStatusResult> StatusResults()
         {
-            return _statusResults;
+            lock (_statusResults)
+            {
+                return _statusResults;
+            }
         }
 
         private async Task<HttpResponseMessage> LogStatusResult(Func<Task<HttpResponseMessage>> doRequest)
         {
-            _stopWatch.Restart();
+            var stopWatch = new Stopwatch();
+            stopWatch.Restart();
             var requestStartTick = Stopwatch.GetTimestamp();
 
             var response = await doRequest();
 
-            _stopWatch.Stop();
+            stopWatch.Stop();
 
             lock (_statusResults)
             {
-                _statusResults.Add(new HttpStatusResult(response, _stopWatch.Elapsed.TotalMilliseconds, requestStartTick));
+                _statusResults.Add(new HttpStatusResult(response, stopWatch.Elapsed.TotalMilliseconds, requestStartTick));
             }
 
             return response;

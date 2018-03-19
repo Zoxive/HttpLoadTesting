@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.Data.Sqlite;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -13,11 +15,13 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
 {
     public class IterationResultRepository : IIterationResultRepository
     {
-        private readonly IDbConnection _dbConnection;
+        private readonly SqliteConnection _dbConnection;
 
-        public IterationResultRepository(IDbConnection dbConnection)
+        private readonly object _obj = new object();
+
+        public IterationResultRepository(IDbWriter dbConnection)
         {
-            _dbConnection = dbConnection;
+            _dbConnection = (SqliteConnection)dbConnection.Connection;
         }
 
         public async Task Save(UserIterationResult iterationResult)
@@ -42,31 +46,50 @@ values
 (@Iteration, @BaseUrl, @DidError, @Elapsed, @StartTick, @EndTick, @Exception, @TestName, @UserNumber, @UserDelay);
 SELECT last_insert_rowid();";
 
-            _dbConnection.Open();
+            if (_dbConnection.State != ConnectionState.Open)
+                await _dbConnection.OpenAsync();
 
-            try
+            //using (MonitorLock.CreateLock(_obj, _dbConnection.ConnectionString))
             {
-                var iterationId = await _dbConnection.ExecuteScalarAsync<int>(sql, iterationDto);
-
-                var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
+                await RawExecuteAsync("BEGIN TRANSACTION");
+                try
                 {
-                    IterationId = iterationId,
-                    ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
-                    Method = httpStatusResult.Method,
-                    RequestUrl = httpStatusResult.RequestUrl,
-                    StatusCode = httpStatusResult.StatusCode,
-                    RequestStartTick = httpStatusResult.RequestStartTick
-                });
+                    var cmd = new CommandDefinition(sql, iterationDto);
 
-                foreach (var batch in inserts.Batch(100))
+                    var iterationId = await _dbConnection.ExecuteScalarAsync<int>(cmd);
+
+                    var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
+                    {
+                        IterationId = iterationId,
+                        ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
+                        Method = httpStatusResult.Method,
+                        RequestUrl = httpStatusResult.RequestUrl,
+                        StatusCode = httpStatusResult.StatusCode,
+                        RequestStartTick = httpStatusResult.RequestStartTick
+                    });
+
+                    foreach (var batch in inserts.Batch(100))
+                    {
+                        await InsertHttpStatusResults(batch, batch.Count);
+                    }
+
+                    await RawExecuteAsync("COMMIT TRANSACTION");
+                }
+                catch (Exception)
                 {
-                    await InsertHttpStatusResults(batch, batch.Count);
+                    await RawExecuteAsync("ROLLBACK TRANSACTION");
+                    throw;
                 }
             }
-            catch (Exception e)
+        }
+
+        private async Task RawExecuteAsync(string sql)
+        {
+            using (var cmd = _dbConnection.CreateCommand())
             {
-                Console.WriteLine(e);
-                throw;
+                cmd.CommandText = sql;
+
+                await cmd.ExecuteNonQueryAsync();
             }
         }
 
@@ -101,45 +124,36 @@ VALUES
 
             return _dbConnection.ExecuteAsync(cmd);
         }
+    }
 
-        public async Task<IReadOnlyDictionary<int, UserIterationResult>> GetAll()
+    public class MonitorLock : IDisposable
+    {
+        public static MonitorLock CreateLock(object value, string name)
         {
-            var iterations = await _dbConnection.QueryAsync<IterationDto>("SELECT * FROM Iteration");
-            var httpStatusResults = (await _dbConnection.QueryAsync<HttpStatusResultDto>("SELECT * FROM HttpStatusResult")).GroupBy(x => x.IterationId).ToDictionary(x => x.Key, y => y.AsList());
-
-            return iterations.ToDictionary(x => x.Id, ToModel(httpStatusResults));
+            return new MonitorLock(value, name);
         }
 
-        public Task<IEnumerable<UserIterationResult>> GetUserResults(int id)
-        {
-            throw new NotImplementedException();
-        }
+        private readonly object _l;
+        private readonly string _name;
 
-        public Task<IEnumerable<UserIterationResult>> GetTestResults(string testName)
+        protected MonitorLock(object l, string name)
         {
-            throw new NotImplementedException();
-        }
+            _l = l;
+            _name = name;
 
-        public async Task<IDictionary<string, int>> GetTestNames()
-        {
-            var testNames = await _dbConnection.QueryAsync<TestNamesDto>("select TestName, count(Id) as Count from Iteration group by TestName");
-
-            return testNames.ToDictionary(x => x.TestName, x => x.Count);
-        }
-
-        private static Func<IterationDto, UserIterationResult> ToModel(Dictionary<int, List<HttpStatusResultDto>> httpStatusResultsDictionary)
-        {
-            return iteration =>
+            /*
+            if (!Monitor.TryEnter(_l, 100))
             {
-                if (!httpStatusResultsDictionary.TryGetValue(iteration.Id, out var httpStatusResultDtos))
-                {
-                    httpStatusResultDtos = new List<HttpStatusResultDto>();
-                }
+                Console.WriteLine($"Lock {_l} attempt by {name} and failed");
+            }
+            */
 
-                var httpStatusResults = httpStatusResultDtos.Select(x => new HttpLoadTesting.Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartTick));
+            Monitor.Enter(_l);
+        }
 
-                return new UserIterationResult(iteration.BaseUrl, iteration.UserNumber, new TimeSpan(iteration.Elapsed), iteration.Iteration, iteration.TestName, httpStatusResults.ToList(), iteration.StartTick, iteration.EndTick, iteration.UserDelay, iteration.Exception);
-            };
+        public void Dispose()
+        {
+            Monitor.Exit(_l);
         }
     }
 }

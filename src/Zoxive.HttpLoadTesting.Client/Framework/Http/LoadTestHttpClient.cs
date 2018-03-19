@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -10,10 +11,12 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
     public class LoadTestHttpClient : ILoadTestHttpClient
     {
         internal readonly IHttpUser HttpUser;
+        private readonly CancellationToken _token;
 
-        public LoadTestHttpClient(IHttpUser httpUser)
+        public LoadTestHttpClient(IHttpUser httpUser, CancellationToken token)
         {
             HttpUser = httpUser;
+            _token = token;
             HttpClient = CreateHttpClient();
 
             TestState = new Dictionary<string, object>();
@@ -75,7 +78,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
             alterHttpRequestMessagePerRequest?.Invoke(request);
 
-            return HttpClient.SendAsync(request);
+            return HttpClient.SendAsync(request, cancellationToken: _token);
         }
 
         public IUserLoadTestHttpClient GetClientForUser()

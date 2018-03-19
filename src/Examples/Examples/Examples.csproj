@@ -8,7 +8,7 @@
     <Version>0.0.12</Version>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <ApplicationIcon />
-    <OutputTypeEx>exe</OutputTypeEx>
+    <OutputType>exe</OutputType>
     <StartupObject />
   </PropertyGroup>
 

@@ -6,18 +6,22 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
     public static class DbInitializer
     {
         // TODO would be nice to have a dotnetcore compatible migrator.
-        public static void Initialize(IDbConnection dbConnection)
+        public static void Initialize(IDbWriter db, string @namespace = "main")
         {
+            var dbConnection = db.Connection;
+
             dbConnection.Open();
 
-            if (IterationTableExists(dbConnection))
+            dbConnection.Execute("PRAGMA read_uncommitted = true;");
+
+            if (IterationTableExists(dbConnection, @namespace))
                 return;
 
-            dbConnection.Execute("DROP TABLE IF EXISTS Iteration;");
-            dbConnection.Execute("DROP TABLE IF EXISTS HttpStatusResult;");
+            dbConnection.Execute($"DROP TABLE IF EXISTS {@namespace}.Iteration;");
+            dbConnection.Execute($"DROP TABLE IF EXISTS {@namespace}.HttpStatusResult;");
 
-            dbConnection.Execute(@"
-CREATE TABLE Iteration (
+            dbConnection.Execute($@"
+CREATE TABLE {@namespace}.Iteration (
     Id         INTEGER PRIMARY KEY AUTOINCREMENT,
     UserNumber INTEGER,
     Iteration  INTEGER,
@@ -32,8 +36,8 @@ CREATE TABLE Iteration (
 );
 ");
 
-            dbConnection.Execute(@"
-CREATE TABLE HttpStatusResult (
+            dbConnection.Execute($@"
+CREATE TABLE {@namespace}.HttpStatusResult (
     Id                  INTEGER PRIMARY KEY,
     IterationId         INTEGER,
     Method              VARCHAR,
@@ -45,9 +49,9 @@ CREATE TABLE HttpStatusResult (
 ");
         }
 
-        private static bool IterationTableExists(IDbConnection dbConnection)
+        private static bool IterationTableExists(IDbConnection dbConnection, string ns)
         {
-            return dbConnection.QueryFirstOrDefault<bool>("SELECT 1 FROM sqlite_master WHERE type='table' AND name='Iteration'");
+            return dbConnection.QueryFirstOrDefault<bool>($"SELECT 1 FROM {ns}.sqlite_master WHERE type='table' AND name='Iteration'");
         }
     }
 }
