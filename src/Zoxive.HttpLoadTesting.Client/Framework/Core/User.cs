@@ -44,24 +44,29 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             await Task.WhenAll(initializeEachTest);
         }
 
-        private Task RetryInitialize(ILoadTest test)
+        private async Task RetryInitialize(ILoadTest test)
         {
             var count = 0;
             while (true)
             {
                 try
                 {
-                    return test.Initialize(_loadTestHttpClient);
+                    await test.Initialize(_loadTestHttpClient);
+                    break;
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Initialize User FAILED. for Test {test.Name}");
-                    Console.WriteLine("User will not be added.");
+                    Console.WriteLine($"Initialize User {UserNumber} Failed. for Test {test.Name}");
                     Console.WriteLine(e);
                     count++;
 
                     if (count > 1)
+                    {
+                        Console.WriteLine("User will not be added.");
                         throw;
+                    }
+
+                    Console.WriteLine("Trying again.");
                 }
             }
         }

@@ -133,10 +133,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                         Console.WriteLine($"Added User {userNum}");
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        Console.WriteLine($"Failed initializing User {userNum}");
-                        Console.Write(ex);
+                        Console.WriteLine($"GAVE UP Trying to initialize User {userNum}");
                         return;
                     }
 
