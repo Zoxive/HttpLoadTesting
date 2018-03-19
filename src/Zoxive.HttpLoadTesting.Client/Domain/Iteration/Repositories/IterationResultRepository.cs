@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.Data.Sqlite;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -14,13 +15,13 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
 {
     public class IterationResultRepository : IIterationResultRepository
     {
-        private readonly Microsoft.Data.Sqlite.SqliteConnection _dbConnection;
+        private readonly SqliteConnection _dbConnection;
 
         private readonly object _obj = new object();
 
         public IterationResultRepository(IDbWriter dbConnection)
         {
-            _dbConnection = (Microsoft.Data.Sqlite.SqliteConnection)dbConnection.Connection;
+            _dbConnection = (SqliteConnection)dbConnection.Connection;
         }
 
         public async Task Save(UserIterationResult iterationResult)
@@ -48,7 +49,7 @@ SELECT last_insert_rowid();";
             if (_dbConnection.State != ConnectionState.Open)
                 await _dbConnection.OpenAsync();
 
-            using (MonitorLock.CreateLock(_obj, _dbConnection.ConnectionString))
+            //using (MonitorLock.CreateLock(_obj, _dbConnection.ConnectionString))
             {
                 await RawExecuteAsync("BEGIN TRANSACTION");
                 try
@@ -140,10 +141,14 @@ VALUES
             _l = l;
             _name = name;
 
+            /*
             if (!Monitor.TryEnter(_l, 100))
             {
                 Console.WriteLine($"Lock {_l} attempt by {name} and failed");
             }
+            */
+
+            Monitor.Enter(_l);
         }
 
         public void Dispose()

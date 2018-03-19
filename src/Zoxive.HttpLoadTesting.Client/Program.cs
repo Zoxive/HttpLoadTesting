@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -42,22 +41,10 @@ namespace Zoxive.HttpLoadTesting.Client
                     services.AddSingleton(loadTestExecution);
                     services.AddSingleton(schedules);
                     services.AddSingleton(options);
-
-                    InitializeWithServices(loadTestExecution, services);
                 })
                 .Build();
 
             return host.RunAsync(cancellationToken);
-        }
-
-        private static void InitializeWithServices(ILoadTestExecution loadTestExecution, IServiceCollection services)
-        {
-            var sp = services.BuildServiceProvider();
-            var saveIterationResult = sp.GetRequiredService<IEnumerable<ISaveIterationResult>>();
-            if (loadTestExecution != null)
-            {
-                loadTestExecution.UserIterationFinished += LogIteration(saveIterationResult);
-            }
         }
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
@@ -98,16 +85,7 @@ namespace Zoxive.HttpLoadTesting.Client
             return fileResultRepository;
         }
 
-        private static UserIterationFinished LogIteration(IEnumerable<ISaveIterationResult> iterationResultRepository)
-        {
-            return result =>
-            {
-                foreach (var repository in iterationResultRepository)
-                {
-                    repository.Queue(result);
-                }
-            };
-        }
+        
     }
 
     public class Db : IDbWriter, IDbReader
