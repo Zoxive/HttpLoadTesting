@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.Data.Sqlite;
+using Zoxive.HttpLoadTesting.Client.Domain.Database;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -11,14 +14,14 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
     public class SaveIterationResultBackgroundService : BackgroundService, ISaveIterationResult
     {
         private readonly IIterationResultRepository _iterationResultRepository;
-        private readonly SqliteConnection _readerConnection;
         private readonly string _databaseFile;
         private ConcurrentQueue<UserIterationResult> _queue = new ConcurrentQueue<UserIterationResult>();
+        private readonly SqliteConnection _inmemoryConnection;
 
-        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, SqliteConnection readerConnection, string databaseFile)
+        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, SqliteConnection inmemoryConnection, string databaseFile)
         {
             _iterationResultRepository = iterationResultRepository;
-            _readerConnection = readerConnection;
+            _inmemoryConnection = inmemoryConnection;
             _databaseFile = databaseFile;
         }
 
@@ -49,12 +52,34 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             }
         }
 
-        public override Task StopAsync(CancellationToken cancellationToken)
+        public override async Task StopAsync(CancellationToken cancellationToken)
         {
             // TODO SAVE MEMORY DATABASE to file
             Console.WriteLine("Saving database to file...");
+            
+            var path = Path.Combine(Directory.GetCurrentDirectory(), _databaseFile);
 
-            return base.StopAsync(cancellationToken);
+            // touch file
+            using (File.Create(path))
+            {
+            }
+
+            await _inmemoryConnection.ExecuteAsync($"ATTACH '{path}' AS FILE");
+
+            DbInitializer.Initialize(new Db(_inmemoryConnection), "FILE");
+
+            var r = await _inmemoryConnection.ExecuteAsync("INSERT INTO FILE.Iteration SELECT * FROM main.Iteration");
+            var rr = await _inmemoryConnection.ExecuteAsync("INSERT INTO FILE.HttpStatusResult SELECT * FROM main.HttpStatusResult");
+
+            var t = await _inmemoryConnection.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM File.Iteration");
+
+            //await _inmemoryConnection.ExecuteAsync($"DETACH DATABASE FILE");
+
+            _inmemoryConnection.Dispose();
+
+            Console.WriteLine($"Done saving. {path} {t}");
+
+            await base.StopAsync(cancellationToken);
         }
 
         public override void Dispose()

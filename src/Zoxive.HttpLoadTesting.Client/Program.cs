@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Threading;
@@ -19,7 +20,14 @@ namespace Zoxive.HttpLoadTesting.Client
 {
     public class Program
     {
-        internal static Task StartAsync(ILoadTestExecution loadTestExecution, IHttpStatusResultService httpStatusResultService, CancellationToken cancellationToken, ClientOptions options)
+        internal static Task StartAsync
+        (
+            ILoadTestExecution loadTestExecution,
+            IReadOnlyList<ISchedule> schedules,
+            IHttpStatusResultService httpStatusResultService,
+            CancellationToken cancellationToken,
+            ClientOptions options
+        )
         {
             Console.WriteLine($"Using DatbaseFile: {options.DatabaseFile}");
 
@@ -31,6 +39,10 @@ namespace Zoxive.HttpLoadTesting.Client
                 .ConfigureServices(services =>
                 {
                     ConfigureServices(services, httpStatusResultService, options.DatabaseFile);
+
+                    services.AddSingleton(loadTestExecution);
+                    services.AddSingleton(schedules);
+                    services.AddSingleton(options);
 
                     InitializeWithServices(loadTestExecution, services);
                 })
@@ -53,8 +65,10 @@ namespace Zoxive.HttpLoadTesting.Client
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
         {
-            var writerConnection = new SqliteConnection($"Data Source={databaseFile};mode=memory;cache=shared");
-            var readerConnection = new SqliteConnection($"Data Source={databaseFile};mode=memory;cache=shared");
+            var connectionString = $"Data Source={databaseFile};mode=memory;cache=shared";
+
+            var writerConnection = new SqliteConnection(connectionString);
+            var readerConnection = new SqliteConnection(connectionString);
 
             var dbWriter = new Db(writerConnection);
 
@@ -68,8 +82,9 @@ namespace Zoxive.HttpLoadTesting.Client
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
             services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
-            var backgroundService = new SaveIterationResultBackgroundService(iterationResultRepository, readerConnection, databaseFile);
+            var backgroundService = new SaveIterationResultBackgroundService(iterationResultRepository, writerConnection, databaseFile);
 
+            services.AddSingleton<IHostedService, ExecuteTestsService>();
             services.AddSingleton<IHostedService>(backgroundService);
             services.AddSingleton<ISaveIterationResult>(backgroundService);
 
