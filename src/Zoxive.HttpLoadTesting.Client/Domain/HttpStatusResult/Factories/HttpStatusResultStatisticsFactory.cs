@@ -9,7 +9,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 {
     public class HttpStatusResultStatisticsFactory : IHttpStatusResultStatisticsFactory
     {
-        public HttpStatusResultStatistics Create(Filters filters, IEnumerable<HttpStatusResultDto> requestsResult, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos)
+        public HttpStatusResultStatistics Create(Filters filters, IReadOnlyCollection<HttpStatusResultDto> requestsResult, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos)
         {
             var deviations = filters.Deviations = filters.Deviations ?? 3;
 

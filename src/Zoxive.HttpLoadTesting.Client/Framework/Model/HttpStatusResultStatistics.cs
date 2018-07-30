@@ -19,7 +19,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
             SlowestRequests = slowestRequests;
 
             RequestsOutsideOfDeviations = DurationCount - DurationWithinDeviationsCount;
-            PercentageOutsideOfDeviations = DurationCount == 0? 0 : RequestsOutsideOfDeviations / DurationCount * 100.0;
+            PercentageOutsideOfDeviations = DurationCount == 0? 0 : (float)RequestsOutsideOfDeviations / DurationCount * 100.0;
         }
 
         public Filters Filters { get; }
@@ -28,20 +28,20 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public long RequestsOutsideOfDeviations { get; }
 
-        public double AverageDuration { get; private set; }
+        public double AverageDuration { get; }
 
-        public long DurationCount { get; private set; }
+        public long DurationCount { get; }
 
-        public double StandardDeviation { get; private set; }
+        public double StandardDeviation { get; }
 
-        public double AverageDurationWithinDeviations { get; private set; }
+        public double AverageDurationWithinDeviations { get; }
 
-        public long DurationWithinDeviationsCount { get; private set; }
+        public long DurationWithinDeviationsCount { get; }
 
-        public IEnumerable<HttpStatusCodeCount> StatusCodeCounts { get; private set; }
+        public IEnumerable<HttpStatusCodeCount> StatusCodeCounts { get; }
 
-        public IEnumerable<HttpStatusResult> FastestRequests { get; private set; }
+        public IEnumerable<HttpStatusResult> FastestRequests { get; }
 
-        public IEnumerable<HttpStatusResult> SlowestRequests { get; private set; }
+        public IEnumerable<HttpStatusResult> SlowestRequests { get; }
     }
 }

@@ -54,7 +54,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             await Task.WhenAll(requests, slowestRequests, fastestRequests);
 
-            return _statisticsFactory.Create(filters, requests.Result, slowestRequests.Result, fastestRequests.Result);
+            return _statisticsFactory.Create(filters, requests.Result.AsList(), slowestRequests.Result, fastestRequests.Result);
         }
 
         public async Task<HttpStatusResultDistincts> GetDistincts(Filters filters)
