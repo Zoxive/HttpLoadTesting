@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -48,7 +49,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             if (runAll)
             {
                 runAllStopwatch = new Stopwatch();
-                runAllStopwatch?.Restart();
+                runAllStopwatch.Restart();
             }
 
             var count = _queue.Count;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
@@ -16,8 +15,6 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
     public class IterationResultRepository : IIterationResultRepository
     {
         private readonly SqliteConnection _dbConnection;
-
-        private readonly object _obj = new object();
 
         public IterationResultRepository(IDbWriter dbConnection)
         {
@@ -49,37 +46,34 @@ SELECT last_insert_rowid();";
             if (_dbConnection.State != ConnectionState.Open)
                 await _dbConnection.OpenAsync();
 
-            //using (MonitorLock.CreateLock(_obj, _dbConnection.ConnectionString))
+            await RawExecuteAsync("BEGIN TRANSACTION");
+            try
             {
-                await RawExecuteAsync("BEGIN TRANSACTION");
-                try
+                var cmd = new CommandDefinition(sql, iterationDto);
+
+                var iterationId = await _dbConnection.ExecuteScalarAsync<int>(cmd);
+
+                var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
                 {
-                    var cmd = new CommandDefinition(sql, iterationDto);
+                    IterationId = iterationId,
+                    ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
+                    Method = httpStatusResult.Method,
+                    RequestUrl = httpStatusResult.RequestUrl,
+                    StatusCode = httpStatusResult.StatusCode,
+                    RequestStartTick = httpStatusResult.RequestStartTick
+                });
 
-                    var iterationId = await _dbConnection.ExecuteScalarAsync<int>(cmd);
-
-                    var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
-                    {
-                        IterationId = iterationId,
-                        ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
-                        Method = httpStatusResult.Method,
-                        RequestUrl = httpStatusResult.RequestUrl,
-                        StatusCode = httpStatusResult.StatusCode,
-                        RequestStartTick = httpStatusResult.RequestStartTick
-                    });
-
-                    foreach (var batch in inserts.Batch(100))
-                    {
-                        await InsertHttpStatusResults(batch, batch.Count);
-                    }
-
-                    await RawExecuteAsync("COMMIT TRANSACTION");
-                }
-                catch (Exception)
+                foreach (var batch in inserts.Batch(100))
                 {
-                    await RawExecuteAsync("ROLLBACK TRANSACTION");
-                    throw;
+                    await InsertHttpStatusResults(batch, batch.Count);
                 }
+
+                await RawExecuteAsync("COMMIT TRANSACTION");
+            }
+            catch (Exception)
+            {
+                await RawExecuteAsync("ROLLBACK TRANSACTION");
+                throw;
             }
         }
 
@@ -123,37 +117,6 @@ VALUES
             var cmd = new CommandDefinition(sql, args);
 
             return _dbConnection.ExecuteAsync(cmd);
-        }
-    }
-
-    public class MonitorLock : IDisposable
-    {
-        public static MonitorLock CreateLock(object value, string name)
-        {
-            return new MonitorLock(value, name);
-        }
-
-        private readonly object _l;
-        private readonly string _name;
-
-        protected MonitorLock(object l, string name)
-        {
-            _l = l;
-            _name = name;
-
-            /*
-            if (!Monitor.TryEnter(_l, 100))
-            {
-                Console.WriteLine($"Lock {_l} attempt by {name} and failed");
-            }
-            */
-
-            Monitor.Enter(_l);
-        }
-
-        public void Dispose()
-        {
-            Monitor.Exit(_l);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         /// </summary> 
         /// <param name="assembly"></param> 
         public DirectoryFriendlyEmbeddedFileProvider(Assembly assembly)
-            : this(assembly, assembly?.GetName()?.Name)
+            : this(assembly, assembly?.GetName().Name)
         {
         }
 

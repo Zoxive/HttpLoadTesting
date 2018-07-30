@@ -22,9 +22,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
         public async Task<IEnumerable<GraphStatDto>> Get(Filters filters)
         {
             if (!filters.Period.HasValue)
-                throw new ArgumentNullException("Filter.Period must have a value");
+                throw new ArgumentNullException(nameof(filters), "Filter.Period must have a value");
             if (!filters.Frequency.HasValue)
-                throw new ArgumentNullException("Filter.Frequence must have a value");
+                throw new ArgumentNullException(nameof(filters), "Filter.Frequence must have a value");
 
             var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
 
@@ -70,9 +70,9 @@ order by Minute
         public async Task<IEnumerable<StatusCodeStatDto>> GetStatusCodes(Filters filters)
         {
             if (!filters.Period.HasValue)
-                throw new ArgumentNullException("Filter.Period must have a value");
+                throw new ArgumentNullException(nameof(filters), "Filter.Period must have a value");
             if (!filters.Frequency.HasValue)
-                throw new ArgumentNullException("Filter.Frequence must have a value");
+                throw new ArgumentNullException(nameof(filters), "Filter.Frequence must have a value");
 
             var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
 

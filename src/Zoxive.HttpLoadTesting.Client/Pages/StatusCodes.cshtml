@@ -52,7 +52,7 @@ var chartColors = {
 var data =
 {
     labels: [],
-    datasets: [],
+    datasets: []
 };
 
 @{
@@ -64,7 +64,10 @@ var data =
         countsByStatusCode.Add(statusCode, new List<int>());
     }
 
-    var minuteGroups = Model.GraphStatus.GroupBy(x => x.Minute, x => (x.StatusCode, x.Requests)).OrderBy(x => x.Key);
+    var minuteGroups = Model.GraphStatus
+        .GroupBy(x => x.Minute, x => (x.StatusCode, x.Requests))
+        .OrderBy(x => x.Key)
+        .ToList();
     foreach (var group in minuteGroups)
     {
         foreach (var statusCodeRequests in group)
@@ -72,7 +75,7 @@ var data =
             countsByStatusCode[statusCodeRequests.Item1].Add(statusCodeRequests.Item2);
         }
 
-        var statusCodesInThisMinute = group.Select(x => x.Item1);
+        var statusCodesInThisMinute = new HashSet<int>(group.Select(x => x.Item1));
         foreach (var statusCode in countsByStatusCode.Keys)
         {
             if (statusCodesInThisMinute.Contains(statusCode))
@@ -168,12 +171,12 @@ var options = {
         tooltips: {
             position: "nearest",
             mode: 'index',
-            intersect: false,
+            intersect: false
         },
         hover: {
             mode: 'nearest',
             intersect: true
-        },
+        }
     }
 };
 

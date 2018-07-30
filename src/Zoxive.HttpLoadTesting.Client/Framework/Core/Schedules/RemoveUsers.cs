@@ -44,7 +44,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Core.Schedules
 
                 return new ScheduleResult(false, -UsersEvery);
             }
-            else if(shouldRemoveUsers && !enoughTimeHasElapsed)
+
+            if(shouldRemoveUsers)
             {
                 return new ScheduleResult(false);
             }
