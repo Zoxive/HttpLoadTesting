@@ -1,44 +1,34 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Framework
 {
-    public class SaveIterationResultBackgroundService : BackgroundService, ISaveIterationResult
+    public class SaveIterationResultBackgroundService : BackgroundService
     {
         private readonly IIterationResultRepository _iterationResultRepository;
+        private ISaveIterationQueue _queue;
+        private readonly ILogger<SaveIterationResultBackgroundService> _logger;
         private readonly string _name;
-        private ConcurrentQueue<UserIterationResult> _queue = new ConcurrentQueue<UserIterationResult>();
 
-        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, string name)
+        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, ISaveIterationQueue queue, ILogger<SaveIterationResultBackgroundService> logger, string name)
         {
             _iterationResultRepository = iterationResultRepository;
+            _queue = queue;
+            _logger = logger;
             _name = name;
-        }
-
-        public void Queue(UserIterationResult result)
-        {
-            _queue.Enqueue(result);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var count = _queue.Count;
-                if (count == 0)
-                {
-                    await Task.Delay(100, stoppingToken);
-                }
-                else
-                {
-                    await SaveFromQueue(stoppingToken);
-                }
+                await SaveFromQueue(stoppingToken);
             }
         }
 
@@ -58,7 +48,8 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                 if (stoppingToken.IsCancellationRequested)
                     return;
 
-                if (_queue.TryDequeue(out var result))
+                var result = await _queue.DequeueAsync(stoppingToken);
+                if (result != null)
                 {
                     try
                     {
@@ -66,13 +57,14 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"{_name} - {e.Message}");
+                        _logger.LogError(e, $"Failed {nameof(SaveFromQueue)} {{Name}}", _name);
                     }
 
                     if (runAll && runAllStopwatch.ElapsedMilliseconds > 1000)
                     {
                         runAllStopwatch.Restart();
-                        Console.WriteLine($"{_queue.Count} remaining..");
+
+                        _logger.LogInformation("QueueCount Remaining {{QueueCount}}", _queue.Count);
                     }
                 }
             }
@@ -84,14 +76,16 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         {
             await base.StopAsync(cancellationToken);
 
+            _logger.LogDebug("Attemping to stop {Name}", _name);
+
             // Make sure we insert the remaining things
             if (_queue.Count > 0)
             {
-                Console.WriteLine($"There are still items in queue {_name} {_queue.Count}");
+                _logger.LogInformation("There are still items in queue {Name} {QueueCount}", _name, _queue.Count);
 
                 await SaveFromQueue(default(CancellationToken), runAll: true);
 
-                Console.WriteLine("Done.");
+                _logger.LogInformation("Done");
             }
         }
 
@@ -102,8 +96,5 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         }
     }
 
-    public interface ISaveIterationResult
-    {
-        void Queue(UserIterationResult result);
-    }
+   
 }
