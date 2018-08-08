@@ -54,6 +54,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                     catch (Exception e)
                     {
                         Console.WriteLine($"Failed {nameof(SaveFromQueue)} {_name}");
+                        Console.WriteLine(e);
                     }
 
                     if (runAll && runAllStopwatch.ElapsedMilliseconds > 1000)
