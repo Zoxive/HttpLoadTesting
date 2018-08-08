@@ -4,17 +4,26 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
+using Zoxive.HttpLoadTesting.Client.Framework.Core;
 
 namespace Zoxive.HttpLoadTesting.Client.Framework
 {
     public class SaveIterationResultBackgroundService : BackgroundService
     {
+        private readonly ISimpleTransaction _transaction;
         private readonly IIterationResultRepository _iterationResultRepository;
         private ISaveIterationQueue _queue;
         private readonly string _name;
 
-        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, ISaveIterationQueue queue, string name)
+        public SaveIterationResultBackgroundService
+        (
+            ISimpleTransaction transaction,
+            IIterationResultRepository iterationResultRepository,
+            ISaveIterationQueue queue,
+            string name
+        )
         {
+            _transaction = transaction;
             _iterationResultRepository = iterationResultRepository;
             _queue = queue;
             _name = name;
@@ -22,51 +31,65 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            await Execute(stoppingToken);
+        }
+
+        private async Task Execute(CancellationToken stoppingToken, bool runAll = false)
+        {
+            var tick = ValueStopwatch.StartNew();
+
+            await _transaction.OpenConnection();
+
+            var inserted = 0;
             while (!stoppingToken.IsCancellationRequested)
             {
-                await SaveFromQueue(stoppingToken);
+                if (runAll && _queue.Count == 0)
+                {
+                    return;
+                }
+
+                inserted += await SaveFromQueue(stoppingToken);
+
+                var timeElapsed = tick.GetElapsedTime().TotalSeconds > 1;
+                if (timeElapsed)
+                {
+                    tick = ValueStopwatch.StartNew();
+
+                    Console.WriteLine($"QueueSize: {_queue.Count}. Inserted {inserted}");
+
+                    inserted = 0;
+                }
             }
         }
 
-        private async Task SaveFromQueue(CancellationToken stoppingToken, bool runAll = false)
+        private async ValueTask<int> SaveFromQueue(CancellationToken stoppingToken)
         {
+            if (stoppingToken.IsCancellationRequested)
+                return 0;
 
-            Stopwatch runAllStopwatch = null;
-            if (runAll)
+            var result = await _queue.DequeueAsync(stoppingToken, 1500);
+            if (result == null) return 0;
+
+            await _transaction.Begin();
+
+            var i = 0;
+            foreach (var item in result)
             {
-                runAllStopwatch = new Stopwatch();
-                runAllStopwatch.Restart();
-            }
-
-            var count = _queue.Count;
-            for (var i = 0; i < count; i++)
-            {
-                if (stoppingToken.IsCancellationRequested)
-                    return;
-
-                var result = await _queue.DequeueAsync(stoppingToken);
-                if (result != null)
+                try
                 {
-                    try
-                    {
-                        await _iterationResultRepository.Save(result);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"Failed {nameof(SaveFromQueue)} {_name}");
-                        Console.WriteLine(e);
-                    }
-
-                    if (runAll && runAllStopwatch.ElapsedMilliseconds > 1000)
-                    {
-                        runAllStopwatch.Restart();
-
-                        Console.WriteLine($"QueueCount Remaining {_queue.Count}");
-                    }
+                    await _iterationResultRepository.Save(item);
+                    i++;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed {nameof(SaveFromQueue)} {_name}");
+                    Console.WriteLine(e);
                 }
             }
 
-            runAllStopwatch?.Stop();
+            await _transaction.Commit();
+
+            return i;
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
@@ -80,7 +103,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             {
                 Console.WriteLine($"There are still items in queue {_name} {_queue.Count}");
 
-                await SaveFromQueue(default(CancellationToken), runAll: true);
+                await Execute(default(CancellationToken), runAll: true);
 
                 Console.WriteLine("Done.");
             }

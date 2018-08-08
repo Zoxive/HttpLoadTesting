@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Zoxive.HttpLoadTesting.Client.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Http;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -14,7 +15,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         private readonly IReadOnlyList<ILoadTest> _loadTests;
         private readonly IHttpUser _httpUser;
         private readonly CancellationTokenSource _cancellationToken;
-        private readonly Stopwatch _userTime;
         private readonly LoadTestHttpClient _loadTestHttpClient;
 
         public int Iteration { get; private set; }
@@ -31,7 +31,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             _loadTestHttpClient = new LoadTestHttpClient(httpUser, _cancellationToken.Token);
 
-            _userTime = new Stopwatch();
             Iteration = 0;
         }
 
@@ -71,7 +70,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }
         }
 
-        public async Task Run(Action<UserIterationResult> iterationResult)
+        public async Task Run(Func<TimeSpan> getCurrentTimeSpan, Action<UserIterationResult> iterationResult)
         {
             // Stop Executing
             if (_cancellationToken.IsCancellationRequested)
@@ -79,9 +78,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             var nextTest = GetNextTest(++Iteration);
 
-            var userSpecificClient = _loadTestHttpClient.GetClientForUser();
+            var userSpecificClient = _loadTestHttpClient.GetClientForUser(getCurrentTimeSpan);
 
-            var task = ExecuteTest(nextTest, userSpecificClient);
+            var task = ExecuteTest(nextTest, userSpecificClient, getCurrentTimeSpan);
 
             await task.ContinueWith((task1, o) => 
             {
@@ -89,14 +88,14 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                 userSpecificClient.Dispose();
 
-                return Run(iterationResult);
+                return Run(getCurrentTimeSpan, iterationResult);
             }, null, _cancellationToken.Token);
         }
 
-        private async Task<UserIterationResult> ExecuteTest(ILoadTest nextTest, IUserLoadTestHttpClient userLoadClient)
+        private async Task<UserIterationResult> ExecuteTest(ILoadTest nextTest, IUserLoadTestHttpClient userLoadClient, Func<TimeSpan> getCurrentTimeSpan)
         {
-            _userTime.Restart();
-            var startTick = Stopwatch.GetTimestamp();
+            var userTime = ValueStopwatch.StartNew();
+            var startedTime = getCurrentTimeSpan();
 
             Exception exception = null;
 
@@ -109,12 +108,10 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                 exception = ex;
             }
 
-            _userTime.Stop();
-
-            var endTick = startTick + _userTime.ElapsedTicks;
+            var elapsedTime = userTime.GetElapsedTime();
 
             var statusResults = userLoadClient.StatusResults();
-            return new UserIterationResult(_httpUser.BaseUrl, UserNumber, _userTime.Elapsed, Iteration, nextTest.Name, statusResults, startTick, endTick, userLoadClient.UserDelay, exception?.ToString());
+            return new UserIterationResult(_httpUser.BaseUrl, UserNumber, elapsedTime, Iteration, nextTest.Name, statusResults, startedTime, userLoadClient.UserDelay, exception?.ToString());
         }
 
         public void Stop()

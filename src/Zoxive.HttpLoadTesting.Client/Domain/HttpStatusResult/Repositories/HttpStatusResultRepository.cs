@@ -99,7 +99,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += whereClause;
 
-            sql += string.Format(" ORDER BY ElapsedMilliseconds DESC LIMIT {0}", filters.Count);
+            sql += $" ORDER BY ElapsedMilliseconds DESC LIMIT {filters.Count}";
 
             return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
@@ -112,7 +112,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += whereClause;
 
-            sql += string.Format(" ORDER BY ElapsedMilliseconds ASC LIMIT {0}", filters.Count);
+            sql += $" ORDER BY ElapsedMilliseconds ASC LIMIT {filters.Count}";
 
             return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }

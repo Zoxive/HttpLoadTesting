@@ -48,13 +48,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\GraphStats\Models\" />
     <Folder Include="wwwroot\css\" />
   </ItemGroup>
   
   <ItemGroup>
     <EmbeddedResource Include="Pages\**\*.cshtml" />
     <EmbeddedResource Include="wwwroot\css\*.css" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Domain\GraphStats\Models\**" />
+    <EmbeddedResource Remove="Domain\GraphStats\Models\**" />
+    <None Remove="Domain\GraphStats\Models\**" />
   </ItemGroup>
   
   <ItemGroup>

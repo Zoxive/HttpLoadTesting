@@ -42,14 +42,13 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
             
         }
 
-        protected Filters(string method, string requestUrl, int? deviations, int? statusCode, decimal? period, long? frequency)
+        protected Filters(string method, string requestUrl, int? deviations, int? statusCode, decimal? period)
         {
             Method = method;
             RequestUrl = requestUrl;
             Deviations = deviations;
             StatusCode = statusCode;
             Period = period;
-            Frequency = frequency;
         }
 
         public string Method { get; set; }
@@ -62,21 +61,19 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 
         public decimal? Period { get; set; }
 
-        public long? Frequency { get; set; }
-
         public Filters NullMethod()
         {
-            return new Filters(null, RequestUrl, Deviations, StatusCode, Period, Frequency);
+            return new Filters(null, RequestUrl, Deviations, StatusCode, Period);
         }
 
         public Filters NullRequestUrl()
         {
-            return new Filters(Method, null, Deviations, StatusCode, Period, Frequency);
+            return new Filters(Method, null, Deviations, StatusCode, Period);
         }
 
         public Filters NullStatusCodeUrl()
         {
-            return new Filters(Method, RequestUrl, Deviations, null, Period, Frequency);
+            return new Filters(Method, RequestUrl, Deviations, null, Period);
         }
     }
 }

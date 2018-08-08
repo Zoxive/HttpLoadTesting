@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +23,6 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
         public async Task OnGetAsync([FromQuery] Filters filters)
         {
             filters.Period = filters.Period ?? 1m;
-            filters.Frequency = filters.Frequency ?? Stopwatch.Frequency;
 
             var graphStatus = _graphStatsService.GetStatusCodes(filters);
             var distincts = _httpStatusResultRepository.GetDistincts(filters);

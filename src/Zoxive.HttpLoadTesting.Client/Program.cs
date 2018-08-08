@@ -84,32 +84,39 @@ namespace Zoxive.HttpLoadTesting.Client
             services.AddSingleton<IDbReader>(new Db(readerConnection));
 
             services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
-            services.AddSingleton<IIterationResultRepository>(CreateIterationResultRepository(databaseFile));
+            services.AddSingleton<IIterationResultRepository>(CreateIterationResultRepository(databaseFile, out var dbWriter));
+
+            services.AddSingleton<IDbWriter>(dbWriter);
+
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
             services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
             services.AddSingleton<IHostedService, ExecuteTestsService>();
 
+            services.AddSingleton<ISimpleTransaction, SimpleTransaction>();
+
             services.AddSingleton<ISaveIterationQueue, SaveIterationQueueQueue>();
             services.AddSingleton<IHostedService, SaveIterationResultBackgroundService>(ioc =>
             {
+                var transaction = ioc.GetRequiredService<ISimpleTransaction>();
                 var repo = ioc.GetRequiredService<IIterationResultRepository>();
                 var queue = ioc.GetRequiredService<ISaveIterationQueue>();
-                return new SaveIterationResultBackgroundService(repo, queue, "File");
+                return new SaveIterationResultBackgroundService(transaction, repo, queue, "File");
             });
 
             Domain.GraphStats.ConfigureGraphStats.ConfigureServices(services);
         }
 
-        public static IterationResultRepository CreateIterationResultRepository(string databaseFile)
+        public static IterationResultRepository CreateIterationResultRepository(string databaseFile, out IDbWriter fileDb)
         {
             var connection = new SqliteConnection($"Data Source={databaseFile};cache=shared");
-            var fileDb = new Db(connection);
+            fileDb = new Db(connection);
 
             var fileResultRepository = new IterationResultRepository(fileDb);
             DbInitializer.Initialize(fileDb);
 
-            connection.Execute("PRAGMA synchronous = OFF;");
+            // Looks like we dont really need this
+            //connection.Execute("PRAGMA synchronous = OFF;");
             connection.Execute("PRAGMA journal_mode = MEMORY;");
 
             return fileResultRepository;

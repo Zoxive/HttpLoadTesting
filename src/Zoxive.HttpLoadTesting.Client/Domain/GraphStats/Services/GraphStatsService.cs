@@ -23,19 +23,10 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
         {
             if (!filters.Period.HasValue)
                 throw new ArgumentNullException(nameof(filters), "Filter.Period must have a value");
-            if (!filters.Frequency.HasValue)
-                throw new ArgumentNullException(nameof(filters), "Filter.Frequence must have a value");
 
             var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
 
-            var frequency = filters.Frequency;
-
             var httpStatusWhere = _httpStatusRepository.CreateWhereClause(filters, out var sqlParams);
-
-            var min = await _connection.QueryFirstAsync<long>($@"
-SELECT
-MIN(RequestStartTick) as Min
-FROM HttpStatusResult");
 
             var sql = $@"
 SELECT 
@@ -50,8 +41,7 @@ SUM(ElapsedMilliseconds * ElapsedMilliseconds) / COUNT(Id) - AVG(ElapsedMillisec
 FROM
 (
     SELECT *,
-    (RequestStartTick - {min}) / ({frequency} / 1000) AS MsFromStart,
-    ((RequestStartTick - {min}) / ({frequency} / 1000)) / {minuteMilliseconds} as Minute,
+    CAST(RequestStartedMs / {minuteMilliseconds} as int64) as Minute,
     UserNumber
     FROM HttpStatusResult
     INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
@@ -71,19 +61,10 @@ order by Minute
         {
             if (!filters.Period.HasValue)
                 throw new ArgumentNullException(nameof(filters), "Filter.Period must have a value");
-            if (!filters.Frequency.HasValue)
-                throw new ArgumentNullException(nameof(filters), "Filter.Frequence must have a value");
 
             var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
 
-            var frequency = filters.Frequency;
-
             var httpStatusWhere = _httpStatusRepository.CreateWhereClause(filters, out var sqlParams);
-
-            var min = await _connection.QueryFirstAsync<long>($@"
-SELECT
-MIN(RequestStartTick) as Min
-FROM HttpStatusResult");
 
             var sql = $@"
 SELECT 
@@ -94,8 +75,7 @@ StatusCode as StatusCode
 FROM
 (
     SELECT *,
-    (RequestStartTick - {min}) / ({frequency} / 1000) AS MsFromStart,
-    ((RequestStartTick - {min}) / ({frequency} / 1000)) / {minuteMilliseconds} as Minute,
+    CAST(RequestStartedMs / {minuteMilliseconds} as int64) as Minute,
     UserNumber
     FROM HttpStatusResult
     INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId

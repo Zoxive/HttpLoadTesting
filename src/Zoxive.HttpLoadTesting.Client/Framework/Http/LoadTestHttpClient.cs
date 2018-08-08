@@ -81,9 +81,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
             return HttpClient.SendAsync(request, cancellationToken: _token);
         }
 
-        public IUserLoadTestHttpClient GetClientForUser()
+        public IUserLoadTestHttpClient GetClientForUser(Func<TimeSpan> getCurrentTimeSpan)
         {
-            return new UserLoadTestHttpClient(this, TestState);
+            return new UserLoadTestHttpClient(this, TestState, getCurrentTimeSpan);
         }
 
         private Uri GetUrl(string relativePath)

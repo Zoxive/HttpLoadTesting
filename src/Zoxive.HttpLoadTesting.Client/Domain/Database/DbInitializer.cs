@@ -25,13 +25,12 @@ CREATE TABLE {@namespace}.Iteration (
     Id         INTEGER PRIMARY KEY AUTOINCREMENT,
     UserNumber INTEGER,
     Iteration  INTEGER,
-    StartTick  BIGINT,
-    EndTick    BIGINT,
     UserDelay  BIGINT,
     Exception  VARCHAR,
     DidError   BOOLEAN,
     BaseUrl    VARCHAR,
-    Elapsed    BIGINT,
+    ElapsedMs  REAL,
+    StartedMs  REAL,
     TestName   VARCHAR
 );
 ");
@@ -44,7 +43,7 @@ CREATE TABLE {@namespace}.HttpStatusResult (
     ElapsedMilliseconds REAL, 
     RequestUrl          VARCHAR,
     StatusCode          INTEGER,
-    RequestStartTick    BIGINT
+    RequestStartedMs    REAL
 );
 ");
         }
