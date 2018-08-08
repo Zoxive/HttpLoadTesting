@@ -83,23 +83,25 @@ namespace Zoxive.HttpLoadTesting.Client
 
             services.AddSingleton<IDbReader>(new Db(readerConnection));
 
-            var iterationResultRepository = CreateFileRepository(databaseFile);
-
             services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
-            services.AddSingleton<IIterationResultRepository>(iterationResultRepository);
+            services.AddSingleton<IIterationResultRepository>(CreateIterationResultRepository(databaseFile));
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
             services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
             services.AddSingleton<IHostedService, ExecuteTestsService>();
 
-            var inMemorySave = new SaveIterationResultBackgroundService(iterationResultRepository, "File");
-            services.AddSingleton<ISaveIterationResult>(inMemorySave);
-            services.AddSingleton<IHostedService>(inMemorySave);
+            services.AddSingleton<ISaveIterationQueue, SaveIterationQueueQueue>();
+            services.AddSingleton<IHostedService, SaveIterationResultBackgroundService>(ioc =>
+            {
+                var repo = ioc.GetRequiredService<IIterationResultRepository>();
+                var queue = ioc.GetRequiredService<ISaveIterationQueue>();
+                return new SaveIterationResultBackgroundService(repo, queue, "File");
+            });
 
             Domain.GraphStats.ConfigureGraphStats.ConfigureServices(services);
         }
 
-        public static IterationResultRepository CreateFileRepository(string databaseFile)
+        public static IterationResultRepository CreateIterationResultRepository(string databaseFile)
         {
             var connection = new SqliteConnection($"Data Source={databaseFile};cache=shared");
             var fileDb = new Db(connection);
@@ -112,8 +114,6 @@ namespace Zoxive.HttpLoadTesting.Client
 
             return fileResultRepository;
         }
-
-        
     }
 
     public class CancelTokenReference : ICancelTokenReference
