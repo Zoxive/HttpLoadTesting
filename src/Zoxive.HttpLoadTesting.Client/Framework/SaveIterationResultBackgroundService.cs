@@ -1,44 +1,30 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
-using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Framework
 {
-    public class SaveIterationResultBackgroundService : BackgroundService, ISaveIterationResult
+    public class SaveIterationResultBackgroundService : BackgroundService
     {
         private readonly IIterationResultRepository _iterationResultRepository;
+        private ISaveIterationQueue _queue;
         private readonly string _name;
-        private ConcurrentQueue<UserIterationResult> _queue = new ConcurrentQueue<UserIterationResult>();
 
-        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, string name)
+        public SaveIterationResultBackgroundService(IIterationResultRepository iterationResultRepository, ISaveIterationQueue queue, string name)
         {
             _iterationResultRepository = iterationResultRepository;
+            _queue = queue;
             _name = name;
-        }
-
-        public void Queue(UserIterationResult result)
-        {
-            _queue.Enqueue(result);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var count = _queue.Count;
-                if (count == 0)
-                {
-                    await Task.Delay(100, stoppingToken);
-                }
-                else
-                {
-                    await SaveFromQueue(stoppingToken);
-                }
+                await SaveFromQueue(stoppingToken);
             }
         }
 
@@ -58,7 +44,8 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                 if (stoppingToken.IsCancellationRequested)
                     return;
 
-                if (_queue.TryDequeue(out var result))
+                var result = await _queue.DequeueAsync(stoppingToken);
+                if (result != null)
                 {
                     try
                     {
@@ -66,13 +53,15 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine($"{_name} - {e.Message}");
+                        Console.WriteLine($"Failed {nameof(SaveFromQueue)} {_name}");
+                        Console.WriteLine(e);
                     }
 
                     if (runAll && runAllStopwatch.ElapsedMilliseconds > 1000)
                     {
                         runAllStopwatch.Restart();
-                        Console.WriteLine($"{_queue.Count} remaining..");
+
+                        Console.WriteLine($"QueueCount Remaining {_queue.Count}");
                     }
                 }
             }
@@ -83,6 +72,8 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             await base.StopAsync(cancellationToken);
+
+            Console.WriteLine($"Attemping to stop {_name}");
 
             // Make sure we insert the remaining things
             if (_queue.Count > 0)
@@ -102,8 +93,5 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         }
     }
 
-    public interface ISaveIterationResult
-    {
-        void Queue(UserIterationResult result);
-    }
+   
 }
