@@ -1,12 +1,13 @@
-﻿using System.Data;
+﻿using System;
 using Dapper;
+using DbUp;
+using Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.Database
 {
     public static class DbInitializer
     {
-        // TODO would be nice to have a dotnetcore compatible migrator.
-        public static void Initialize(IDbWriter db, string @namespace = "main")
+        public static void Initialize(IDbWriter db)
         {
             var dbConnection = db.Connection;
 
@@ -14,43 +15,22 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
 
             dbConnection.Execute("PRAGMA read_uncommitted = true;");
 
-            if (IterationTableExists(dbConnection, @namespace))
-                return;
+            var migrator = DeployChanges.To
+                .SQLiteDatabase(db.Connection.ConnectionString)
+                .WithScriptsAndCodeEmbeddedInAssembly(typeof(Patch1).Assembly, s => s.StartsWith("Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations"))
+                .LogToConsole()
+                .Build();
 
-            dbConnection.Execute($"DROP TABLE IF EXISTS {@namespace}.Iteration;");
-            dbConnection.Execute($"DROP TABLE IF EXISTS {@namespace}.HttpStatusResult;");
+            var result = migrator.PerformUpgrade();
 
-            dbConnection.Execute($@"
-CREATE TABLE {@namespace}.Iteration (
-    Id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    UserNumber INTEGER,
-    Iteration  INTEGER,
-    UserDelay  BIGINT,
-    Exception  VARCHAR,
-    DidError   BOOLEAN,
-    BaseUrl    VARCHAR,
-    ElapsedMs  REAL,
-    StartedMs  REAL,
-    TestName   VARCHAR
-);
-");
+            if (!result.Successful)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(result.Error);
+                Console.ResetColor();
 
-            dbConnection.Execute($@"
-CREATE TABLE {@namespace}.HttpStatusResult (
-    Id                  INTEGER PRIMARY KEY,
-    IterationId         INTEGER,
-    Method              VARCHAR,
-    ElapsedMilliseconds REAL, 
-    RequestUrl          VARCHAR,
-    StatusCode          INTEGER,
-    RequestStartedMs    REAL
-);
-");
-        }
-
-        private static bool IterationTableExists(IDbConnection dbConnection, string ns)
-        {
-            return dbConnection.QueryFirstOrDefault<bool>($"SELECT 1 FROM {ns}.sqlite_master WHERE type='table' AND name='Iteration'");
+                throw new Exception("Migration Failed");
+            }
         }
     }
 }
