@@ -16,7 +16,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations
             {
                 if (!Frequency.HasValue)
                 {
-                    throw new Exception("Cant migrate sqlite database to new schema. Please enter the Frequency");
+                    throw new Exception("Please add --frequency to migrate this older database");
                 }
 
                 MigrateToNewSchema(Frequency, dbCommandFactory);
@@ -80,7 +80,6 @@ CREATE TABLE main.HttpStatusResult (
 
         private static (bool isOld, bool tableExists) Get(Func<IDbCommand> cmdFactory)
         {
-            var isOld = false;
             var tableExists = false;
 
             using (var cmd = cmdFactory())
@@ -89,25 +88,26 @@ CREATE TABLE main.HttpStatusResult (
 
                 using (var reader = cmd.ExecuteReader())
                 {
-                    var i = 0;
                     while (reader.Read())
                     {
                         tableExists = true;
-
-                        var field = reader.GetName(i);
-
-                        if (field == "Elapsed")
+                        for (var i = 0; i < reader.FieldCount; i++)
                         {
-                            isOld = true;
-                            break;
+                            var field = reader.GetName(i);
+                            if (field == "name")
+                            {
+                                var value = reader.GetString(i);
+                                if (value == "Elapsed")
+                                {
+                                    return (true, true);
+                                }
+                            }
                         }
-
-                        i++;
                     }
                 }
             }
 
-            return (isOld, tableExists);
+            return (false, tableExists);
         }
     }
 }
