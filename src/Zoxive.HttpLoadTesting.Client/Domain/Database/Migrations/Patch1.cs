@@ -104,7 +104,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations
             INSERT INTO Iterationac0e(Id, UserNumber, Iteration, UserDelay, Exception, DidError, BaseUrl, TestName, ElapsedMs, StartedMs) SELECT Id, UserNumber, Iteration, UserDelay, Exception, DidError, BaseUrl, TestName, ElapsedMs, StartedMs FROM Iteration;
             DROP TABLE Iteration;
             ALTER TABLE Iterationac0e RENAME TO Iteration;
-        ", dbCommandFactory);
+            ", dbCommandFactory);
+
+            ExecuteSql("VACUUM", dbCommandFactory);
         }
 
         private void CreateNewSchema(Func<IDbCommand> dbCommandFactory)
