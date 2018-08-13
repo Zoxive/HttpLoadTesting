@@ -15,10 +15,6 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos
 
         public int Iteration { get; set; }
 
-        public long StartTick { get; set; }
-
-        public long EndTick { get; set; }
-
         public long UserDelay { get; set; }
 
         public string Exception { get; set; }
@@ -27,7 +23,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos
 
         public string BaseUrl { get; set; }
 
-        public long Elapsed { get; set; }
+        public double StartedMs { get; set; }
+
+        public double ElapsedMs { get; set; }
 
         public string TestName { get; set; }
     }

@@ -24,7 +24,6 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
         public async Task OnGetAsync([FromQuery] Filters filters)
         {
             filters.Period = filters.Period ?? 1m;
-            filters.Frequency = filters.Frequency ?? Stopwatch.Frequency;
 
             var graphStatus = _graphStatsService.Get(filters);
             var distincts = _httpStatusResultRepository.GetDistincts(filters);

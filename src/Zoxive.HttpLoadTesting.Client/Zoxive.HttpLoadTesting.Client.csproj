@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="1.50.5" />
+    <PackageReference Include="dbup-sqlite" Version="4.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="2.1.1" />
@@ -48,13 +49,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\GraphStats\Models\" />
     <Folder Include="wwwroot\css\" />
   </ItemGroup>
   
   <ItemGroup>
     <EmbeddedResource Include="Pages\**\*.cshtml" />
     <EmbeddedResource Include="wwwroot\css\*.css" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="Domain\GraphStats\Models\**" />
+    <EmbeddedResource Remove="Domain\GraphStats\Models\**" />
+    <None Remove="Domain\GraphStats\Models\**" />
   </ItemGroup>
   
   <ItemGroup>

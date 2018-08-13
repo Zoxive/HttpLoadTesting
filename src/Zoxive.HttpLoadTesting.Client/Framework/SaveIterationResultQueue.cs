@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -19,13 +20,18 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         public int Count => _queue.Count;
 
-        public async Task<UserIterationResult> DequeueAsync(CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<UserIterationResult>> DequeueAsync(CancellationToken cancellationToken, int maxCount)
         {
             await _signal.WaitAsync(cancellationToken);
 
-            _queue.TryDequeue(out var item);
+            var i = 0;
+            var list = new List<UserIterationResult>(maxCount);
+            while (_queue.TryDequeue(out var item) && i++ < maxCount)
+            {
+                list.Add(item);
+            }
 
-            return item;
+            return list;
         }
     }
 
@@ -35,6 +41,6 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         int Count { get; }
 
-        Task<UserIterationResult> DequeueAsync(CancellationToken cancellationToken);
+        Task<IReadOnlyList<UserIterationResult>> DequeueAsync(CancellationToken cancellationToken, int maxCount);
     }
 }

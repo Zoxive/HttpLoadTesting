@@ -5,23 +5,23 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 {
     public class HttpStatusResult
     {
-        public HttpStatusResult(HttpResponseMessage result, double elapsedMilliseconds, long requestStartTick)
+        public HttpStatusResult(HttpResponseMessage result, double elapsedMilliseconds, double requestStartMilliseconds)
         {
             ElapsedMilliseconds = elapsedMilliseconds;
             StatusCode = result.StatusCode;
             RequestUrl = result.RequestMessage.RequestUri.ToString();
             Method = result.RequestMessage.Method.Method;
-            RequestStartTick = requestStartTick;
+            RequestStartedMs = requestStartMilliseconds;
         }
 
-        public HttpStatusResult(long id, string method, double elapsedMilliseconds, string requestUrl, HttpStatusCode statusCode, long requestStartTick)
+        public HttpStatusResult(long id, string method, double elapsedMilliseconds, string requestUrl, HttpStatusCode statusCode, double requestStartMilliseconds)
         {
             Id = id;
             Method = method;
             ElapsedMilliseconds = elapsedMilliseconds;
             RequestUrl = requestUrl;
             StatusCode = statusCode;
-            RequestStartTick = requestStartTick;
+            RequestStartedMs = requestStartMilliseconds;
         }
 
         public long Id { get; }
@@ -34,6 +34,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public HttpStatusCode StatusCode { get; }
 
-        public long RequestStartTick { get; }
+        public double RequestStartedMs { get; }
     }
 }

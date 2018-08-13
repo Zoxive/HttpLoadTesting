@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Dapper;
-using Microsoft.Data.Sqlite;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -14,13 +12,23 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
 {
     public class IterationResultRepository : IIterationResultRepository
     {
-        private readonly SqliteConnection _dbConnection;
+        private readonly DbConnection _dbConnection;
 
         public IterationResultRepository(IDbWriter dbConnection)
         {
-            _dbConnection = (SqliteConnection)dbConnection.Connection;
+            _dbConnection = (DbConnection)dbConnection.Connection;
         }
 
+        private DbCommand _insertIteration;
+        private DbParameter _iteration;
+        private DbParameter _baseUrl;
+        private DbParameter _didError;
+        private DbParameter _elapsedMs;
+        private DbParameter _startedMs;
+        private DbParameter _exception;
+        private DbParameter _testName;
+        private DbParameter _userNumber;
+        private DbParameter _userDelay;
         public async Task Save(UserIterationResult iterationResult)
         {
             var iterationDto = new IterationDto
@@ -28,9 +36,8 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
                 Iteration = iterationResult.Iteration,
                 BaseUrl = iterationResult.BaseUrl,
                 DidError = iterationResult.DidError,
-                Elapsed = iterationResult.Elapsed.Ticks,
-                StartTick = iterationResult.StartTick,
-                EndTick = iterationResult.EndTick,
+                StartedMs = iterationResult.StartedTime.TotalMilliseconds,
+                ElapsedMs = iterationResult.Elapsed.TotalMilliseconds,
                 Exception = iterationResult.Exception,
                 TestName = iterationResult.TestName,
                 UserNumber = iterationResult.UserNumber,
@@ -38,85 +45,155 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
             };
 
             const string sql = @"INSERT INTO
-[Iteration] ([Iteration], [BaseUrl], [DidError], [Elapsed], [StartTick], [EndTick], [Exception], [TestName], [UserNumber], [UserDelay])
+[Iteration] ([Iteration], [BaseUrl], [DidError], [ElapsedMs], [StartedMs], [Exception], [TestName], [UserNumber], [UserDelay])
 values
-(@Iteration, @BaseUrl, @DidError, @Elapsed, @StartTick, @EndTick, @Exception, @TestName, @UserNumber, @UserDelay);
+(@Iteration, @BaseUrl, @DidError, @ElapsedMs, @StartedMs, @Exception, @TestName, @UserNumber, @UserDelay);
 SELECT last_insert_rowid();";
 
-            if (_dbConnection.State != ConnectionState.Open)
-                await _dbConnection.OpenAsync();
+            long iterationId;
 
-            await RawExecuteAsync("BEGIN TRANSACTION");
-            try
+            if (_insertIteration == null)
             {
-                var cmd = new CommandDefinition(sql, iterationDto);
+                _insertIteration = _dbConnection.CreateCommand();
+                _insertIteration.CommandText = sql;
 
-                var iterationId = await _dbConnection.ExecuteScalarAsync<int>(cmd);
+                _iteration = _insertIteration.CreateParameter();
+                _iteration.DbType = DbType.Int32;
+                _iteration.ParameterName = "@Iteration";
+                _insertIteration.Parameters.Add(_iteration);
 
-                var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
-                {
-                    IterationId = iterationId,
-                    ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
-                    Method = httpStatusResult.Method,
-                    RequestUrl = httpStatusResult.RequestUrl,
-                    StatusCode = httpStatusResult.StatusCode,
-                    RequestStartTick = httpStatusResult.RequestStartTick
-                });
+                _baseUrl = _insertIteration.CreateParameter();
+                _baseUrl.DbType = DbType.String;
+                _baseUrl.ParameterName = "@BaseUrl";
+                _insertIteration.Parameters.Add(_baseUrl);
 
-                foreach (var batch in inserts.Batch(100))
-                {
-                    await InsertHttpStatusResults(batch, batch.Count);
-                }
+                _didError = _insertIteration.CreateParameter();
+                _didError.DbType = DbType.Boolean;
+                _didError.ParameterName = "@DidError";
+                _insertIteration.Parameters.Add(_didError);
 
-                await RawExecuteAsync("COMMIT TRANSACTION");
+                _elapsedMs = _insertIteration.CreateParameter();
+                _elapsedMs.DbType = DbType.Double;
+                _elapsedMs.ParameterName = "@ElapsedMs";
+                _insertIteration.Parameters.Add(_elapsedMs);
+
+                _startedMs = _insertIteration.CreateParameter();
+                _startedMs.DbType = DbType.Double;
+                _startedMs.ParameterName = "@StartedMs";
+                _insertIteration.Parameters.Add(_startedMs);
+
+                _exception = _insertIteration.CreateParameter();
+                _exception.DbType = DbType.String;
+                _exception.ParameterName = "@Exception";
+                _insertIteration.Parameters.Add(_exception);
+
+                _testName = _insertIteration.CreateParameter();
+                _testName.DbType = DbType.String;
+                _testName.ParameterName = "@TestName";
+                _insertIteration.Parameters.Add(_testName);
+
+                _userNumber = _insertIteration.CreateParameter();
+                _userNumber.DbType = DbType.Int32;
+                _userNumber.ParameterName = "@UserNumber";
+                _insertIteration.Parameters.Add(_userNumber);
+
+                _userDelay = _insertIteration.CreateParameter();
+                _userDelay.DbType = DbType.Int64;
+                _userDelay.ParameterName = "@UserDelay";
+                _insertIteration.Parameters.Add(_userDelay);
+
+                _insertIteration.Prepare();
             }
-            catch (Exception)
+
+            _iteration.Value = iterationDto.Iteration;
+            _baseUrl.Value = iterationDto.BaseUrl;
+            _didError.Value = iterationDto.DidError;
+            _elapsedMs.Value = iterationDto.ElapsedMs;
+            _startedMs.Value = iterationDto.StartedMs;
+            _exception.Value = iterationDto.Exception as object ?? DBNull.Value;
+            _testName.Value = iterationDto.TestName;
+            _userNumber.Value = iterationDto.UserNumber;
+            _userDelay.Value = iterationDto.UserDelay;
+
+            iterationId = (long)await _insertIteration.ExecuteScalarAsync();
+
+            var inserts = iterationResult.StatusResults.Select(httpStatusResult => new HttpStatusResultDto
             {
-                await RawExecuteAsync("ROLLBACK TRANSACTION");
-                throw;
-            }
+                IterationId = (int)iterationId,
+                ElapsedMilliseconds = httpStatusResult.ElapsedMilliseconds,
+                Method = httpStatusResult.Method,
+                RequestUrl = httpStatusResult.RequestUrl,
+                StatusCode = httpStatusResult.StatusCode,
+                RequestStartedMs = httpStatusResult.RequestStartedMs
+            });
+
+            await InsertResults(inserts);
         }
 
-        private async Task RawExecuteAsync(string sql)
+        private DbCommand _httpStatusResultCommand;
+        private DbParameter _iterationId;
+        private DbParameter _elapsedMilliseconds;
+        private DbParameter _method;
+        private DbParameter _requestUrl;
+        private DbParameter _statusCode;
+        private DbParameter _requestStartMs;
+
+        private async Task InsertResults(IEnumerable<HttpStatusResultDto> inserts)
         {
-            using (var cmd = _dbConnection.CreateCommand())
+            const string sql = @"INSERT INTO HttpStatusResult 
+            ([IterationId], [ElapsedMilliseconds], [Method], [RequestUrl], [StatusCode], [RequestStartedMs])
+            VALUES
+            (@IterationId, @ElapsedMilliseconds, @Method, @RequestUrl, @StatusCode, @RequestStartMs)";
+
+            if (_httpStatusResultCommand == null)
             {
-                cmd.CommandText = sql;
+                _httpStatusResultCommand = _dbConnection.CreateCommand();
+                _httpStatusResultCommand.CommandText = sql;
 
-                await cmd.ExecuteNonQueryAsync();
+                _iterationId = _httpStatusResultCommand.CreateParameter();
+                _iterationId.DbType = DbType.Int32;
+                _iterationId.ParameterName = "@IterationId";
+                _httpStatusResultCommand.Parameters.Add(_iterationId);
+
+                _elapsedMilliseconds = _httpStatusResultCommand.CreateParameter();
+                _elapsedMilliseconds.DbType = DbType.Double;
+                _elapsedMilliseconds.ParameterName = "@ElapsedMilliseconds";
+                _httpStatusResultCommand.Parameters.Add(_elapsedMilliseconds);
+
+                _method = _httpStatusResultCommand.CreateParameter();
+                _method.DbType = DbType.String;
+                _method.ParameterName = "@Method";
+                _httpStatusResultCommand.Parameters.Add(_method);
+
+                _requestUrl = _httpStatusResultCommand.CreateParameter();
+                _requestUrl.DbType = DbType.String;
+                _requestUrl.ParameterName = "@RequestUrl";
+                _httpStatusResultCommand.Parameters.Add(_requestUrl);
+
+                _statusCode = _httpStatusResultCommand.CreateParameter();
+                _statusCode.DbType = DbType.Int32;
+                _statusCode.ParameterName = "@StatusCode";
+                _httpStatusResultCommand.Parameters.Add(_statusCode);
+
+                _requestStartMs = _httpStatusResultCommand.CreateParameter();
+                _requestStartMs.DbType = DbType.Double;
+                _requestStartMs.ParameterName = "@RequestStartMs";
+                _httpStatusResultCommand.Parameters.Add(_requestStartMs);
+
+                _httpStatusResultCommand.Prepare();
             }
-        }
 
-        private Task InsertHttpStatusResults(IEnumerable<HttpStatusResultDto> inserts, int count)
-        {
-            var args = new Dictionary<string, object>();
-
-            var stringBuilder = new StringBuilder();
-            var i = 0;
             foreach (var dto in inserts)
             {
-                stringBuilder.Append($"(@IterationId{i}, @ElapsedMilliseconds{i}, @Method{i}, @RequestUrl{i}, @StatusCode{i}, @RequestStartTick{i})");
-                if (i < count - 1)
-                    stringBuilder.AppendLine(", ");
+                _iterationId.Value = dto.IterationId;
+                _elapsedMilliseconds.Value = dto.ElapsedMilliseconds;
+                _method.Value = dto.Method;
+                _requestUrl.Value = dto.RequestUrl;
+                _statusCode.Value = (int)dto.StatusCode;
+                _requestStartMs.Value = dto.RequestStartedMs;
 
-                args[$"IterationId{i}"] = dto.IterationId;
-                args[$"ElapsedMilliseconds{i}"] = dto.ElapsedMilliseconds;
-                args[$"Method{i}"] = dto.Method;
-                args[$"RequestUrl{i}"] = dto.RequestUrl;
-                args[$"StatusCode{i}"] = dto.StatusCode;
-                args[$"RequestStartTick{i}"] = dto.RequestStartTick;
-
-                i++;
+                await _httpStatusResultCommand.ExecuteNonQueryAsync();
             }
-
-            var sql = $@"INSERT INTO HttpStatusResult 
-([IterationId], [ElapsedMilliseconds], [Method], [RequestUrl], [StatusCode], [RequestStartTick])
-VALUES
-{stringBuilder}";
-
-            var cmd = new CommandDefinition(sql, args);
-
-            return _dbConnection.ExecuteAsync(cmd);
         }
     }
 }

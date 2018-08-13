@@ -18,6 +18,6 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos
 
         public HttpStatusCode StatusCode { get; set; }
 
-        public long RequestStartTick { get; set; }
+        public double RequestStartedMs { get; set; }
     }
 }

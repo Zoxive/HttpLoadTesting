@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Zoxive.HttpLoadTesting.Client.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Framework.Core
@@ -13,6 +14,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     public class LoadTestExecution : ILoadTestExecution
     {
         private readonly IReadOnlyList<IHttpUser> _httpUsers;
+        private ValueStopwatch _executionTimestamp;
 
         public event UserIterationFinished UserIterationFinished;
 
@@ -30,6 +32,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             var done = false;
 
             var scheduleIdx = 0;
+
+            _executionTimestamp = ValueStopwatch.StartNew();
 
             while (!done)
             {
@@ -139,7 +143,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                         return;
                     }
 
-                    await user.Run(result => UserIterationFinished?.Invoke(result));
+                    await user.Run(_executionTimestamp.GetElapsedTime, result => UserIterationFinished?.Invoke(result));
                 });
 
                 addUserTasks.Add(addUserTask);

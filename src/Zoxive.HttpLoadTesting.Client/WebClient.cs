@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -31,6 +32,8 @@ namespace Zoxive.HttpLoadTesting.Client
             var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
                 .Build();
+
+            Patch1.Frequency = config.GetValue<long?>("frequency");
 
             var clientOptions = new ClientOptions(config.GetValue<string>("databaseFile"));
 

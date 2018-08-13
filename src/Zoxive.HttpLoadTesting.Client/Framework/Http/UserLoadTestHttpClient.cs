@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Zoxive.HttpLoadTesting.Client.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -11,14 +12,16 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
     public class UserLoadTestHttpClient : IUserLoadTestHttpClient
     {
         private ILoadTestHttpClient _loadTestHttpClient;
+        private readonly Func<TimeSpan> _getCurrentTimeSpan;
 
         private List<HttpStatusResult> _statusResults = new List<HttpStatusResult>();
 
         private Stopwatch _stopWatch;
 
-        public UserLoadTestHttpClient(ILoadTestHttpClient loadTestHttpClient, IDictionary<string, object> testState)
+        public UserLoadTestHttpClient(ILoadTestHttpClient loadTestHttpClient, IDictionary<string, object> testState, Func<TimeSpan> getCurrentTimeSpan)
         {
             _loadTestHttpClient = loadTestHttpClient;
+            _getCurrentTimeSpan = getCurrentTimeSpan;
             TestState = testState;
             _stopWatch = new Stopwatch();
         }
@@ -76,17 +79,16 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         private async Task<HttpResponseMessage> LogStatusResult(Func<Task<HttpResponseMessage>> doRequest)
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Restart();
-            var requestStartTick = Stopwatch.GetTimestamp();
+            var stopWatch = ValueStopwatch.StartNew();
+            var startedTime = _getCurrentTimeSpan();
 
             var response = await doRequest();
 
-            stopWatch.Stop();
+            var elapsed = stopWatch.GetElapsedTime();
 
             lock (_statusResults)
             {
-                _statusResults.Add(new HttpStatusResult(response, stopWatch.Elapsed.TotalMilliseconds, requestStartTick));
+                _statusResults.Add(new HttpStatusResult(response, elapsed.TotalMilliseconds, startedTime.TotalMilliseconds));
             }
 
             return response;
