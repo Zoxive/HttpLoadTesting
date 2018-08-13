@@ -20,8 +20,11 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations
                 }
 
                 MigrateToNewSchema(Frequency, dbCommandFactory);
+
+                return string.Empty;
             }
-            else if (tableExists)
+
+            if (tableExists)
             {
                 return string.Empty;
             }
@@ -33,7 +36,75 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations
 
         private void MigrateToNewSchema(long? frequency, Func<IDbCommand> dbCommandFactory)
         {
-            throw new NotImplementedException();
+            ExecuteSql("ALTER TABLE HttpStatusResult ADD RequestStartedMs REAL DEFAULT 0 NOT NULL", dbCommandFactory);
+
+            ExecuteSql($@"
+            UPDATE HttpStatusResult SET RequestStartedMs = 
+            (
+              SELECT
+                     (r.RequestStartTick - min.min) / ({frequency} / 1000.0) as RequestStartedMs
+              FROM HttpStatusResult r
+              JOIN (SELECT MIN(RequestStartTick) as min FROM HttpStatusResult) min
+              WHERE r.Id = HttpStatusResult.Id
+            )", dbCommandFactory);
+
+            ExecuteSql(@"
+            CREATE TABLE HttpStatusResult0440
+            (
+                Id INTEGER PRIMARY KEY,
+                IterationId INTEGER,
+                Method VARCHAR,
+                ElapsedMilliseconds REAL,
+                RequestUrl VARCHAR,
+                StatusCode INTEGER,
+                RequestStartedMs REAL DEFAULT 0 NOT NULL
+            );
+            INSERT INTO HttpStatusResult0440(Id, IterationId, Method, ElapsedMilliseconds, RequestUrl, StatusCode, RequestStartedMs) SELECT Id, IterationId, Method, ElapsedMilliseconds, RequestUrl, StatusCode, RequestStartedMs FROM HttpStatusResult;
+            DROP TABLE HttpStatusResult;
+            ALTER TABLE HttpStatusResult0440 RENAME TO HttpStatusResult;
+            ", dbCommandFactory);
+
+            ExecuteSql(@"
+            ALTER TABLE Iteration ADD ElapsedMs REAL DEFAULT 0 NOT NULL;
+            ALTER TABLE Iteration ADD StartedMs REAL DEFAULT 0 NOT NULL;
+            ", dbCommandFactory);
+
+            ExecuteSql($@"
+            UPDATE Iteration Set StartedMs =
+            (
+             SELECT
+                  (i.StartTick - min.min) / ({frequency} / 1000.0) as StartedMs
+            FROM Iteration i
+            JOIN (SELECT MIN(StartTick) as min FROM Iteration) min
+            WHERE i.Id = Iteration.Id
+            ), ElapsedMs =
+            (
+             SELECT
+                (i.EndTick - i.StartTick) / ({frequency} / 1000.0) as ElapsedMs
+            FROM Iteration i
+            JOIN (SELECT MIN(StartTick) as min FROM Iteration) min
+            WHERE i.Id = Iteration.Id
+            )
+            ", dbCommandFactory);
+
+            ExecuteSql(@";
+            CREATE TABLE Iterationac0e
+            (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                UserNumber INTEGER,
+                Iteration INTEGER,
+                UserDelay BIGINT,
+                Exception VARCHAR,
+                DidError BOOLEAN,
+                BaseUrl VARCHAR,
+                TestName VARCHAR,
+                ElapsedMs REAL DEFAULT 0 NOT NULL,
+                StartedMs REAL DEFAULT 0 NOT NULL
+            );
+            INSERT INTO Iterationac0e(Id, UserNumber, Iteration, UserDelay, Exception, DidError, BaseUrl, TestName, ElapsedMs, StartedMs) SELECT Id, UserNumber, Iteration, UserDelay, Exception, DidError, BaseUrl, TestName, ElapsedMs, StartedMs FROM Iteration;
+            DROP TABLE Iteration;
+            ALTER TABLE Iterationac0e RENAME TO Iteration;
+        ", dbCommandFactory);
         }
 
         private void CreateNewSchema(Func<IDbCommand> dbCommandFactory)
