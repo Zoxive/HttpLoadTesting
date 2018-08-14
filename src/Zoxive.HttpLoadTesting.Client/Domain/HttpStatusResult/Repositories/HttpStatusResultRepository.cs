@@ -77,9 +77,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             return _dbConnection.QueryAsync<int>(sql, sqlParams);
         }
 
-        private Task<IEnumerable<HttpStatusResultDto>> GetRequests(Filters filters)
+        private Task<IEnumerable<SimpleRequestInfoDto>> GetRequests(Filters filters)
         {
-            var sql = "SELECT * FROM HttpStatusResult";
+            var sql = "SELECT ElapsedMilliseconds, StatusCode FROM HttpStatusResult";
 
             var whereClause = CreateWhereClause(filters.NullRequestUrl(), out var sqlParams);
 
@@ -87,9 +87,8 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += " ORDER BY ElapsedMilliseconds DESC";
 
-            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
+            return _dbConnection.QueryAsync<SimpleRequestInfoDto>(sql, sqlParams);
         }
-
 
         private Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters)
         {
