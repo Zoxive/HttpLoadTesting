@@ -105,8 +105,6 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations
             DROP TABLE Iteration;
             ALTER TABLE Iterationac0e RENAME TO Iteration;
             ", dbCommandFactory);
-
-            ExecuteSql("VACUUM", dbCommandFactory);
         }
 
         private void CreateNewSchema(Func<IDbCommand> dbCommandFactory)

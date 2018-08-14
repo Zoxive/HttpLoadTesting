@@ -18,11 +18,18 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
             var migrator = DeployChanges.To
                 .SQLiteDatabase(db.Connection.ConnectionString)
                 .WithScriptsAndCodeEmbeddedInAssembly(typeof(Patch1).Assembly, s => s.StartsWith("Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations"))
-                .WithTransactionPerScript()
+                .WithTransaction()
                 .LogToConsole()
                 .Build();
 
+            var wasPatched = migrator.IsUpgradeRequired();
+
             var result = migrator.PerformUpgrade();
+
+            if (result.Successful && wasPatched)
+            {
+                db.Connection.Execute("VACUUM");
+            }
 
             if (!result.Successful)
             {
