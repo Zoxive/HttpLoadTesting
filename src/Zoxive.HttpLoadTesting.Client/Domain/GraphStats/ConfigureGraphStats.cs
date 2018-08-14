@@ -7,7 +7,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats
     {
         public static void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<IGraphStatsService, GraphStatsService>();
+            services.AddScoped<IGraphStatsService, GraphStatsService>();
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@using StackExchange.Profiling
+@inject IHttpContextAccessor ContextAccessor
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -27,6 +30,7 @@
         @RenderBody()
         <hr />
         <footer>
+            @MiniProfiler.Current.RenderIncludes(ContextAccessor.HttpContext, position: RenderPosition.Left)
         </footer>
     </div>
     

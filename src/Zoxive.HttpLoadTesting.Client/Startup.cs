@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using StackExchange.Profiling.Storage;
 using Zoxive.HttpLoadTesting.Client.Framework;
 
 namespace Zoxive.HttpLoadTesting.Client
@@ -18,7 +19,15 @@ namespace Zoxive.HttpLoadTesting.Client
             services.AddMvcCore()
                 .AddJsonFormatters()
                 .AddAuthorization()
+                .AddCacheTagHelper()
                 .AddRazorPages();
+
+            services.AddMiniProfiler(o =>
+            {
+                o.RouteBasePath = "/profiler";
+            });
+
+            services.AddHttpContextAccessor();
 
             services.Configure<RazorViewEngineOptions>(options =>
             {
@@ -69,6 +78,8 @@ namespace Zoxive.HttpLoadTesting.Client
         {
             var assembly = GetType().Assembly;
             var embededFileProvider = new DirectoryFriendlyEmbeddedFileProvider(assembly, "Zoxive.HttpLoadTesting.Client.wwwroot");
+
+            app.UseMiniProfiler();
 
             app.UseDeveloperExceptionPage();
             app.UseStatusCodePages();

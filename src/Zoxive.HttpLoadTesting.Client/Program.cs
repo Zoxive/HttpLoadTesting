@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using StackExchange.Profiling;
 using Zoxive.HttpLoadTesting.Client.Domain.Database;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
@@ -77,19 +79,14 @@ namespace Zoxive.HttpLoadTesting.Client
 
         private static void ConfigureServices(IServiceCollection services, IHttpStatusResultService httpStatusResultService, string databaseFile)
         {
-            var connectionString = $"Data Source={databaseFile};cache=shared";
-
-            var readerConnection = new SqliteConnection(connectionString);
-
-            services.AddSingleton<IDbReader>(new Db(readerConnection));
+            services.AddScoped<IDbReader>(ioc => new Db(GetConnection(databaseFile)));
 
             services.AddSingleton(provider => httpStatusResultService ?? new HttpStatusResultNullService());
             services.AddSingleton<IIterationResultRepository>(CreateIterationResultRepository(databaseFile, out var dbWriter));
-
             services.AddSingleton<IDbWriter>(dbWriter);
 
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
-            services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
+            services.AddScoped<IHttpStatusResultRepository, HttpStatusResultRepository>();
 
             services.AddSingleton<IHostedService, ExecuteTestsService>();
 
@@ -109,17 +106,22 @@ namespace Zoxive.HttpLoadTesting.Client
 
         public static IterationResultRepository CreateIterationResultRepository(string databaseFile, out IDbWriter fileDb)
         {
-            var connection = new SqliteConnection($"Data Source={databaseFile};cache=shared");
+            var connection = GetConnection(databaseFile);
             fileDb = new Db(connection);
 
             var fileResultRepository = new IterationResultRepository(fileDb);
             DbInitializer.Initialize(fileDb);
 
-            // Looks like we dont really need this
-            //connection.Execute("PRAGMA synchronous = OFF;");
             connection.Execute("PRAGMA journal_mode = MEMORY;");
 
             return fileResultRepository;
+        }
+
+        private static DbConnection GetConnection(string databaseFile)
+        {
+            var connection = new SqliteConnection($"Data Source={databaseFile};cache=shared");
+
+            return new StackExchange.Profiling.Data.ProfiledDbConnection(connection, MiniProfiler.Current);
         }
     }
 
