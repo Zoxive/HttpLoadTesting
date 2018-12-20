@@ -7,21 +7,21 @@
 <h2>LineGraph</h2>
 
 <form method="get">
-    
+
     @Html.Partial("_Filters", new FiltersModel(Model.Filters, Model.Distincts))
 
     <div class="inline">
         Period in minutes:
-        <input name="period" type="text" value="@Model.Filters.Period"/>
+        <input name="period" type="text" value="@Model.Filters.Period" />
     </div>
-    
+
     <button type="submit">Go</button>
 </form>
 
 <canvas id="myChart"></canvas>
 
 <script type="text/javascript">
-    
+
 var chartColors = {
 	red: 'rgb(255, 99, 132)',
 	orange: 'rgb(255, 159, 64)',
@@ -32,12 +32,12 @@ var chartColors = {
 	grey: 'rgb(201, 203, 207)'
 };
 
-var data = 
+var data =
 {
     labels: [],
     datasets: []
 };
-    
+
 @{
     var requests = new List<int>();
     var avg = new List<decimal>();
@@ -45,7 +45,6 @@ var data =
     var min = new List<decimal>();
     var max = new List<decimal>();
     var std = new List<double>();
-
 
     foreach (var row in Model.GraphStatus)
     {
@@ -59,15 +58,15 @@ var data =
 }
 
 data.labels = new Array(@Model.GraphStatus.Count).fill(1).map((x, y) => (x + y - 1) * @Model.Filters.Period);
-    
-add([@string.Join(", ", requests)], chartColors.blue, "Requests");
-add([@string.Join(", ", max)], chartColors.red, "Max");
-add([@string.Join(", ", std)], chartColors.yellow, "Std");
-add([@string.Join(", ", min)], chartColors.green, "Min");
-add([@string.Join(", ", avg)], chartColors.orange, "Avg");
-add([@string.Join(", ", users)], chartColors.purple, "Users");
-    
-function add(row, color, name)
+
+add([@string.Join(", ", requests)], chartColors.blue, "Requests", "y-axis-count");
+add([@string.Join(", ", max)], chartColors.red, "Max", "y-axis-time");
+add([@string.Join(", ", std)], chartColors.yellow, "Std", "y-axis-time");
+add([@string.Join(", ", min)], chartColors.green, "Min", "y-axis-time");
+add([@string.Join(", ", avg)], chartColors.orange, "Avg", "y-axis-time");
+add([@string.Join(", ", users)], chartColors.purple, "Users", "y-axis-count");
+
+function add(row, color, name, yAxisId)
 {
     data.datasets.push
     (
@@ -76,12 +75,13 @@ function add(row, color, name)
             backgroundColor: color,
             borderColor: color,
             data: row,
-            fill: false
+            fill: false,
+            yAxisID: yAxisId
         }
     );
 }
 var ctx = document.getElementById("myChart").getContext("2d");
-    
+
 var options = {
     type: 'line',
     data: data,
@@ -95,8 +95,110 @@ var options = {
         hover: {
             mode: 'nearest',
             intersect: true
+        },
+        scales: {
+            xAxes: [{
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Duration (mins)'
+                }
+            }],
+            yAxes: [{
+                type: 'linear',
+                display: true,
+                position: 'left',
+                id: 'y-axis-time',
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Request Time (ms)'
+                }
+            }, {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                id: 'y-axis-count',
+                gridLines: {
+                    drawOnChartArea: false
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'Request and User Count'
+                }
+            }, {
+                type: 'linear',
+                display: false,
+                position: 'right',
+                id: 'y-axis-user-count',
+                gridLines: {
+                    drawOnChartArea: false
+                },
+                scaleLabel: {
+                    display: true,
+                    labelString: 'User Count'
+                }
+            }]
         }
-    }
+    },
+    plugins: [{
+        afterUpdate: function(chart) {
+            console.log(arguments);
+
+            var requestCountDisplayed = !chart.legend.legendItems[0].hidden;
+            var maxDisplayed = !chart.legend.legendItems[1].hidden;
+            var stdDisplayed = !chart.legend.legendItems[2].hidden;
+            var minDisplayed = !chart.legend.legendItems[3].hidden;
+            var aveDisplayed = !chart.legend.legendItems[4].hidden;
+            var userCountDisplayed = !chart.legend.legendItems[5].hidden;
+
+            var timeAxis = chart.options.scales.yAxes[0];
+            var countAxis = chart.options.scales.yAxes[1];
+            var userAxis = chart.options.scales.yAxes[2];
+
+            var currentTimeAxisDisplayed = timeAxis.display;
+            var currentCountAxisDisplayed = countAxis.display;
+            var currentCountAxisPosition = countAxis.position;
+            var currentCountAxisLabel = countAxis.scaleLabel.labelString;
+            var currentUserAxisDisplayed = userAxis.display;
+
+            //Reset
+            timeAxis.display = true;
+            countAxis.display = true;
+            countAxis.position = 'right';
+            countAxis.scaleLabel.labelString = 'Request and User Count';
+            userAxis.display = false;
+            chart.data.datasets[5]._meta[0].yAxisID = 'y-axis-count';
+
+            if (!requestCountDisplayed && !userCountDisplayed) {
+                countAxis.display = false;
+            } else if (!requestCountDisplayed || !userCountDisplayed) {
+                if (requestCountDisplayed) {
+                    countAxis.scaleLabel.labelString = 'Request Count';
+                } else {
+                    countAxis.scaleLabel.labelString = 'User Count';
+                }
+            }
+
+            if (!maxDisplayed && !stdDisplayed && !minDisplayed && !aveDisplayed && (requestCountDisplayed || userCountDisplayed)) {
+                timeAxis.display = false;
+                countAxis.position = 'left';
+
+                if (requestCountDisplayed && userCountDisplayed) {
+                    userAxis.display = true;
+                    chart.data.datasets[5]._meta[0].yAxisID = 'y-axis-user-count';
+                    countAxis.scaleLabel.labelString = 'Request Count';
+                }
+            }
+
+            if (currentTimeAxisDisplayed === timeAxis.display &&
+                currentCountAxisDisplayed === countAxis.display &&
+                currentCountAxisPosition === countAxis.position &&
+                currentCountAxisLabel === countAxis.scaleLabel.labelString &&
+                currentUserAxisDisplayed === userAxis.display)
+                return;
+
+            chart.update();
+        }
+    }]
 };
 
 var chart = new Chart(ctx, options);
