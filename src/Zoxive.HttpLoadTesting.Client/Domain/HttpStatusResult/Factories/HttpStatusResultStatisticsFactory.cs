@@ -17,13 +17,14 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 
             var averageDuration = Average(durationsDesc);
 
+            var percentile90Th = Percentile90Th(durationsDesc);
+
             var standardDeviation = StandardDeviation(durationsDesc, averageDuration);
 
-            var durationsWithinDeviations =
-                durationsDesc.Where(x => Math.Abs(x - averageDuration) <= standardDeviation*deviations).ToArray();
+            var durationsWithinDeviations = durationsDesc.Where(x => Math.Abs(x - averageDuration) <= standardDeviation * deviations).ToArray();
 
-            var durationCount = durationsDesc.Count();
-            var durationWithinDeviationsCount = durationsWithinDeviations.Count();
+            var durationCount = durationsDesc.LongLength;
+            var durationWithinDeviationsCount = durationsWithinDeviations.LongLength;
             var averageDurationWithinDeviations = Average(durationsWithinDeviations);
 
             var slowestRequests = slowestRequestDtos.Select(x => new HttpLoadTesting.Framework.Model.HttpStatusResult(x.Id, x.Method, x.ElapsedMilliseconds, x.RequestUrl, x.StatusCode, x.RequestStartedMs));
@@ -31,20 +32,24 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
 
             var statusCodeCounts = requestsResult.GroupBy(x => x.StatusCode).Select(g => new HttpStatusCodeCount(g.Key, g.Count())).OrderBy(x => x.StatusCode);
 
-            return new HttpStatusResultStatistics(filters, averageDuration, durationCount, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount, statusCodeCounts, slowestRequests, fastestRequests);
+            return new HttpStatusResultStatistics(filters, averageDuration, durationCount, percentile90Th, standardDeviation, averageDurationWithinDeviations, durationWithinDeviationsCount, statusCodeCounts, slowestRequests, fastestRequests);
         }
 
-        public static double Average(double[] values)
+        private static double Average(double[] values)
         {
             return values.Length == 0 ? 0d : values.Average();
         }
 
-        public static double StandardDeviation(double[] values, double average)
+        private static double StandardDeviation(double[] values, double average)
         {
-            if (values.Length == 0)
-                return 0d;
+            return values.Length == 0 ? 0d : Math.Sqrt(values.Average(v => Math.Pow(v - average, 2)));
+        }
 
-            return Math.Sqrt(values.Average(v => Math.Pow(v - average, 2)));
+        private static double Percentile90Th(double[] values)
+        {
+            var index = values.Length * 9 / 10 - 1;
+
+            return index < 0 ? 0 : values.OrderBy(x => x).ElementAt(index);
         }
     }
 }
