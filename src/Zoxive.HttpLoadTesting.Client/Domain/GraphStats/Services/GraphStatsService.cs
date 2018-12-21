@@ -11,12 +11,12 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
     public class GraphStatsService : IGraphStatsService
     {
         private readonly IDbConnection _connection;
-        private readonly IHttpStatusResultRepository _httpStatusRepository;
+        private readonly IRequestResultRepository _requestRepository;
 
-        public GraphStatsService(IDbReader connection, IHttpStatusResultRepository httpStatusRepository)
+        public GraphStatsService(IDbReader connection, IRequestResultRepository requestRepository)
         {
             _connection = connection.Connection;
-            _httpStatusRepository = httpStatusRepository;
+            _requestRepository = requestRepository;
         }
 
         public async Task<IEnumerable<GraphStatDto>> Get(Filters filters)
@@ -26,7 +26,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services
 
             var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
 
-            var httpStatusWhere = _httpStatusRepository.CreateWhereClause(filters, out var sqlParams);
+            var httpStatusWhere = _requestRepository.CreateWhereClause(filters, out var sqlParams);
 
             var sql = $@"
 SELECT 
@@ -64,7 +64,7 @@ order by Minute
 
             var minuteMilliseconds = Math.Round(filters.Period.Value * 60000);
 
-            var httpStatusWhere = _httpStatusRepository.CreateWhereClause(filters, out var sqlParams);
+            var httpStatusWhere = _requestRepository.CreateWhereClause(filters, out var sqlParams);
 
             var sql = $@"
 SELECT 

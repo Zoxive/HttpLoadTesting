@@ -89,7 +89,9 @@ namespace Zoxive.HttpLoadTesting.Client
             services.AddSingleton<IDbWriter>(dbWriter);
 
             services.AddSingleton<IHttpStatusResultStatisticsFactory, HttpStatusResultStatisticsFactory>();
-            services.AddSingleton<IHttpStatusResultRepository, HttpStatusResultRepository>();
+            services.AddSingleton<IResultRepository, ResultRepository>();
+            services.AddSingleton<IRequestResultRepository, RequestResultRepository>();
+            services.AddSingleton<ITestResultRepository, TestResultRepository>();
 
             services.AddSingleton<IHostedService, ExecuteTestsService>();
 

@@ -9,11 +9,11 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 {
     public class IndexModel : PageModel
     {
-        private readonly IHttpStatusResultRepository _httpStatusResultRepository;
+        private readonly IResultRepository _resultRepository;
 
-        public IndexModel(IHttpStatusResultRepository httpStatusResultRepository)
+        public IndexModel(IResultRepository resultRepository)
         {
-            _httpStatusResultRepository = httpStatusResultRepository;
+            _resultRepository = resultRepository;
         }
 
         public HttpStatusResultStatistics Stats;
@@ -22,8 +22,8 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 
         public async Task OnGetAsync([FromQuery] Filters filters)
         {
-            var distincts = _httpStatusResultRepository.GetDistincts(filters);
-            var stats = _httpStatusResultRepository.GetStatistics(filters);
+            var distincts = _resultRepository.GetDistincts(filters);
+            var stats = _resultRepository.GetStatistics(filters);
 
             await Task.WhenAll(distincts, stats);
 
@@ -33,17 +33,24 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
         }
     }
 
+    public enum CollationType
+    {
+        Requests,
+        Tests
+    }
+
     public class Filters
     {
         public int Count = 50;
 
         public Filters()
         {
-            
         }
 
-        protected Filters(string method, string requestUrl, int? deviations, int? statusCode, decimal? period)
+        protected Filters(CollationType collationType, string test, string method, string requestUrl, int? deviations, int? statusCode, decimal? period)
         {
+            CollationType = collationType;
+            Test = test;
             Method = method;
             RequestUrl = requestUrl;
             Deviations = deviations;
@@ -51,29 +58,33 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
             Period = period;
         }
 
+        public CollationType CollationType { get; set; }
+
+        public string Test { get; set; }
+
         public string Method { get; set; }
 
         public string RequestUrl { get; set; }
 
         public int? Deviations { get; set; }
 
-        public int? StatusCode { get; set;}
+        public int? StatusCode { get; set; }
 
         public decimal? Period { get; set; }
 
         public Filters NullMethod()
         {
-            return new Filters(null, RequestUrl, Deviations, StatusCode, Period);
+            return new Filters(CollationType.Requests, null, null, RequestUrl, Deviations, StatusCode, Period);
         }
 
         public Filters NullRequestUrl()
         {
-            return new Filters(Method, null, Deviations, StatusCode, Period);
+            return new Filters(CollationType.Requests, null, Method, null, Deviations, StatusCode, Period);
         }
 
         public Filters NullStatusCodeUrl()
         {
-            return new Filters(Method, RequestUrl, Deviations, null, Period);
+            return new Filters(CollationType.Requests, null, Method, RequestUrl, Deviations, null, Period);
         }
     }
 }

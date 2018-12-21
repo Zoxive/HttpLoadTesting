@@ -1,83 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
-using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
-using Zoxive.HttpLoadTesting.Client.Framework.Model;
 using Zoxive.HttpLoadTesting.Client.Pages;
 using Zoxive.HttpLoadTesting.Framework.Core;
-using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 {
-    public class HttpStatusResultRepository : IHttpStatusResultRepository
+    public class RequestResultRepository : IRequestResultRepository
     {
         private readonly IDbConnection _dbConnection;
-        private readonly IHttpStatusResultStatisticsFactory _statisticsFactory;
         private readonly IHttpStatusResultService _service;
 
-        public HttpStatusResultRepository(IDbReader dbConnection, IHttpStatusResultStatisticsFactory statisticsFactory, IHttpStatusResultService service)
+        public RequestResultRepository(IDbReader dbConnection, IHttpStatusResultService service)
         {
             _dbConnection = dbConnection.Connection;
-            _statisticsFactory = statisticsFactory;
             _service = service;
         }
 
-        private async Task<IEnumerable<string>> GetDistinctRequestUrls(Filters filters)
-        {
-            var sql = "SELECT DISTINCT RequestUrl FROM HttpStatusResult";
-
-            sql += CreateWhereClause(filters.NullRequestUrl(), out var sqlParams);
-
-            var requestUrls = await _dbConnection.QueryAsync<string>(sql, sqlParams);
-
-            return _service.SelectUniqueRequests(requestUrls);
-        }
-
-        private Task<IEnumerable<string>> GetDistinctMethods(Filters filters)
-        {
-            var sql = "SELECT DISTINCT Method FROM HttpStatusResult";
-
-            sql += CreateWhereClause(filters.NullMethod(), out var sqlParams);
-
-            return _dbConnection.QueryAsync<string>(sql, sqlParams);
-        }
-
-
-        public async Task<HttpStatusResultStatistics> GetStatistics(Filters filters)
-        {
-            var requests = GetRequests(filters);
-            var slowestRequests = GetSlowestRequests(filters);
-            var fastestRequests = GetFastestRequests(filters);
-
-            await Task.WhenAll(requests, slowestRequests, fastestRequests);
-
-            return _statisticsFactory.Create(filters, requests.Result.AsList(), slowestRequests.Result, fastestRequests.Result);
-        }
-
-        public async Task<HttpStatusResultDistincts> GetDistincts(Filters filters)
-        {
-            var methods = GetDistinctMethods(filters);
-            var requestUrls = GetDistinctRequestUrls(filters);
-            var statusCodes = GetDistinctStatusCodes(filters);
-
-            await Task.WhenAll(methods, requestUrls, statusCodes);
-
-            return new HttpStatusResultDistincts(methods.Result, requestUrls.Result, statusCodes.Result);
-        }
-
-        private Task<IEnumerable<int>> GetDistinctStatusCodes(Filters filters)
-        {
-            var sql = "SELECT DISTINCT StatusCode FROM HttpStatusResult";
-
-            sql += CreateWhereClause(filters.NullStatusCodeUrl(), out var sqlParams);
-
-            return _dbConnection.QueryAsync<int>(sql, sqlParams);
-        }
-
-        private Task<IEnumerable<HttpStatusResultDto>> GetRequests(Filters filters)
+        public async Task<IReadOnlyCollection<HttpStatusResultDto>> GetRequests(Filters filters)
         {
             var sql = "SELECT * FROM HttpStatusResult";
 
@@ -87,11 +31,12 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += " ORDER BY ElapsedMilliseconds DESC";
 
-            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
+            var results = await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
+
+            return results.ToList();
         }
 
-
-        private Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters)
+        public Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters)
         {
             var sql = "SELECT * FROM HttpStatusResult";
 
@@ -104,7 +49,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
 
-        private Task<IEnumerable<HttpStatusResultDto>> GetFastestRequests(Filters filters)
+        public Task<IEnumerable<HttpStatusResultDto>> GetFastestRequests(Filters filters)
         {
             var sql = "SELECT * FROM HttpStatusResult";
 

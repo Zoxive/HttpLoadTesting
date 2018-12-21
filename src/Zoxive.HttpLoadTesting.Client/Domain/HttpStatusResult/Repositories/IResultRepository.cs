@@ -6,7 +6,7 @@ using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 {
-    public interface IHttpStatusResultRepository
+    public interface IResultRepository
     {
         Task<HttpStatusResultStatistics> GetStatistics(Filters filters);
 

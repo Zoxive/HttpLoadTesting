@@ -1,7 +1,46 @@
 ﻿@model FiltersModel
 
+<script>
+    function collationTypeChanged() {
+        var collationType = document.getElementsByName("collationType")[0].value;
+
+        var showTests = collationType === "Tests";
+
+        showHide("testDiv", showTests);
+        showHide("methodDiv", !showTests);
+        showHide("requestUrlDiv", !showTests);
+        showHide("statusCodeDiv", !showTests);
+    }
+
+    function showHide(name, show) {
+        var elements = document.getElementsByName(name);
+        if (elements.length < 1) return;
+        elements[0].hidden = !show;
+    }
+</script>
+
 <div>
-    <div>Method: 
+    <div>
+        Collation Type:
+        <select name="collationType" onchange="collationTypeChanged()">
+            @foreach (var collationType in Model.Distincts.CollationTypes)
+            {
+                <option selected="@(collationType == Model.Filters.CollationType)">@collationType</option>
+            }
+        </select>
+    </div>
+    <div name="testDiv">
+        Test:
+        <select name="test">
+            <option key="" value="" />
+            @foreach (var test in Model.Distincts.Tests)
+            {
+                <option selected="@(test == Model.Filters.Test)">@test</option>
+            }
+        </select>
+    </div>
+    <div name="methodDiv">
+        Method:
         <select name="method">
             <option key="" value="" />
             @foreach (var method in Model.Distincts.Methods)
@@ -10,7 +49,8 @@
             }
         </select>
     </div>
-    <div>Request: 
+    <div name="requestUrlDiv">
+        Request:
         <select name="requestUrl">
             <option key="" value="" />
             @foreach (var requestUrls in Model.Distincts.RequestUrls.Take(100))
@@ -19,7 +59,8 @@
             }
         </select>
     </div>
-    <div>StatusCode: 
+    <div name="statusCodeDiv">
+        StatusCode:
         <select name="statusCode">
             <option key="" value="" />
             @foreach (var statusCode in Model.Distincts.StatusCodes)
@@ -28,9 +69,14 @@
             }
         </select>
     </div>
-    <div>Number of Std Devs: 
-        <input name="deviations" type="text" value="@Model.Filters.Deviations"/>
+    <div>
+        Number of Std Devs:
+        <input name="deviations" type="text" value="@Model.Filters.Deviations" />
     </div>
-    
+
     <button type="submit">Go</button>
 </div>
+
+<script>
+    collationTypeChanged();
+</script>
