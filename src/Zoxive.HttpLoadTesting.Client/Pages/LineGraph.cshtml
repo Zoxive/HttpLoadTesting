@@ -80,7 +80,12 @@ function add(row, color, name, yAxisId)
         }
     );
 }
-var ctx = document.getElementById("myChart").getContext("2d");
+
+var axisLabelDuration = 'Duration (mins)';
+var axisLabelResponseTime = 'Response Time (ms)';
+var axisLabelUserCount = 'User Count';
+var axisLabelRequestCount = 'Request Count';
+var axisLabelRequestAndUserCount = 'Request and User Count';
 
 var options = {
     type: 'line',
@@ -100,7 +105,7 @@ var options = {
             xAxes: [{
                 scaleLabel: {
                     display: true,
-                    labelString: 'Duration (mins)'
+                    labelString: axisLabelDuration
                 }
             }],
             yAxes: [{
@@ -110,7 +115,7 @@ var options = {
                 id: 'y-axis-time',
                 scaleLabel: {
                     display: true,
-                    labelString: 'Response Time (ms)'
+                    labelString: axisLabelResponseTime
                 }
             }, {
                 type: 'linear',
@@ -122,7 +127,7 @@ var options = {
                 },
                 scaleLabel: {
                     display: true,
-                    labelString: 'Request and User Count'
+                    labelString: axisLabelRequestAndUserCount
                 }
             }, {
                 type: 'linear',
@@ -134,14 +139,13 @@ var options = {
                 },
                 scaleLabel: {
                     display: true,
-                    labelString: 'User Count'
+                    labelString: axisLabelUserCount
                 }
             }]
         }
     },
     plugins: [{
         afterUpdate: function(chart) {
-            console.log(arguments);
 
             var requestCountDisplayed = !chart.legend.legendItems[0].hidden;
             var maxDisplayed = !chart.legend.legendItems[1].hidden;
@@ -153,6 +157,7 @@ var options = {
             var timeAxis = chart.options.scales.yAxes[0];
             var countAxis = chart.options.scales.yAxes[1];
             var userAxis = chart.options.scales.yAxes[2];
+            var userCountDatasetMeta = chart.data.datasets[5]._meta[0];
 
             var currentTimeAxisDisplayed = timeAxis.display;
             var currentCountAxisDisplayed = countAxis.display;
@@ -164,28 +169,34 @@ var options = {
             timeAxis.display = true;
             countAxis.display = true;
             countAxis.position = 'right';
-            countAxis.scaleLabel.labelString = 'Request and User Count';
+            countAxis.scaleLabel.labelString = axisLabelRequestAndUserCount;
             userAxis.display = false;
-            chart.data.datasets[5]._meta[0].yAxisID = 'y-axis-count';
+            userCountDatasetMeta.yAxisID = 'y-axis-count';
 
-            if (!requestCountDisplayed && !userCountDisplayed) {
+            var countAxisRequired = requestCountDisplayed || userCountDisplayed;
+            var oneCountAxisRequired = countAxisRequired && (!requestCountDisplayed || !userCountDisplayed);
+
+            if (!countAxisRequired) {
                 countAxis.display = false;
-            } else if (!requestCountDisplayed || !userCountDisplayed) {
+            } else if (oneCountAxisRequired) {
                 if (requestCountDisplayed) {
-                    countAxis.scaleLabel.labelString = 'Request Count';
+                    countAxis.scaleLabel.labelString = axisLabelRequestCount;
                 } else {
-                    countAxis.scaleLabel.labelString = 'User Count';
+                    countAxis.scaleLabel.labelString = axisLabelUserCount;
                 }
             }
 
-            if (!maxDisplayed && !stdDisplayed && !minDisplayed && !aveDisplayed && (requestCountDisplayed || userCountDisplayed)) {
+            var timeAxisRequired = maxDisplayed || stdDisplayed || minDisplayed || aveDisplayed;
+
+            if (!timeAxisRequired && countAxisRequired) {
                 timeAxis.display = false;
                 countAxis.position = 'left';
 
-                if (requestCountDisplayed && userCountDisplayed) {
+                var shouldSplitCountAxis = requestCountDisplayed && userCountDisplayed;
+                if (shouldSplitCountAxis) {
                     userAxis.display = true;
-                    chart.data.datasets[5]._meta[0].yAxisID = 'y-axis-user-count';
-                    countAxis.scaleLabel.labelString = 'Request Count';
+                    userCountDatasetMeta.yAxisID = 'y-axis-user-count';
+                    countAxis.scaleLabel.labelString = axisLabelRequestCount;
                 }
             }
 
@@ -200,6 +211,8 @@ var options = {
         }
     }]
 };
+
+var ctx = document.getElementById("myChart").getContext("2d");
 
 var chart = new Chart(ctx, options);
 </script>
