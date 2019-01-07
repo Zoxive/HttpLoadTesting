@@ -47,7 +47,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
         private Task<IEnumerable<string>> GetDistinctTests()
         {
-            var sql = "SELECT DISTINCT TestName FROM Iteration";
+            const string sql = "SELECT DISTINCT TestName FROM Iteration";
 
             return _dbConnection.QueryAsync<string>(sql);
         }
@@ -77,8 +77,8 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
                 case CollationType.Tests:
                     results = _testResultRepository.GetTests(filters);
-                    slowestRequests = _testResultRepository.GetSlowestRequests(filters);
-                    fastestRequests = _testResultRepository.GetFastestRequests(filters);
+                    slowestRequests = _testResultRepository.GetSlowestTests(filters);
+                    fastestRequests = _testResultRepository.GetFastestTests(filters);
                     break;
 
                 default:
@@ -111,86 +111,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             return _dbConnection.QueryAsync<int>(sql, sqlParams);
         }
 
-        private Task<IEnumerable<HttpStatusResultDto>> GetCollatedResults(Filters filters)
-        {
-            switch (filters.CollationType)
-            {
-                case CollationType.Requests:
-                    return GetRequests(filters);
-
-                case CollationType.Tests:
-                    return GetTests(filters);
-
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        private Task<IEnumerable<HttpStatusResultDto>> GetRequests(Filters filters)
-        {
-            var sql = "SELECT * FROM HttpStatusResult";
-
-            var whereClause = CreateWhereClause(filters.NullRequestUrl(), out var sqlParams);
-
-            sql += whereClause;
-
-            sql += " ORDER BY ElapsedMilliseconds DESC";
-
-            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
-        }
-
-        private Task<IEnumerable<HttpStatusResultDto>> GetTests(Filters filters)
-        {
-            var sql = @"SELECT
- HttpStatusResult.[IterationId] as Id
-,HttpStatusResult.IterationId
-,HttpStatusResult.IterationId as Method
-,SUM(HttpStatusResult.[ElapsedMilliseconds]) AS ElapsedMilliseconds
-,TestName as RequestUrl
-,200 as StatusCode
-,MIN(HttpStatusResult.[RequestStartedMs]) AS [RequestStartedMs]
-FROM HttpStatusResult
-INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
-";
-
-            var whereClause = CreateWhereClause(filters, out var sqlParams);
-
-            sql += whereClause;
-
-            sql += " GROUP BY Iteration.Id";
-
-            sql += " ORDER BY ElapsedMilliseconds DESC";
-
-            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
-        }
-
-        private Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters)
-        {
-            var sql = "SELECT * FROM HttpStatusResult";
-
-            var whereClause = CreateWhereClause(filters, out var sqlParams);
-
-            sql += whereClause;
-
-            sql += $" ORDER BY ElapsedMilliseconds DESC LIMIT {filters.Count}";
-
-            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
-        }
-
-        private Task<IEnumerable<HttpStatusResultDto>> GetFastestRequests(Filters filters)
-        {
-            var sql = "SELECT * FROM HttpStatusResult";
-
-            var whereClause = CreateWhereClause(filters, out var sqlParams);
-
-            sql += whereClause;
-
-            sql += $" ORDER BY ElapsedMilliseconds ASC LIMIT {filters.Count}";
-
-            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
-        }
-
-        public string CreateWhereClause(Filters filters, out IDictionary<string, object> sqlParams)
+        private string CreateWhereClause(Filters filters, out IDictionary<string, object> sqlParams)
         {
             sqlParams = new Dictionary<string, object>();
 
@@ -222,10 +143,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
                 {
                     if (sqlParams.ContainsKey(kvp.Key))
                     {
-                        throw new ArgumentException(
-                            string.Format(
-                                "The sql parameter '{0}' provided by the CreateRequestUrlWhereClause method of the IHttpStatusResultService implementation already exists",
-                                kvp.Key));
+                        throw new ArgumentException($"The sql parameter '{kvp.Key}' provided by the CreateRequestUrlWhereClause method of the IHttpStatusResultService implementation already exists");
                     }
 
                     sqlParams.Add(kvp.Key, kvp.Value);

@@ -46,7 +46,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
             return results.ToList();
         }
 
-        public Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters)
+        public Task<IEnumerable<HttpStatusResultDto>> GetSlowestTests(Filters filters)
         {
             var sql = Sql;
 
@@ -61,7 +61,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
             return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
 
-        public Task<IEnumerable<HttpStatusResultDto>> GetFastestRequests(Filters filters)
+        public Task<IEnumerable<HttpStatusResultDto>> GetFastestTests(Filters filters)
         {
             var sql = Sql;
 

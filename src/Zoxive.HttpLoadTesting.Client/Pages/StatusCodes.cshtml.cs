@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Framework.Model;

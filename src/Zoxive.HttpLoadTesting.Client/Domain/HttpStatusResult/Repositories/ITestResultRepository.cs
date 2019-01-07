@@ -9,9 +9,9 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
     {
         Task<IReadOnlyCollection<HttpStatusResultDto>> GetTests(Filters filters);
 
-        Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters);
+        Task<IEnumerable<HttpStatusResultDto>> GetSlowestTests(Filters filters);
 
-        Task<IEnumerable<HttpStatusResultDto>> GetFastestRequests(Filters filters);
+        Task<IEnumerable<HttpStatusResultDto>> GetFastestTests(Filters filters);
 
         string CreateWhereClause(Filters filters, out IDictionary<string, object> sqlParams);
     }

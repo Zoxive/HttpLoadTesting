@@ -22,14 +22,16 @@
 
 <script type="text/javascript">
 
+var showingRequests = '@Model.Filters.CollationType' === '@CollationType.Requests';
+
 var chartColors = {
-	red: 'rgb(255, 99, 132)',
-	orange: 'rgb(255, 159, 64)',
-	yellow: 'rgb(255, 205, 86)',
-	green: 'rgb(75, 192, 192)',
-	blue: 'rgb(54, 162, 235)',
-	purple: 'rgb(153, 102, 255)',
-	grey: 'rgb(201, 203, 207)'
+    red: 'rgb(255, 99, 132)',
+    orange: 'rgb(255, 159, 64)',
+    yellow: 'rgb(255, 205, 86)',
+    green: 'rgb(75, 192, 192)',
+    blue: 'rgb(54, 162, 235)',
+    purple: 'rgb(153, 102, 255)',
+    grey: 'rgb(201, 203, 207)'
 };
 
 var data =
@@ -59,7 +61,7 @@ var data =
 
 data.labels = new Array(@Model.GraphStatus.Count).fill(1).map((x, y) => (x + y - 1) * @Model.Filters.Period);
 
-add([@string.Join(", ", requests)], chartColors.blue, "Requests", "y-axis-count");
+add([@string.Join(", ", requests)], chartColors.blue, showingRequests ? "Requests" : "Tests", "y-axis-count");
 add([@string.Join(", ", max)], chartColors.red, "Max", "y-axis-time");
 add([@string.Join(", ", std)], chartColors.yellow, "Std", "y-axis-time");
 add([@string.Join(", ", min)], chartColors.green, "Min", "y-axis-time");
@@ -82,10 +84,10 @@ function add(row, color, name, yAxisId)
 }
 
 var axisLabelDuration = 'Duration (mins)';
-var axisLabelResponseTime = 'Response Time (ms)';
+var axisLabelResponseTime = showingRequests ? 'Response Time (ms)' : 'Test Time (ms)';
 var axisLabelUserCount = 'User Count';
-var axisLabelRequestCount = 'Request Count';
-var axisLabelRequestAndUserCount = 'Request and User Count';
+var axisLabelRequestCount = showingRequests ? 'Request Count' : 'Test Count';
+var axisLabelRequestAndUserCount = showingRequests ? 'Request and User Count' : 'Test and User Count';
 
 var options = {
     type: 'line',
