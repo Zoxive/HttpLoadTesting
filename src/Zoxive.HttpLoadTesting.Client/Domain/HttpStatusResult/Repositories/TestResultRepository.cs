@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
@@ -29,7 +28,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
             _dbConnection = dbConnection.Connection;
         }
 
-        public async Task<IReadOnlyCollection<HttpStatusResultDto>> GetTests(Filters filters)
+        public async Task<IEnumerable<HttpStatusResultDto>> GetTests(Filters filters)
         {
             var sql = Sql;
 
@@ -41,9 +40,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
 
             sql += " ORDER BY ElapsedMilliseconds DESC";
 
-            var results = await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
-
-            return results.ToList();
+            return await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
 
         public Task<IEnumerable<HttpStatusResultDto>> GetSlowestTests(Filters filters)

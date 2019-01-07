@@ -7,7 +7,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 {
     public interface ITestResultRepository
     {
-        Task<IReadOnlyCollection<HttpStatusResultDto>> GetTests(Filters filters);
+        Task<IEnumerable<HttpStatusResultDto>> GetTests(Filters filters);
 
         Task<IEnumerable<HttpStatusResultDto>> GetSlowestTests(Filters filters);
 

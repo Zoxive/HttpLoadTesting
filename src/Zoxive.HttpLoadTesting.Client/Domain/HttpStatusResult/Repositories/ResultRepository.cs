@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
@@ -63,7 +64,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
         public async Task<HttpStatusResultStatistics> GetStatistics(Filters filters)
         {
-            Task<IReadOnlyCollection<HttpStatusResultDto>> results;
+            Task<IEnumerable<HttpStatusResultDto>> results;
             Task<IEnumerable<HttpStatusResultDto>> slowestRequests;
             Task<IEnumerable<HttpStatusResultDto>> fastestRequests;
 
@@ -87,7 +88,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             await Task.WhenAll(results, slowestRequests, fastestRequests);
 
-            return _statisticsFactory.Create(filters, results.Result, slowestRequests.Result, fastestRequests.Result);
+            return _statisticsFactory.Create(filters, results.Result.ToList(), slowestRequests.Result, fastestRequests.Result);
         }
 
         public async Task<HttpStatusResultDistincts> GetDistincts(Filters filters)

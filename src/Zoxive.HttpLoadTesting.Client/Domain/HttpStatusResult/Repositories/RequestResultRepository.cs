@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
@@ -21,7 +20,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             _service = service;
         }
 
-        public async Task<IReadOnlyCollection<HttpStatusResultDto>> GetRequests(Filters filters)
+        public async Task<IEnumerable<HttpStatusResultDto>> GetRequests(Filters filters)
         {
             var sql = "SELECT * FROM HttpStatusResult";
 
@@ -31,9 +30,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += " ORDER BY ElapsedMilliseconds DESC";
 
-            var results = await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
-
-            return results.ToList();
+            return await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
 
         public Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters)
