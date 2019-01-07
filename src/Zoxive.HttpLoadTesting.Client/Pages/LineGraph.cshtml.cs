@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.GraphStats.Services;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Framework.Model;
@@ -13,12 +13,12 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
     public class LineGraphModel : PageModel
     {
         private readonly IGraphStatsService _graphStatsService;
-        private readonly IHttpStatusResultRepository _httpStatusResultRepository;
+        private readonly IResultRepository _resultRepository;
 
-        public LineGraphModel(IGraphStatsService graphStatsService, IHttpStatusResultRepository httpStatusResultRepository)
+        public LineGraphModel(IGraphStatsService graphStatsService, IResultRepository resultRepository)
         {
             _graphStatsService = graphStatsService;
-            _httpStatusResultRepository = httpStatusResultRepository;
+            _resultRepository = resultRepository;
         }
 
         public async Task OnGetAsync([FromQuery] Filters filters)
@@ -26,7 +26,7 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
             filters.Period = filters.Period ?? 1m;
 
             var graphStatus = _graphStatsService.Get(filters);
-            var distincts = _httpStatusResultRepository.GetDistincts(filters);
+            var distincts = _resultRepository.GetDistincts(filters);
 
             await Task.WhenAll(graphStatus, distincts);
 

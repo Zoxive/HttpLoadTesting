@@ -7,83 +7,132 @@
 <div>
     <h3>Statistics Calculation Options</h3>
     <form method="get">
-        @Html.Partial("_Filters", new FiltersModel(Model.Filters, Model.Distincts))
+        @Html.Partial("_Filters", new FiltersModel(Model.Distincts, Model.Filters, true))
     </form>
-    <br/>
+    <br />
     <h3>Result Statistics</h3>
+    @{
+        var displayRequest = Model.Filters.CollationType == CollationType.Requests;
+        var typeText = displayRequest ? "Requests" : "Tests";
+        var titleText = displayRequest ? "Request" : "Test";
+    }
     <div>Average Duration: @Model.Stats.AverageDuration ms</div>
-    <div>Number of Requests: @Model.Stats.DurationCount</div>
-    <br/>
+    <div>Number of @typeText: @Model.Stats.DurationCount</div>
+    <br />
+    <div>90<sup>th</sup> Percentile: @Model.Stats.Percentile90Th ms</div>
+    <br />
     <div>Standard Deviation: @Model.Stats.StandardDeviation ms</div>
-    <br/>
-    <div>Average Duration of Requests within @Model.Stats.Filters.Deviations Std Devs of Avg: @Model.Stats.AverageDurationWithinDeviations ms</div>
-    <div>Number of Requests within @Model.Stats.Filters.Deviations Std Devs of Avg: @Model.Stats.DurationWithinDeviationsCount </div>
-    <br/>
-    <div>Number of Requests outside of @Model.Stats.Filters.Deviations Std Devs from Avg: @Model.Stats.RequestsOutsideOfDeviations </div>
-    <div>Percentage of Requests outside of @Model.Stats.Filters.Deviations Std Devs from Avg: @Model.Stats.PercentageOutsideOfDeviations% </div>
-    <br/>
-    <h3>Status Code Counts</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Status Code</th>
-                <th>Count</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model.Stats.StatusCodeCounts)
+    <br />
+    <div>Average Duration of @typeText within @Model.Stats.Filters.Deviations Std Devs of Avg: @Model.Stats.AverageDurationWithinDeviations ms</div>
+    <div>Number of @typeText within @Model.Stats.Filters.Deviations Std Devs of Avg: @Model.Stats.DurationWithinDeviationsCount </div>
+    <br />
+    <div>Number of @typeText outside of @Model.Stats.Filters.Deviations Std Devs from Avg: @Model.Stats.RequestsOutsideOfDeviations </div>
+    <div>Percentage of @typeText outside of @Model.Stats.Filters.Deviations Std Devs from Avg: @Model.Stats.PercentageOutsideOfDeviations% </div>
+    <br />
+
+    @{
+        if (displayRequest)
         {
-            <tr>
-                <td>@((int)item.StatusCode) (@item.StatusCode)</td>
-                <td>@item.Count</td>
-            </tr>
+            <h3>Status Code Counts</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Status Code</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Stats.StatusCodeCounts)
+                    {
+                        <tr>
+                            <td>@((int)item.StatusCode) (@item.StatusCode)</td>
+                            <td>@item.Count</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <br />
         }
-        </tbody>
-    </table>
-    <br/>
-    <h3>Slowest Request Durations</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Duration (ms)</th>
-                <th>Method</th>
-                <th>Request Url</th>
-                <th>Status Code</th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model.Stats.SlowestRequests)
-        {
-            <tr>
-                <td>@item.ElapsedMilliseconds</td>
-                <td>@item.Method</td>
-                <td>@item.RequestUrl</td>
-                <td>@((int)item.StatusCode) (@item.StatusCode)</td>
-            </tr>
-        }
-        </tbody>
-    </table>
-    <br/>
-    <h3>Fastest Request Durations</h3>
+    }
+    <h3>Slowest @titleText Durations</h3>
     <table>
         <thead>
             <tr>
                 <th>Duration (ms)</th>
-                <th>Method</th>
-                <th>Request Url</th>
-                <th>Status Code</th>
+                @{
+                    if (displayRequest)
+                    {
+                        <th>Method</th>
+                        <th>Request Url</th>
+                        <th>Status Code</th>
+                    }
+                    else
+                    {
+                        <th>Test</th>
+                    }
+                }
             </tr>
         </thead>
         <tbody>
-        @foreach (var item in Model.Stats.FastestRequests)
-        {
+            @foreach (var item in Model.Stats.SlowestRequests)
+            {
+                <tr>
+                    <td>@item.ElapsedMilliseconds</td>
+                    @{
+                        if (displayRequest)
+                        {
+                            <td>@item.Method</td>
+                            <td>@item.RequestUrl</td>
+                            <td>@((int)item.StatusCode) (@item.StatusCode)</td>
+                        }
+                        else
+                        {
+                            <td>@item.RequestUrl</td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+    <br />
+    <h3>Fastest @titleText Durations</h3>
+    <table>
+        <thead>
             <tr>
-                <td>@item.ElapsedMilliseconds</td>
-                <td>@item.Method</td>
-                <td>@item.RequestUrl</td>
-                <td>@((int)item.StatusCode) (@item.StatusCode)</td>
+                <th>Duration (ms)</th>
+                @{
+                    if (displayRequest)
+                    {
+                        <th>Method</th>
+                        <th>Request Url</th>
+                        <th>Status Code</th>
+                    }
+                    else
+                    {
+                        <th>Test</th>
+                    }
+                }
             </tr>
-        }
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Stats.FastestRequests)
+            {
+                <tr>
+                    <td>@item.ElapsedMilliseconds</td>
+                    @{
+                        if (displayRequest)
+                        {
+                            <td>@item.Method</td>
+                            <td>@item.RequestUrl</td>
+                            <td>@((int)item.StatusCode) (@item.StatusCode)</td>
+                        }
+                        else
+                        {
+                            <td>@item.RequestUrl</td>
+                        }
+                    }
+                </tr>
+            }
         </tbody>
     </table>
 </div>
