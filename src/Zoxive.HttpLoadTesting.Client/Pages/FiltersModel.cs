@@ -4,13 +4,15 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 {
     public class FiltersModel
     {
-        public FiltersModel(Filters filters, HttpStatusResultDistincts distincts)
+        public FiltersModel(HttpStatusResultDistincts distincts, Filters filters, bool showCollationType)
         {
-            Filters = filters;
             Distincts = distincts;
+            Filters = filters;
+            ShowCollationType = showCollationType;
         }
 
         public HttpStatusResultDistincts Distincts { get; }
         public Filters Filters { get; }
+        public bool ShowCollationType { get; }
     }
 }

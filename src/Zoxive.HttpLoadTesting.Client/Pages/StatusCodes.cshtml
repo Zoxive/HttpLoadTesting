@@ -7,14 +7,14 @@
 <h2>LineGraph</h2>
 
 <form method="get">
-    
-    @Html.Partial("_Filters", new FiltersModel(Model.Filters, Model.Distincts))
+
+    @Html.Partial("_Filters", new FiltersModel(Model.Distincts, Model.Filters, false))
 
     <div class="inline">
         Period in minutes:
-        <input name="period" type="text" value="@Model.Filters.Period"/>
+        <input name="period" type="text" value="@Model.Filters.Period" />
     </div>
-    
+
     <button type="submit">Go</button>
 </form>
 
@@ -23,26 +23,26 @@
 <script type="text/javascript">
 
 var chartColors = {
-	blue: 'rgb(54, 162, 235)',
-	coral: 'rgb(255, 127, 80)',
-	darkBlue: 'rgb(0, 0, 153)',
+    blue: 'rgb(54, 162, 235)',
+    coral: 'rgb(255, 127, 80)',
+    darkBlue: 'rgb(0, 0, 153)',
     darkGreen: 'rgb(0, 100, 0)',
     darkRed: 'rgb(139, 0, 0)',
     greenYellow: 'rgb(173, 255, 47)',
-	grey: 'rgb(201, 203, 207)',
-	magenta: 'rgb(255, 0, 255)',
+    grey: 'rgb(201, 203, 207)',
+    magenta: 'rgb(255, 0, 255)',
     midnightBlue: 'rgb(25, 25, 112)',
-	orange: 'rgb(255, 159, 64)',
-	purple: 'rgb(128, 0, 128)',
-	red: 'rgb(255, 0, 0)',
-	saddleBrown: 'rgb(139, 69, 19)',
+    orange: 'rgb(255, 159, 64)',
+    purple: 'rgb(128, 0, 128)',
+    red: 'rgb(255, 0, 0)',
+    saddleBrown: 'rgb(139, 69, 19)',
     salmon: '(250, 128, 114)',
-	sandyBrown: 'rgb(244, 164, 96)',
-	seaGreen: 'rgb(46, 139, 87)',
-	skyBlue: 'rgb(135, 206, 235)',
+    sandyBrown: 'rgb(244, 164, 96)',
+    seaGreen: 'rgb(46, 139, 87)',
+    skyBlue: 'rgb(135, 206, 235)',
     springGreen: 'rgb(0, 255, 127)',
     tan: 'rgb(210, 180, 140)',
-	yellow: 'rgb(255, 205, 86)'
+    yellow: 'rgb(255, 205, 86)'
 };
 
 var data =

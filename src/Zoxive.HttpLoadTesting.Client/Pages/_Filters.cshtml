@@ -1,26 +1,29 @@
 ﻿@model FiltersModel
 
-<script>
-    function collationTypeChanged() {
-        var collationType = document.getElementsByName("collationType")[0].value;
+@if (Model.ShowCollationType)
+{
+    <script>
+        function collationTypeChanged() {
+            var collationType = document.getElementsByName("collationType")[0].value;
 
-        var showTests = collationType === "Tests";
+            var showTests = collationType === "Tests";
 
-        showHide("testDiv", showTests);
-        showHide("methodDiv", !showTests);
-        showHide("requestUrlDiv", !showTests);
-        showHide("statusCodeDiv", !showTests);
-    }
+            showHide("testDiv", showTests);
+            showHide("methodDiv", !showTests);
+            showHide("requestUrlDiv", !showTests);
+            showHide("statusCodeDiv", !showTests);
+        }
 
-    function showHide(name, show) {
-        var elements = document.getElementsByName(name);
-        if (elements.length < 1) return;
-        elements[0].hidden = !show;
-    }
-</script>
+        function showHide(name, show) {
+            var elements = document.getElementsByName(name);
+            if (elements.length < 1) return;
+            elements[0].hidden = !show;
+        }
+    </script>
+}
 
 <div>
-    <div>
+    <div style="display: @(Model.ShowCollationType?"block":"none");">
         Collation Type:
         <select name="collationType" onchange="collationTypeChanged()">
             @foreach (var collationType in Model.Distincts.CollationTypes)
@@ -77,6 +80,9 @@
     <button type="submit">Go</button>
 </div>
 
-<script>
-    collationTypeChanged();
-</script>
+@if (Model.ShowCollationType)
+{
+    <script>
+        collationTypeChanged();
+    </script>
+}

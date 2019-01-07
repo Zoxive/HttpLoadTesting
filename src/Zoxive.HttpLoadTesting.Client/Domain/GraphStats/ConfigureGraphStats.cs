@@ -11,6 +11,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.GraphStats
             services.AddSingleton<IGraphStatsService, GraphStatsService>();
             services.AddSingleton<IRequestGraphRepository, RequestGraphRepository>();
             services.AddSingleton<ITestGraphRepository, TestGraphRepository>();
+            services.AddSingleton<IStatusCodeGraphRepository, StatusCodeGraphRepository>();
         }
     }
 }

@@ -7,7 +7,7 @@
 <div>
     <h3>Statistics Calculation Options</h3>
     <form method="get">
-        @Html.Partial("_Filters", new FiltersModel(Model.Filters, Model.Distincts))
+        @Html.Partial("_Filters", new FiltersModel(Model.Distincts, Model.Filters, true))
     </form>
     <br />
     <h3>Result Statistics</h3>

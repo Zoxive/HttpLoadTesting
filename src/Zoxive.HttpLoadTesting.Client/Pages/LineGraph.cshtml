@@ -8,7 +8,7 @@
 
 <form method="get">
 
-    @Html.Partial("_Filters", new FiltersModel(Model.Filters, Model.Distincts))
+    @Html.Partial("_Filters", new FiltersModel(Model.Distincts, Model.Filters, true))
 
     <div class="inline">
         Period in minutes:
