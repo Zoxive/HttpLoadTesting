@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Zoxive.HttpLoadTesting.Client.Framework;
 
 namespace Zoxive.HttpLoadTesting.Client
@@ -63,9 +64,15 @@ namespace Zoxive.HttpLoadTesting.Client
             });
 
             services.AddSingleton<Microsoft.AspNetCore.Mvc.RazorPages.Internal.AuthorizationPageApplicationModelProvider>();
+
+            services.AddLogging(builder =>
+            {
+                builder.SetMinimumLevel(LogLevel.Warning);
+                builder.AddConsole();
+            });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app)
         {
             var assembly = GetType().Assembly;
             var embededFileProvider = new DirectoryFriendlyEmbeddedFileProvider(assembly, "Zoxive.HttpLoadTesting.Client.wwwroot");
@@ -77,8 +84,6 @@ namespace Zoxive.HttpLoadTesting.Client
                 FileProvider = embededFileProvider
             });
             app.UseMvc();
-
-            loggerFactory.AddConsole(LogLevel.Warning);
         }
     }
 }
