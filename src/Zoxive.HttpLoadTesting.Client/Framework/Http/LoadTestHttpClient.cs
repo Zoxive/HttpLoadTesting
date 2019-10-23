@@ -60,7 +60,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         public Task<HttpResponseMessage> Patch(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
-            var request = new HttpRequestMessage(new HttpMethod("Patch"), GetUrl(relativePath))
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), GetUrl(relativePath))
             {
                 Content = content
             };
