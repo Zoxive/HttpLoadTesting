@@ -41,6 +41,11 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
             return LogStatusResult(() => _loadTestHttpClient.Put(relativePath, content, alterHttpRequestMessagePerRequest));
         }
 
+        public Task<HttpResponseMessage> Patch(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
+        {
+            return LogStatusResult(() => _loadTestHttpClient.Patch(relativePath, content, alterHttpRequestMessagePerRequest));
+        }
+
         public Task<HttpResponseMessage> Get(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             return LogStatusResult(() => _loadTestHttpClient.Get(relativePath, alterHttpRequestMessagePerRequest));

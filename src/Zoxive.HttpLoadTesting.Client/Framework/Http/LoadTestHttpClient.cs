@@ -58,6 +58,15 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
             return SendAsync(request, alterHttpRequestMessagePerRequest);
         }
 
+        public Task<HttpResponseMessage> Patch(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
+        {
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), GetUrl(relativePath))
+            {
+                Content = content
+            };
+            return SendAsync(request, alterHttpRequestMessagePerRequest);
+        }
+
         public Task<HttpResponseMessage> Get(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, GetUrl(relativePath));
