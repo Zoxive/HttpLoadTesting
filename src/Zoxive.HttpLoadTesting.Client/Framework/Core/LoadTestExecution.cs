@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.Extensions.Hosting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Zoxive.HttpLoadTesting.Client;
 using Zoxive.HttpLoadTesting.Client.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -14,16 +16,20 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     public class LoadTestExecution : ILoadTestExecution
     {
         private readonly IReadOnlyList<IHttpUser> _httpUsers;
+        private readonly ClientOptions _options;
+        private readonly HostRef _host;
         private ValueStopwatch _executionTimestamp;
 
         public event UserIterationFinished UserIterationFinished;
 
-        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers)
+        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers, ClientOptions options, HostRef host)
         {
             _httpUsers = httpUsers;
+            _options = options;
+            _host = host;
         }
 
-        public async Task Execute(IReadOnlyList<ISchedule> schedule, CancellationToken? token = null)
+        public async Task Execute(IReadOnlyList<ISchedule> schedule) 
         {
             Console.WriteLine("Loaded {0} Tests.", _httpUsers.SelectMany(u => u.Tests).Distinct().Count());
 
@@ -39,7 +45,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             {
                 var startTick = Env.Milliseconds;
 
-                if (Canceled(token))
+                if (Canceled())
                 {
                     Shutdown(context);
                     break;
@@ -69,7 +75,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }
         }
 
-        private static void Shutdown(ITestExecutionContextInternal context)
+        private void Shutdown(ITestExecutionContextInternal context)
         {
             Console.WriteLine("Stopping Users");
             RemoveUsers(context.CurrentUsers, context);
@@ -78,11 +84,16 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             Console.WriteLine();
 
             Console.WriteLine("Total Test Time: {0} Minutes", context.TotalMinutes);
+
+            if (_options.StopApplicationWhenComplete)
+            {
+                _host.StopApplication();
+            }
         }
 
-        private static bool Canceled(CancellationToken? token)
+        private bool Canceled()
         {
-            if (token?.IsCancellationRequested == true)
+            if (_options.CancelTokenSource.Token.IsCancellationRequested == true)
             {
                 Console.WriteLine("Canceling..");
 

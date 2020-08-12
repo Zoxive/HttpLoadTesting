@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using System.Diagnostics;
 
 namespace Zoxive.HttpLoadTesting.Client.Framework.Extensions
 {

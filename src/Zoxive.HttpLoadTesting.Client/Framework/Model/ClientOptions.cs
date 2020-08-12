@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace Zoxive.HttpLoadTesting.Framework.Model
 {
@@ -24,11 +25,17 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
             }
         }
 
+        public bool StopApplicationWhenComplete { get; }
+
         public bool Viewing { get; private set; }
 
-        public ClientOptions(string databaseFile)
+        public CancellationTokenSource CancelTokenSource { get; }
+
+        public ClientOptions(string databaseFile = null, CancellationTokenSource cancelToken = null, bool? stopAppWhenComplete = false)
         {
             DatabaseFile = databaseFile;
+            CancelTokenSource = cancelToken ?? new CancellationTokenSource();
+            StopApplicationWhenComplete = stopAppWhenComplete ?? false;
         }
     }
 }

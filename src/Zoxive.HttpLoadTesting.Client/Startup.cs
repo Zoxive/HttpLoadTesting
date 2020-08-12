@@ -6,18 +6,35 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Zoxive.HttpLoadTesting.Client.Framework;
+using Zoxive.HttpLoadTesting.Framework.Model;
+using IApplicationLifetime = Microsoft.AspNetCore.Hosting.IApplicationLifetime;
 
 namespace Zoxive.HttpLoadTesting.Client
 {
+    public class HostRef
+    {
+        private readonly ClientOptions _options;
+
+        public HostRef(ClientOptions options)
+        {
+            _options = options;
+        }
+
+        public void StopApplication()
+        {
+            _options.CancelTokenSource.Cancel();
+        }
+    }
+
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<HostRef>();
+
             services.AddRouting();
             services.AddMvcCore()
-                .AddJsonFormatters()
                 .AddAuthorization()
                 .AddRazorPages();
 

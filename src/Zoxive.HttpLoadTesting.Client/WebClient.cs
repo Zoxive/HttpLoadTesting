@@ -11,23 +11,20 @@ namespace Zoxive.HttpLoadTesting.Client
 {
     public class WebClient
     {
-        public static void Run(ILoadTestExecution testExecution, IReadOnlyList<ISchedule> schedule, IHttpStatusResultService httpStatusResultService, ClientOptions clientOptions)
+        public static void Run(IReadOnlyList<IHttpUser> users, IReadOnlyList<ISchedule> schedule, IHttpStatusResultService httpStatusResultService, ClientOptions clientOptions)
         {
-            var cancellationSource = new CancellationTokenSource();
             Console.CancelKeyPress += ((sender, cancelEventArgs) =>
             {
-                cancellationSource.Cancel();
+                clientOptions.CancelTokenSource.Cancel();
                 cancelEventArgs.Cancel = true;
             });
 
-            //var t = new Timer(_ => { cancellationSource.Cancel(); }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(0));
-
-            var webUi = Program.StartAsync(testExecution, schedule, httpStatusResultService, cancellationSource.Token, clientOptions);
+            var webUi = Program.StartAsync(users, schedule, httpStatusResultService, clientOptions);
 
             Task.WaitAll(webUi);
         }
 
-        public static void Run(ILoadTestExecution testExecution, IReadOnlyList<ISchedule> schedule, IHttpStatusResultService httpStatusResultService, string[] args)
+        public static void Run(IReadOnlyList<IHttpUser> users, IReadOnlyList<ISchedule> schedule, IHttpStatusResultService httpStatusResultService, string[] args)
         {
             var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
@@ -35,9 +32,9 @@ namespace Zoxive.HttpLoadTesting.Client
 
             Patch1.Frequency = config.GetValue<long?>("frequency");
 
-            var clientOptions = new ClientOptions(config.GetValue<string>("databaseFile"));
+            var clientOptions = new ClientOptions(config.GetValue<string>("databaseFile"), new CancellationTokenSource());
 
-            Run(testExecution, schedule, httpStatusResultService, clientOptions);
+            Run(users, schedule, httpStatusResultService, clientOptions);
         }
     }
 }

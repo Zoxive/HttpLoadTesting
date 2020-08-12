@@ -53,9 +53,7 @@ namespace Examples
                 }
             };
 
-            var testExecution = new LoadTestExecution(users);
-
-            Zoxive.HttpLoadTesting.Client.WebClient.Run(testExecution, schedule, null, args);
+            Zoxive.HttpLoadTesting.Client.WebClient.Run(users, schedule, null, args);
         }
 
         private static void SetHttpClientProperties(HttpClient httpClient)

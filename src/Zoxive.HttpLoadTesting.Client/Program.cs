@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories;
 using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories;
 using Zoxive.HttpLoadTesting.Client.Framework;
+using Zoxive.HttpLoadTesting.Client.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
@@ -21,27 +23,29 @@ namespace Zoxive.HttpLoadTesting.Client
 {
     public class Program
     {
+        public static int Main(string[] args)
+        {
+            Console.WriteLine("No op");
+            return 0;
+        }
+
         internal static Task StartAsync
         (
-            ILoadTestExecution loadTestExecution,
+            IReadOnlyList<IHttpUser> users,
             IReadOnlyList<ISchedule> schedules,
             IHttpStatusResultService httpStatusResultService,
-            CancellationToken cancellationToken,
             ClientOptions options
         )
         {
-            var host = new WebHostBuilder()
+            var host = WebHost.CreateDefaultBuilder<Startup>(new string[0])
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
                 .UseUrls("http://localhost:5000")
-                .ConfigureServices(services =>
+                .ConfigureServices((context, services) =>
                 {
                     ConfigureServices(services, httpStatusResultService, options.DatabaseFile);
-
-                    services.AddSingleton<ICancelTokenReference>(new CancelTokenReference(cancellationToken));
-
-                    services.AddSingleton(loadTestExecution);
+                    services.AddSingleton<LoadTestExecutionFactory>();
+                    services.AddSingleton(ioc => ioc.GetRequiredService<LoadTestExecutionFactory>().Create(users));
                     services.AddSingleton(schedules);
                     services.AddSingleton(options);
                 })
@@ -49,7 +53,17 @@ namespace Zoxive.HttpLoadTesting.Client
 
             var stopWebUi = new CancellationTokenSource();
 
-            cancellationToken.Register(Cancel(stopWebUi));
+            if (!options.StopApplicationWhenComplete)
+            {
+                options.CancelTokenSource.Token.Register(Cancel(stopWebUi));
+            }
+            else
+            {
+                options.CancelTokenSource.Token.Register(() =>
+                {
+                    stopWebUi.Cancel();
+                });
+            }
 
             return host.RunAsync(stopWebUi.Token);
         }
@@ -123,21 +137,6 @@ namespace Zoxive.HttpLoadTesting.Client
 
             return fileResultRepository;
         }
-    }
-
-    public class CancelTokenReference : ICancelTokenReference
-    {
-        public CancellationToken Token { get; }
-
-        public CancelTokenReference(CancellationToken token)
-        {
-            Token = token;
-        }
-    }
-
-    public interface ICancelTokenReference
-    {
-        CancellationToken Token { get; }
     }
 
     public class Db : IDbWriter, IDbReader
