@@ -1,0 +1,19 @@
+version: 2
+updates:
+- package-ecosystem: nuget
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: Microsoft.Extensions.FileProviders.Embedded
+    versions:
+    - 5.0.2
+    - 5.0.3
+    - 5.0.4
+  - dependency-name: Microsoft.Data.Sqlite
+    versions:
+    - 5.0.2
+    - 5.0.3
+    - 5.0.4
