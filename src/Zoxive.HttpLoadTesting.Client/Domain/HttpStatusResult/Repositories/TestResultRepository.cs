@@ -28,7 +28,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
             _dbConnection = dbConnection.Connection;
         }
 
-        public async Task<IEnumerable<HttpStatusResultDto>> GetTests(Filters filters)
+        public Task<IEnumerable<HttpStatusResultDto>> GetTests(Filters filters)
         {
             var sql = Sql;
 
@@ -40,7 +40,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
 
             sql += " ORDER BY ElapsedMilliseconds DESC";
 
-            return await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
+            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
 
         public Task<IEnumerable<HttpStatusResultDto>> GetSlowestTests(Filters filters)
@@ -80,7 +80,7 @@ INNER JOIN Iteration ON Iteration.Id = HttpStatusResult.IterationId
             var hasFilterValue = !string.IsNullOrWhiteSpace(filters.Test);
             if (!hasFilterValue) return "";
 
-            sqlParams.Add("testName", filters.Test);
+            sqlParams.Add("testName", filters.Test ?? string.Empty);
 
             return "WHERE TestName = @testName";
         }

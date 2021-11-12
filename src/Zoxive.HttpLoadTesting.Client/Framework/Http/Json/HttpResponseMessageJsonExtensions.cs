@@ -1,41 +1,27 @@
 ﻿using System;
-using System.IO;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Zoxive.HttpLoadTesting.Framework.Http.Json
 {
     public static class HttpResponseMessageJsonExtensions
     {
-        public static JToken AsJson(this Task<HttpResponseMessage> taskResponseMessage)
+        public static Task<T?> AsJsonAsync<T>(this HttpResponseMessage responseMessage)
         {
-            return taskResponseMessage.Result.AsJson();
+            if (!responseMessage.IsSuccessStatusCode)
+                throw new Exception($"Failed Converting HTTP Response to JSON. StatusCode was Not Success. {responseMessage.StatusCode}");
+
+            return responseMessage.Content.ReadFromJsonAsync<T>();
         }
 
-        public static JToken AsJson(this HttpResponseMessage responseMessage)
+        public static Task<JsonNode?> AsJsonAsync(this HttpResponseMessage responseMessage)
         {
-            var intStatusCode = (int)responseMessage.StatusCode;
-            if (intStatusCode >= 400)
-            {
-                throw new Exception($"Failed Converting HTTP Response to JSON. StatusCode was Not Success. {intStatusCode}");
-            }
+            if (!responseMessage.IsSuccessStatusCode)
+                throw new Exception($"Failed Converting HTTP Response to JSON. StatusCode was Not Success. {responseMessage.StatusCode}");
 
-            using (var sr = new StreamReader(responseMessage.Content.ReadAsStreamAsync().Result))
-            using (var reader = new JsonTextReader(sr))
-            {
-                var serializer = new JsonSerializer();
-
-                var o = serializer.Deserialize(reader);
-
-                if (!(o is JToken result))
-                {
-                    throw new Exception("Failed Converting HTTP Response to JSON");
-                }
-
-                return result;
-            }
+            return responseMessage.Content.ReadFromJsonAsync<JsonNode>();
         }
     }
 }

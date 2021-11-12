@@ -83,12 +83,12 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(filters.CollationType), filters.CollationType, "CollationType unknown");
             }
 
             await Task.WhenAll(results, slowestRequests, fastestRequests);
 
-            return _statisticsFactory.Create(filters, results.Result.ToList(), slowestRequests.Result, fastestRequests.Result);
+            return _statisticsFactory.Create(filters, (await results).ToList(), await slowestRequests, await fastestRequests);
         }
 
         public async Task<HttpStatusResultDistincts> GetDistincts(Filters filters)
@@ -100,7 +100,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             await Task.WhenAll(tests, methods, requestUrls, statusCodes);
 
-            return new HttpStatusResultDistincts(tests.Result, methods.Result, requestUrls.Result, statusCodes.Result);
+            return new HttpStatusResultDistincts(await tests, await methods, await requestUrls, await statusCodes);
         }
 
         private Task<IEnumerable<int>> GetDistinctStatusCodes(Filters filters)
@@ -122,7 +122,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
                 var whereClause = filterByTest ? "WHERE TestName = @testName" : "";
                 if (filterByTest)
                 {
-                    sqlParams.Add("testName", filters.Test);
+                    sqlParams.Add("testName", filters.Test ?? string.Empty);
                 }
 
                 return whereClause;

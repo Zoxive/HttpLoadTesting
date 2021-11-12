@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Zoxive.HttpLoadTesting.Framework.Core;
+using Zoxive.HttpLoadTesting.Framework.Extensions;
 using Zoxive.HttpLoadTesting.Framework.Http;
 
 namespace Examples.Tests
@@ -15,7 +16,7 @@ namespace Examples.Tests
 
         public async Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient)
         {
-            //await loadLoadTestHttpClient.DelayUserClick();
+            await loadLoadTestHttpClient.DelayUserClick();
 
             await loadLoadTestHttpClient.Get("");
         }

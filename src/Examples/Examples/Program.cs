@@ -3,7 +3,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using Examples.Tests;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Zoxive.HttpLoadTesting;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Core.Schedules;
 using Zoxive.HttpLoadTesting.Framework.Model;
@@ -26,9 +31,11 @@ namespace Examples
                 new AddUsers(totalUsers: 50, usersEvery: 10, seconds: 1),
                 new Duration(2m),
                 */
-                //new AddUsers(totalUsers: 30, usersEvery: 50, seconds: 1),
-                new AddUsers(totalUsers: 300, usersEvery: 50, seconds: 1),
+                /*
+                new AddUsers(totalUsers: 30, usersEvery: 10, seconds: 1),
                 new Duration(2m),
+                */
+                new AddUsers(totalUsers: 1, usersEvery: 1, seconds: 1),
             };
 
             var tests = new List<ILoadTest>
@@ -53,7 +60,18 @@ namespace Examples
                 }
             };
 
-            Zoxive.HttpLoadTesting.Client.WebClient.Run(users, schedule, null, args);
+
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureServices((services) =>
+                {
+                    services.AddHttpLoadTesting(users, schedule, args);
+                })
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+
+            host.Build().Run();
         }
 
         private static void SetHttpClientProperties(HttpClient httpClient)

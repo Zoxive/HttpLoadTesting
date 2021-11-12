@@ -10,11 +10,11 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos
 
         public int IterationId { get; set; }
 
-        public string Method { get; set; }
+        public string? Method { get; set; }
 
         public double ElapsedMilliseconds { get; set; }
 
-        public string RequestUrl { get; set; }
+        public string? RequestUrl { get; set; }
 
         public HttpStatusCode StatusCode { get; set; }
 

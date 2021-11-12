@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,20 +19,21 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         private readonly IReadOnlyList<IHttpUser> _httpUsers;
         private readonly ClientOptions _options;
         private readonly HostRef _host;
-        private ValueStopwatch _executionTimestamp;
+        private Stopwatch _executionTimestamp;
 
-        public event UserIterationFinished UserIterationFinished;
+        public event UserIterationFinished? UserIterationFinished;
 
         public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers, ClientOptions options, HostRef host)
         {
             _httpUsers = httpUsers;
             _options = options;
             _host = host;
+            _executionTimestamp = new Stopwatch();
         }
 
         public async Task Execute(IReadOnlyList<ISchedule> schedule) 
         {
-            Console.WriteLine("Loaded {0} Tests.", _httpUsers.SelectMany(u => u.Tests).Distinct().Count());
+            Console.WriteLine($"Loaded {_httpUsers.SelectMany(u => u.Tests).Distinct().Count()} Tests.");
 
             var context = new TestExecutionContext();
 
@@ -39,7 +41,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             var scheduleIdx = 0;
 
-            _executionTimestamp = ValueStopwatch.StartNew();
+            _executionTimestamp.Restart();
 
             while (!done)
             {
@@ -137,7 +139,10 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                     var httpUser = GetNextHttpUser(userNum);
 
+                    // TODO
+#pragma warning disable IDISP001
                     var user = new User(userNum, httpUser);
+#pragma warning restore IDISP001
 
                     Console.WriteLine($"Initializing User {userNum}");
 
@@ -154,7 +159,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                         return;
                     }
 
-                    await user.Run(_executionTimestamp.GetElapsedTime, result => UserIterationFinished?.Invoke(result));
+                    await user.Run(() => _executionTimestamp.Elapsed, result => UserIterationFinished?.Invoke(result));
                 });
 
                 addUserTasks.Add(addUserTask);

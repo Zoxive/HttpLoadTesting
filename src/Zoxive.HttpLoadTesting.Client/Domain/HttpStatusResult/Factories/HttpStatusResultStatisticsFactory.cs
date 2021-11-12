@@ -11,7 +11,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Factories
     {
         public HttpStatusResultStatistics Create(Filters filters, IReadOnlyCollection<HttpStatusResultDto> requestsResult, IEnumerable<HttpStatusResultDto> slowestRequestDtos, IEnumerable<HttpStatusResultDto> fastestRequestDtos)
         {
-            var deviations = filters.Deviations = filters.Deviations ?? 3;
+            var deviations = filters.Deviations ??= 3;
 
             var durationsDesc = requestsResult.Select(x => x.ElapsedMilliseconds).ToArray();
 

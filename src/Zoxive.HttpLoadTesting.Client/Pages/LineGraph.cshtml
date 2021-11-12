@@ -12,7 +12,7 @@
 
     <div class="inline">
         Period in minutes:
-        <input name="period" type="text" value="@Model.Filters.Period" />
+        <input name="period" type="text" value="@Model.Filters?.Period" />
     </div>
 
     <button type="submit">Go</button>
@@ -22,7 +22,7 @@
 
 <script type="text/javascript">
 
-var showingRequests = '@Model.Filters.CollationType' === '@CollationType.Requests';
+var showingRequests = '@Model.Filters?.CollationType' === '@CollationType.Requests';
 
 var chartColors = {
     red: 'rgb(255, 99, 132)',
@@ -59,7 +59,7 @@ var data =
     }
 }
 
-data.labels = new Array(@Model.GraphStatus.Count).fill(1).map((x, y) => (x + y - 1) * @Model.Filters.Period);
+data.labels = new Array(@Model.GraphStatus.Count).fill(1).map((x, y) => (x + y - 1) * @Model.Filters?.Period);
 
 add([@string.Join(", ", requests)], chartColors.blue, showingRequests ? "Requests" : "Tests", "y-axis-count");
 add([@string.Join(", ", max)], chartColors.red, "Max", "y-axis-time");

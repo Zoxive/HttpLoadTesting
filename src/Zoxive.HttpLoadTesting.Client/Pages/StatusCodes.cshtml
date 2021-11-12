@@ -8,11 +8,11 @@
 
 <form method="get">
 
-    @Html.Partial("_Filters", new FiltersModel(Model.Distincts, Model.Filters, false))
+    @await Html.PartialAsync("_Filters", new FiltersModel(Model.Distincts, Model.Filters, false))
 
     <div class="inline">
         Period in minutes:
-        <input name="period" type="text" value="@Model.Filters.Period" />
+        <input name="period" type="text" value="@Model.Filters?.Period" />
     </div>
 
     <button type="submit">Go</button>
@@ -84,12 +84,12 @@ var data =
     }
 }
 
-data.labels = new Array(@minuteGroups.Count()).fill(1).map((x, y) => (x + y - 1) * @Model.Filters.Period);
+data.labels = new Array(@minuteGroups.Count()).fill(1).map((x, y) => (x + y - 1) * @Model.Filters?.Period);
 
 @foreach (var kvp in countsByStatusCode)
 {
     var statusCode = kvp.Key;
-    @:add([@string.Join(", ", kvp.Value)], getChartColor(@statusCode), @string.Format("{0}", statusCode));
+    @:add([@string.Join(", ", kvp.Value)], getChartColor(@statusCode), @($"{statusCode}"));
 }
 
 function getChartColor(statusCode)

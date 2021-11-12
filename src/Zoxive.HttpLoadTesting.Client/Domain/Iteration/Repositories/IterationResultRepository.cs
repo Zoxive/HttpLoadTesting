@@ -8,9 +8,11 @@ using Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Dtos;
 using Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
+#nullable disable
+
 namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Repositories
 {
-    public class IterationResultRepository : IIterationResultRepository
+    public sealed class IterationResultRepository : IIterationResultRepository
     {
         private readonly DbConnection _dbConnection;
 
@@ -102,7 +104,7 @@ SELECT last_insert_rowid();";
                 _userDelay.ParameterName = "@UserDelay";
                 _insertIteration.Parameters.Add(_userDelay);
 
-                _insertIteration.Prepare();
+                await _insertIteration.PrepareAsync();
             }
 
             _iteration.Value = iterationDto.Iteration;
@@ -180,7 +182,7 @@ SELECT last_insert_rowid();";
                 _requestStartMs.ParameterName = "@RequestStartMs";
                 _httpStatusResultCommand.Parameters.Add(_requestStartMs);
 
-                _httpStatusResultCommand.Prepare();
+                await _httpStatusResultCommand.PrepareAsync();
             }
 
             foreach (var dto in inserts)
@@ -194,6 +196,13 @@ SELECT last_insert_rowid();";
 
                 await _httpStatusResultCommand.ExecuteNonQueryAsync();
             }
+        }
+
+        public void Dispose()
+        {
+            _dbConnection?.Dispose();
+            _insertIteration?.Dispose();
+            _httpStatusResultCommand?.Dispose();
         }
     }
 }

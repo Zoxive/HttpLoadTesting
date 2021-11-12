@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Zoxive.HttpLoadTesting.Client.Pages;
 
 namespace Zoxive.HttpLoadTesting.Client.Framework.Model
@@ -22,5 +23,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework.Model
         public IEnumerable<string> Methods { get; }
 
         public IEnumerable<int> StatusCodes { get; }
+
+        public static HttpStatusResultDistincts Empty = new(ArraySegment<string>.Empty, ArraySegment<string>.Empty, ArraySegment<string>.Empty, ArraySegment<int>.Empty);
     }
 }

@@ -20,7 +20,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
             _service = service;
         }
 
-        public async Task<IEnumerable<HttpStatusResultDto>> GetRequests(Filters filters)
+        public Task<IEnumerable<HttpStatusResultDto>> GetRequests(Filters filters)
         {
             var sql = "SELECT * FROM HttpStatusResult";
 
@@ -30,7 +30,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.HttpStatusResult.Repositories
 
             sql += " ORDER BY ElapsedMilliseconds DESC";
 
-            return await _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
+            return _dbConnection.QueryAsync<HttpStatusResultDto>(sql, sqlParams);
         }
 
         public Task<IEnumerable<HttpStatusResultDto>> GetSlowestRequests(Filters filters)

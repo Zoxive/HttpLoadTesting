@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Zoxive.HttpLoadTesting.Client.Pages;
 
 namespace Zoxive.HttpLoadTesting.Framework.Model
 {
     public class HttpStatusResultStatistics
     {
+        public static HttpStatusResultStatistics Empty = new(Filters.Empty, 0, 0, 0, 0, 0, 0, ArraySegment<HttpStatusCodeCount>.Empty, ArraySegment<HttpStatusResult>.Empty, ArraySegment<HttpStatusResult>.Empty);
+
         public HttpStatusResultStatistics(Filters filters, double averageDuration, long durationCount, double percentile90Th, double standardDeviation, double averageDurationWithinDeviations, long durationWithinDeviationsCount, IEnumerable<HttpStatusCodeCount> statusCodeCounts, IEnumerable<HttpStatusResult> slowestRequests, IEnumerable<HttpStatusResult> fastestRequests)
         {
             Filters = filters;

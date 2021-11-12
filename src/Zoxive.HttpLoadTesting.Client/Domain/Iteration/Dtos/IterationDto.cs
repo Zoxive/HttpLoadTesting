@@ -17,24 +17,16 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Iteration.Dtos
 
         public long UserDelay { get; set; }
 
-        public string Exception { get; set; }
+        public string? Exception { get; set; }
 
         public bool DidError { get; set; }
 
-        public string BaseUrl { get; set; }
+        public string BaseUrl { get; set; } = string.Empty;
 
         public double StartedMs { get; set; }
 
         public double ElapsedMs { get; set; }
 
-        public string TestName { get; set; }
-    }
-
-    [Table(IterationDto.Table)]
-    public class TestNamesDto
-    {
-        public string TestName { get; set; }
-
-        public int Count { get; set; }
+        public string TestName { get; set; } = string.Empty;
     }
 }

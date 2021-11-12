@@ -6,9 +6,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
     @{ var chartJs = Context.IsDebuggingEnabled() ? "Chart.js" : "Chart.bundle.min.js"; }
     <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/@chartJs"></script>
+    <style type="text/css">
+        body {
+            padding-top: 50px;
+            padding-bottom: 20px;
+        }
+
+        /* Wrapping element */
+        /* Set some basic padding to keep content from hitting the edges */
+        .body-content {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /* Carousel */
+        .carousel-caption p {
+            font-size: 20px;
+            line-height: 1.4;
+        }
+
+        /* Make .svg files in the carousel display properly in older browsers */
+        .carousel-inner .item img[src$=".svg"] {
+            width: 100%;
+        }
+
+        /* QR code generator */
+        #qrCode {
+            margin: 15px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        .inline {
+            display: inline-block;
+        }
+
+        /* Hide/rearrange for smaller screens */
+        @@media screen and (max-width: 767px) {
+            /* Hide captions */
+            .carousel-caption {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar navbar-inverse navbar-fixed-top">

@@ -55,7 +55,7 @@ order by Minute
             var hasFilterValue = !string.IsNullOrWhiteSpace(filters.Test);
             if (!hasFilterValue) return httpStatusWhere;
 
-            sqlParams.Add("testName", filters.Test);
+            sqlParams.Add("testName", filters.Test ?? string.Empty);
 
             return (string.IsNullOrWhiteSpace(httpStatusWhere) ? "WHERE " : httpStatusWhere + " AND ") + "TestName = @testName";
         }

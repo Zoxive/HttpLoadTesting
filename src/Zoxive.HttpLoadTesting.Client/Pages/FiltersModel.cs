@@ -4,10 +4,17 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 {
     public class FiltersModel
     {
-        public FiltersModel(HttpStatusResultDistincts distincts, Filters filters, bool showCollationType)
+        public FiltersModel()
         {
-            Distincts = distincts;
-            Filters = filters;
+            Distincts = HttpStatusResultDistincts.Empty;
+            Filters = Filters.Empty;
+            ShowCollationType = false;
+        }
+
+        public FiltersModel(HttpStatusResultDistincts? distincts, Filters? filters, bool showCollationType)
+        {
+            Distincts = distincts ?? HttpStatusResultDistincts.Empty;
+            Filters = filters ?? Filters.Empty;
             ShowCollationType = showCollationType;
         }
 

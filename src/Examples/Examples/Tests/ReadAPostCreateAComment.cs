@@ -18,15 +18,15 @@ namespace Examples.Tests
         // Example of initialing TestState by using the client itself
         public async Task Initialize(ILoadTestHttpClient loadLoadTestHttpClient)
         {
-            var posts = (await loadLoadTestHttpClient.Get("posts?_start=0&_limit=1")).AsJson();
+            var posts = await (await loadLoadTestHttpClient.Get("posts?_start=0&_limit=1")).AsJsonAsync<IReadOnlyList<PostListItem>>();
 
-            var post = posts.FirstOrDefault();
+            var post = posts?.FirstOrDefault();
             if (post == null)
             {
                 throw new Exception("Failing finding a post");
             }
 
-            loadLoadTestHttpClient.TestState.Add(PostId, post.Value<string>("id"));
+            loadLoadTestHttpClient.TestState.Add(PostId, post.Id);
         }
 
         public async Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient)
@@ -48,5 +48,10 @@ namespace Examples.Tests
 
             await loadLoadTestHttpClient.Post($"posts/{postId}/comments", comment);
         }
+    }
+
+    public sealed class PostListItem
+    {
+        public int Id { get; set; }
     }
 }

@@ -11,10 +11,10 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         IReadOnlyList<ILoadTest> Tests { get; }
 
-        Func<HttpMessageHandler> CreateHttpMessageHandler { get; set; }
+        Func<HttpMessageHandler>? CreateHttpMessageHandler { get; set; }
 
-        Action<HttpClient> AlterHttpClient { get; set; }
+        Action<HttpClient>? AlterHttpClient { get; set; }
 
-        Action<HttpRequestMessage> AlterHttpRequestMessage { get; set; }
+        Action<HttpRequestMessage>? AlterHttpRequestMessage { get; set; }
     }
 }

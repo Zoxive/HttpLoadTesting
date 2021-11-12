@@ -1,6 +1,14 @@
 ﻿@model FiltersModel
 
-@if (Model.ShowCollationType)
+@if (Model == null)
+{
+    <div class="alert alert-danger">
+        <strong>Error!</strong> No model found.
+    </div>
+    return;
+}
+
+@if (Model.ShowCollationType == true)
 {
     <script>
         function collationTypeChanged() {
@@ -23,7 +31,7 @@
 }
 
 <div>
-    <div style="display: @(Model.ShowCollationType?"block":"none");">
+    <div style="display: @(Model.ShowCollationType == true?"block":"none");">
         Collation Type:
         <select name="collationType" onchange="collationTypeChanged()">
             @foreach (var collationType in Model.Distincts.CollationTypes)

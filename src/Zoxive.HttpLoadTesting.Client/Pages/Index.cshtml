@@ -1,4 +1,6 @@
 ﻿@page
+@using Zoxive.HttpLoadTesting.Framework.Extensions
+@using Zoxive.HttpLoadTesting.Framework.Model
 @model IndexModel
 @{
     ViewData["Title"] = "Stats";
@@ -7,12 +9,12 @@
 <div>
     <h3>Statistics Calculation Options</h3>
     <form method="get">
-        @Html.Partial("_Filters", new FiltersModel(Model.Distincts, Model.Filters, true))
+        @await Html.PartialAsync("_Filters", new FiltersModel(Model.Distincts, Model.Filters, true))
     </form>
     <br />
     <h3>Result Statistics</h3>
     @{
-        var displayRequest = Model.Filters.CollationType == CollationType.Requests;
+        var displayRequest = Model.Filters?.CollationType == CollationType.Requests;
         var typeText = displayRequest ? "Requests" : "Tests";
         var titleText = displayRequest ? "Request" : "Test";
     }

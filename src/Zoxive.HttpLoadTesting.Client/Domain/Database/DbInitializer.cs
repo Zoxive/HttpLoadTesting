@@ -17,7 +17,7 @@ namespace Zoxive.HttpLoadTesting.Client.Domain.Database
 
             var migrator = DeployChanges.To
                 .SQLiteDatabase(db.Connection.ConnectionString)
-                .WithScriptsAndCodeEmbeddedInAssembly(typeof(Patch1).Assembly, s => s.StartsWith("Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations"))
+                .WithScriptsAndCodeEmbeddedInAssembly(typeof(Patch1).Assembly, s => s.StartsWith("Zoxive.HttpLoadTesting.Client.Domain.Database.Migrations", StringComparison.Ordinal))
                 .WithTransaction()
                 .LogToConsole()
                 .Build();

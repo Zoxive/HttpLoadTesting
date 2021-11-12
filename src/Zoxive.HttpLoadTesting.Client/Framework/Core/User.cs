@@ -10,7 +10,7 @@ using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Framework.Core
 {
-    public class User
+    public sealed class User : IDisposable
     {
         private readonly IReadOnlyList<ILoadTest> _loadTests;
         private readonly IHttpUser _httpUser;
@@ -34,13 +34,13 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             Iteration = 0;
         }
 
-        public async Task Initialize()
+        public Task Initialize()
         {
             var initializeEachTest = _loadTests
                 .Select(RetryInitialize)
                 .ToArray();
 
-            await Task.WhenAll(initializeEachTest);
+            return Task.WhenAll(initializeEachTest);
         }
 
         private async Task RetryInitialize(ILoadTest test)
@@ -82,14 +82,23 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             var task = ExecuteTest(nextTest, userSpecificClient, getCurrentTimeSpan);
 
-            await task.ContinueWith((task1, o) => 
+#pragma warning disable VSTHRD105
+#pragma warning disable AsyncFixer05
+            await task.ContinueWith((task1, o) =>
+#pragma warning restore VSTHRD105
             {
+                if (!task.IsCompleted)
+                    throw new InvalidOperationException("Task wasnt done");
+
+#pragma warning disable VSTHRD103
                 iterationResult(task.Result);
+#pragma warning restore VSTHRD103
 
                 userSpecificClient.Dispose();
 
                 return Run(getCurrentTimeSpan, iterationResult);
-            }, null, _cancellationToken.Token);
+            }, null, _cancellationToken.Token).ConfigureAwait(false);
+#pragma warning restore AsyncFixer05
         }
 
         private async Task<UserIterationResult> ExecuteTest(ILoadTest nextTest, IUserLoadTestHttpClient userLoadClient, Func<TimeSpan> getCurrentTimeSpan)
@@ -97,7 +106,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             var userTime = ValueStopwatch.StartNew();
             var startedTime = getCurrentTimeSpan();
 
-            Exception exception = null;
+            Exception? exception = null;
 
             try
             {
@@ -125,6 +134,12 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             var testIdx = currentUserIdx % _loadTests.Count;
 
             return _loadTests[testIdx];
+        }
+
+        public void Dispose()
+        {
+            _cancellationToken.Dispose();
+            _loadTestHttpClient.Dispose();
         }
     }
 }
