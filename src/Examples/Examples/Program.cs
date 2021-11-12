@@ -33,9 +33,9 @@ namespace Examples
                 */
                 /*
                 new AddUsers(totalUsers: 30, usersEvery: 10, seconds: 1),
-                new Duration(2m),
                 */
-                new AddUsers(totalUsers: 1, usersEvery: 1, seconds: 1),
+                new AddUsers(totalUsers: 30, usersEvery: 1, seconds: 1),
+                new Duration(2m),
             };
 
             var tests = new List<ILoadTest>
@@ -62,7 +62,7 @@ namespace Examples
 
 
             var host = Host.CreateDefaultBuilder(args)
-                .ConfigureServices((services) =>
+                .ConfigureServices((context, services) =>
                 {
                     services.AddHttpLoadTesting(users, schedule, args);
                 })

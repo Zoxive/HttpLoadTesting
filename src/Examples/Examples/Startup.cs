@@ -21,7 +21,6 @@ namespace Examples
 
             services.AddLogging(l =>
             {
-                l.SetMinimumLevel(LogLevel.Trace);
                 l.AddConsole();
             });
         }

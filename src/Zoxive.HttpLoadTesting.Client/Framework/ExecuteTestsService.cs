@@ -44,7 +44,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
             _loadTestExecution.UserIterationFinished += LogIteration(_saveIterationQueue);
 
-            return _loadTestExecution.Execute(_schedules);
+            return _loadTestExecution.Execute(_schedules, stoppingToken);
         }
 
         private static UserIterationFinished LogIteration(ISaveIterationQueue iterationQueueRepository)

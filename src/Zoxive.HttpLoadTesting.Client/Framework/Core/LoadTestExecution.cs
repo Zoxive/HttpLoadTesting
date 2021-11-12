@@ -1,12 +1,9 @@
-﻿using Microsoft.Extensions.Hosting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Zoxive.HttpLoadTesting.Client;
-using Zoxive.HttpLoadTesting.Client.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Framework.Core
@@ -18,20 +15,18 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     {
         private readonly IReadOnlyList<IHttpUser> _httpUsers;
         private readonly ClientOptions _options;
-        private readonly HostRef _host;
         private Stopwatch _executionTimestamp;
 
         public event UserIterationFinished? UserIterationFinished;
 
-        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers, ClientOptions options, HostRef host)
+        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers, ClientOptions options)
         {
             _httpUsers = httpUsers;
             _options = options;
-            _host = host;
             _executionTimestamp = new Stopwatch();
         }
 
-        public async Task Execute(IReadOnlyList<ISchedule> schedule) 
+        public async Task Execute(IReadOnlyList<ISchedule> schedule, CancellationToken cancellationToken)
         {
             Console.WriteLine($"Loaded {_httpUsers.SelectMany(u => u.Tests).Distinct().Count()} Tests.");
 
@@ -47,7 +42,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             {
                 var startTick = Env.Milliseconds;
 
-                if (Canceled())
+                if (Canceled(cancellationToken))
                 {
                     Shutdown(context);
                     break;
@@ -55,7 +50,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                 var scheduleItem = schedule[scheduleIdx];
 
-                if (await Execute(scheduleItem, context))
+                if (await Execute(scheduleItem, context, cancellationToken))
                 {
                     scheduleIdx++;
 
@@ -89,13 +84,13 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
             if (_options.StopApplicationWhenComplete)
             {
-                _host.StopApplication();
+                throw new NotImplementedException("TODO implement stop when complete");
             }
         }
 
-        private bool Canceled()
+        private static bool Canceled(CancellationToken cancellationToken)
         {
-            if (_options.CancelTokenSource.Token.IsCancellationRequested == true)
+            if (cancellationToken.IsCancellationRequested)
             {
                 Console.WriteLine("Canceling..");
 
@@ -105,7 +100,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             return false;
         }
 
-        private async Task<bool> Execute(ISchedule scheduleItem, ITestExecutionContext context)
+        private async Task<bool> Execute(ISchedule scheduleItem, ITestExecutionContext context, CancellationToken cancellationToken)
         {
             var result = scheduleItem.Execute(context);
 
@@ -114,7 +109,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                 var internalContext = (ITestExecutionContextInternal)context;
                 if (result.UsersChanged > 0)
                 {
-                    await AddNewUsers(result.UsersChanged, internalContext);
+                    await AddNewUsers(result.UsersChanged, internalContext, cancellationToken);
                 }
                 else
                 {
@@ -125,7 +120,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             return result.ScheduleComplete;
         }
 
-        private Task AddNewUsers(int usersChanged, ITestExecutionContextInternal context)
+        private Task AddNewUsers(int usersChanged, ITestExecutionContextInternal context, CancellationToken cancellationToken)
         {
             Console.WriteLine("Adding {0} Users", usersChanged);
 
@@ -135,6 +130,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             {
                 var addUserTask = Task.Run(async () =>
                 {
+                    if (cancellationToken.IsCancellationRequested)
+                        return;
+
                     var userNum = context.UserInitializing();
 
                     var httpUser = GetNextHttpUser(userNum);
@@ -160,12 +158,18 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                     }
 
                     await user.Run(() => _executionTimestamp.Elapsed, result => UserIterationFinished?.Invoke(result));
-                });
+                }, cancellationToken);
 
                 addUserTasks.Add(addUserTask);
             }
 
-            return Task.WhenAll(addUserTasks);
+            var cancellationTask = new TaskCompletionSource();
+            cancellationToken.Register(() =>
+            {
+                cancellationTask.TrySetCanceled();
+            });
+
+            return Task.WhenAny(Task.WhenAll(addUserTasks), cancellationTask.Task);
         }
 
         private IHttpUser GetNextHttpUser(int userNum)

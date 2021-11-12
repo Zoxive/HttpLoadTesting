@@ -13,11 +13,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public bool Viewing { get; }
 
-#pragma warning disable IDISP008
-        public CancellationTokenSource CancelTokenSource { get; }
-#pragma warning restore IDISP008
-
-        public ClientOptions(string? databaseFile = null, CancellationTokenSource? cancelToken = null, bool? stopAppWhenComplete = false)
+        public ClientOptions(string? databaseFile = null, bool? stopAppWhenComplete = false)
         {
 
             if (string.IsNullOrWhiteSpace(databaseFile))
@@ -31,7 +27,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
                 Viewing = true;
             }
 
-            CancelTokenSource = cancelToken ?? new CancellationTokenSource();
             StopApplicationWhenComplete = stopAppWhenComplete ?? false;
         }
 
@@ -42,7 +37,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
                 .Build();
 
             Patch1.Frequency = config.GetValue<long?>("frequency");
-            return new ClientOptions(config.GetValue<string?>("databaseFile"), new CancellationTokenSource());
+            return new ClientOptions(config.GetValue<string?>("databaseFile"));
         }
     }
 }

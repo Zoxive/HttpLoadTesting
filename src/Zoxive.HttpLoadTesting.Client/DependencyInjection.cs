@@ -42,7 +42,6 @@ namespace Zoxive.HttpLoadTesting
 
             var readerConnection = new SqliteConnection(connectionString);
 
-            services.AddSingleton<HostRef>();
             services.AddSingleton<LoadTestExecutionFactory>();
             services.AddSingleton<IDbReader>(new Db(readerConnection));
 
