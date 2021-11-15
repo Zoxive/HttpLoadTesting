@@ -15,14 +15,18 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     {
         private readonly IReadOnlyList<IHttpUser> _httpUsers;
         private readonly ClientOptions _options;
-        private Stopwatch _executionTimestamp;
+        private readonly UserExecutingQueue _executingQueue;
+        private readonly Stopwatch _executionTimestamp;
 
+        #pragma warning disable CS0067
         public event UserIterationFinished? UserIterationFinished;
+        #pragma warning restore CS0067
 
-        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers, ClientOptions options)
+        public LoadTestExecution(IReadOnlyList<IHttpUser> httpUsers, ClientOptions options, UserExecutingQueue executingQueue)
         {
             _httpUsers = httpUsers;
             _options = options;
+            _executingQueue = executingQueue;
             _executionTimestamp = new Stopwatch();
         }
 
@@ -67,7 +71,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                 if (!done && tickSinceStart < 1000)
                 {
-                    await Task.Delay((int) (1000 - tickSinceStart));
+                    await Task.Delay((int) (1000 - tickSinceStart), cancellationToken);
                 }
             }
         }
@@ -110,6 +114,8 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                 if (result.UsersChanged > 0)
                 {
                     await AddNewUsers(result.UsersChanged, internalContext, cancellationToken);
+
+                    Console.WriteLine("done adding users");
                 }
                 else
                 {
@@ -137,27 +143,23 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                     var httpUser = GetNextHttpUser(userNum);
 
-                    // TODO
 #pragma warning disable IDISP001
-                    var user = new User(userNum, httpUser);
+                    var user = new User(userNum, httpUser, () => _executionTimestamp.Elapsed, result => UserIterationFinished?.Invoke(result), context);
 #pragma warning restore IDISP001
 
                     Console.WriteLine($"Initializing User {userNum}");
 
-                    try
+                    if (_options.InitializeBeforeAddingUsers)
                     {
                         await user.Initialize();
-                        context.UserInitialized(user);
-
-                        Console.WriteLine($"Added User {userNum}");
                     }
-                    catch (Exception)
+
+                    if (!_executingQueue.TryWrite(user))
                     {
-                        Console.WriteLine($"GAVE UP Trying to initialize User {userNum}");
-                        return;
+                        throw new Exception("Failed to add user to executing queue");
                     }
 
-                    await user.Run(() => _executionTimestamp.Elapsed, result => UserIterationFinished?.Invoke(result));
+                    Console.WriteLine($"Added User {userNum}");
                 }, cancellationToken);
 
                 addUserTasks.Add(addUserTask);

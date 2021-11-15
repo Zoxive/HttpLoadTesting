@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Zoxive.HttpLoadTesting.Framework.Http;
 
 namespace Zoxive.HttpLoadTesting.Framework.Core
@@ -9,6 +10,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         Task Initialize(ILoadTestHttpClient loadLoadTestHttpClient);
 
-        Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient);
+        Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient, CancellationToken? cancellationToken = null);
     }
 }

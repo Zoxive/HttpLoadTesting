@@ -5,14 +5,14 @@ namespace Zoxive.HttpLoadTesting.Framework.Core.Schedules
 {
     public class AddUsers : ISchedule
     {
-        public AddUsers(int totalUsers, int usersEvery, int seconds)
+        public AddUsers(int totalUsers, int usersEvery, double seconds)
         {
             Users = totalUsers;
             UsersEvery = usersEvery;
             AddUsersEverySeconds = seconds;
         }
 
-        public int AddUsersEverySeconds { get; }
+        public double AddUsersEverySeconds { get; }
 
         public int UsersEvery { get; }
 

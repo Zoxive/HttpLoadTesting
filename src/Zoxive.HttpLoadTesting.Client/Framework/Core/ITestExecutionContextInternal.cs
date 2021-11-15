@@ -1,6 +1,6 @@
 ﻿namespace Zoxive.HttpLoadTesting.Framework.Core
 {
-    internal interface ITestExecutionContextInternal : ITestExecutionContext
+    public interface ITestExecutionContextInternal : ITestExecutionContext
     {
         int UserInitializing();
 

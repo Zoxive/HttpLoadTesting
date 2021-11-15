@@ -49,7 +49,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             {
                 for (var i = 0; i < count; i++)
                 {
-                    var user = _currentUsers[_currentUsers.Count - 1];
+                    var user = _currentUsers[^1];
                     user.Stop();
                     _currentUsers.Remove(user);
                 }

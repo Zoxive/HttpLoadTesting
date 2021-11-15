@@ -13,7 +13,9 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public bool Viewing { get; }
 
-        public ClientOptions(string? databaseFile = null, bool? stopAppWhenComplete = false)
+        public bool InitializeBeforeAddingUsers { get; set; }
+
+        public ClientOptions(string? databaseFile = null, bool? stopAppWhenComplete = false, bool? initializeBeforeAddingUsers = false)
         {
 
             if (string.IsNullOrWhiteSpace(databaseFile))
@@ -28,6 +30,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
             }
 
             StopApplicationWhenComplete = stopAppWhenComplete ?? false;
+            InitializeBeforeAddingUsers = initializeBeforeAddingUsers ?? false;
         }
 
         public static ClientOptions FromArgs(string[] args)

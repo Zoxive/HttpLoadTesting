@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,9 +18,12 @@ namespace Zoxive.HttpLoadTesting
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddHttpLoadTesting(this IServiceCollection services, IReadOnlyList<IHttpUser> users, IReadOnlyList<ISchedule> schedules, string[] args, IHttpStatusResultService? httpStatusResultService = null)
+        public static IServiceCollection AddHttpLoadTesting(this IServiceCollection services, IReadOnlyList<IHttpUser> users, IReadOnlyList<ISchedule> schedules, string[] args, Action<ClientOptions>? configureOptions = null, IHttpStatusResultService? httpStatusResultService = null)
         {
             var clientOptions = ClientOptions.FromArgs(args);
+
+            configureOptions?.Invoke(clientOptions);
+
             return AddHttpLoadTesting(services, users, schedules, clientOptions, httpStatusResultService);
         }
 
@@ -82,6 +86,9 @@ namespace Zoxive.HttpLoadTesting
                 var queue = ioc.GetRequiredService<ISaveIterationQueue>();
                 return new SaveIterationResultBackgroundService(transaction, repo, queue, "File");
             });
+
+            services.AddSingleton<UserExecutingQueue>();
+            services.AddHostedService<UserExecutionBackgroundService>();
 
             Client.Domain.GraphStats.ConfigureGraphStats.ConfigureServices(services);
         }

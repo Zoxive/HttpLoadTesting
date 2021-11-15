@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Zoxive.HttpLoadTesting.Framework.Core;
 using Zoxive.HttpLoadTesting.Framework.Extensions;
@@ -29,7 +30,7 @@ namespace Examples.Tests
             loadLoadTestHttpClient.TestState.Add(PostId, post.Id);
         }
 
-        public async Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient)
+        public async Task Execute(IUserLoadTestHttpClient loadLoadTestHttpClient, CancellationToken? cancellationToken = null)
         {
             await loadLoadTestHttpClient.DelayUserClick();
 
