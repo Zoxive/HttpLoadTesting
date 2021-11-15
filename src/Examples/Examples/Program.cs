@@ -34,7 +34,8 @@ namespace Examples
                 /*
                 new AddUsers(totalUsers: 30, usersEvery: 10, seconds: 1),
                 */
-                new AddUsers(totalUsers: 300, usersEvery: 1, seconds: 1),
+                //new AddUsers(totalUsers: 300, usersEvery: 1, seconds: 1),
+                new AddUsers(totalUsers: 1, usersEvery: 1, seconds: 1),
                 new Duration(2m),
             };
 

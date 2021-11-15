@@ -11,20 +11,33 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     public sealed class UserExecutionBackgroundService : BackgroundService
     {
         private readonly UserExecutingQueue _userExecutingQueue;
+        private readonly TestExecutionToken _testExecutionToken;
 
         private readonly ConcurrentDictionary<User, Task> _users;
 
-        public UserExecutionBackgroundService(UserExecutingQueue userExecutingQueue)
+        public UserExecutionBackgroundService(UserExecutingQueue userExecutingQueue, TestExecutionToken testExecutionToken)
         {
             _userExecutingQueue = userExecutingQueue;
+            _testExecutionToken = testExecutionToken;
             _users = new ConcurrentDictionary<User, Task>();
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var testToken = _testExecutionToken.Token;
+
+            testToken.Register(() =>
+            {
+                foreach (var (user, _) in _users)
+                {
+                    user.Stop();
+                    _users.TryRemove(user, out _);
+                }
+            });
+
             await foreach (var user in _userExecutingQueue.ReadAllAsync(stoppingToken))
             {
-                StartRunningUser(user, stoppingToken);
+                StartRunningUser(user, testToken);
             }
         }
 
@@ -41,7 +54,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
                 while (!cancellationToken.IsCancellationRequested && user.IsRunning)
                 {
-                    await user.Run(cancellationToken);
+                    await user.Run();
                 }
             }, cancellationToken));
 
@@ -53,10 +66,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             if (sender is User user)
             {
                 _users.TryRemove(user, out _);
-
-#pragma warning disable IDISP007
-                user.Dispose();
-#pragma warning restore IDISP007
             }
         }
     }

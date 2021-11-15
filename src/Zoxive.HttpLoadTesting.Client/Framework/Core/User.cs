@@ -94,30 +94,15 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }
         }
 
-        public Task Run(CancellationToken cancellationToken)
+        public Task Run()
         {
             // Stop Executing
-            if (_cancellationToken.IsCancellationRequested || cancellationToken.IsCancellationRequested)
+            if (_cancellationToken.IsCancellationRequested)
                 return Task.CompletedTask;
-
 
             var nextTest = GetNextTest(++Iteration);
 
             return ExecuteTest(nextTest, _getCurrentTimeSpan);
-
-            /*
-            await task.ContinueWith((task1, o) =>
-            {
-                if (!task.IsCompleted)
-                    throw new InvalidOperationException("Task wasnt done");
-
-                _iterationResult(task.Result);
-
-                userSpecificClient.Dispose();
-
-                return Run();
-            //}, null, _cancellationToken.Token).ConfigureAwait(false);
-            */
         }
 
         private async Task ExecuteTest(ILoadTest nextTest, Func<TimeSpan> getCurrentTimeSpan)
