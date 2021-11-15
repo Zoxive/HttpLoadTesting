@@ -144,10 +144,12 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
                     var httpUser = GetNextHttpUser(userNum);
 
 #pragma warning disable IDISP001
-                    var user = new User(userNum, httpUser, () => _executionTimestamp.Elapsed, result => UserIterationFinished?.Invoke(result), context);
+                    var user = new User(userNum, httpUser, () => _executionTimestamp.Elapsed, result => UserIterationFinished?.Invoke(result));
 #pragma warning restore IDISP001
 
                     Console.WriteLine($"Initializing User {userNum}");
+
+                    context.AddNewUser(user);
 
                     if (_options.InitializeBeforeAddingUsers)
                     {

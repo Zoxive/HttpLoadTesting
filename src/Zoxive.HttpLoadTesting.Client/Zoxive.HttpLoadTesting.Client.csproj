@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>HttpLoadTesting http load generator web client</Description>
     <AssemblyTitle>Zoxive.HttpLoadTesting.Client</AssemblyTitle>
-    <Version>0.0.30</Version>
+    <Version>0.1.1-alpha</Version>
     <Authors>Kyle Wascher</Authors>
     <TargetFramework>net6</TargetFramework>
     <LangVersion>10</LangVersion>
@@ -12,7 +12,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>Zoxive.HttpLoadTesting.Client</AssemblyName>
     <PackageTags>load tests;performance;http;rest;benchmark;test;testing;dotnetcore</PackageTags>
-    <PackageLicenseUrl>https://github.com/Zoxive/HttpLoadTesting/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Zoxive/HttpLoadTesting</RepositoryUrl>
     <IsPackable>true</IsPackable>

@@ -34,7 +34,7 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             }
         }
 
-        public void UserInitialized(User newUser)
+        public void AddNewUser(User newUser)
         {
             lock (_currentUsers)
             {

@@ -36,7 +36,8 @@ namespace Examples
                 */
                 //new AddUsers(totalUsers: 300, usersEvery: 1, seconds: 1),
                 new AddUsers(totalUsers: 1, usersEvery: 1, seconds: 1),
-                new Duration(2m),
+                new Duration(0.2m),
+                new RemoveUsers(1, 1, 1),
             };
 
             var tests = new List<ILoadTest>

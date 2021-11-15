@@ -19,7 +19,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
         private readonly Action<UserIterationResult> _iterationResult;
         private readonly CancellationTokenSource _cancellationToken;
         private readonly LoadTestHttpClient _loadTestHttpClient;
-        private readonly ITestExecutionContextInternal _context;
 
         public event EventHandler? OnStop;
 
@@ -27,14 +26,13 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
 
         public int UserNumber { get; }
 
-        public User(int userNum, IHttpUser httpUser, Func<TimeSpan> getCurrentTimeSpan, Action<UserIterationResult> iterationResult, ITestExecutionContextInternal context)
+        public User(int userNum, IHttpUser httpUser, Func<TimeSpan> getCurrentTimeSpan, Action<UserIterationResult> iterationResult)
         {
             UserNumber = userNum;
             _loadTests = httpUser.Tests;
             _httpUser = httpUser;
             _getCurrentTimeSpan = getCurrentTimeSpan;
             _iterationResult = iterationResult;
-            _context = context;
 
             _cancellationToken = new CancellationTokenSource();
 
@@ -55,7 +53,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
             try
             {
                 await Task.WhenAll(initializeEachTest);
-                _context.UserInitialized(this);
                 Initialized = true;
             }
             catch (Exception)

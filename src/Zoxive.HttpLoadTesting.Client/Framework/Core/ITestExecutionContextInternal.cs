@@ -4,7 +4,7 @@
     {
         int UserInitializing();
 
-        void UserInitialized(User newUser);
+        void AddNewUser(User newUser);
 
         void RemoveUsers(int count);
     }
