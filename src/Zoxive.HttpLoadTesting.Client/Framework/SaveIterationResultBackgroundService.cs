@@ -29,9 +29,9 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             _name = name;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Execute(stoppingToken);
+            return Execute(stoppingToken);
         }
 
         private async Task Execute(CancellationToken stoppingToken, bool runAll = false)
@@ -67,8 +67,8 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             if (stoppingToken.IsCancellationRequested)
                 return 0;
 
-            var result = await _queue.DequeueAsync(stoppingToken, 1500);
-            if (result == null) return 0;
+            var result = await _queue.DequeueAsync(1500, stoppingToken);
+            if (result == null || result.Count == 0) return 0;
 
             await _transaction.Begin();
 
@@ -108,13 +108,5 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
                 Console.WriteLine("Done.");
             }
         }
-
-        public override void Dispose()
-        {
-            base.Dispose();
-            _queue = null;
-        }
     }
-
-   
 }

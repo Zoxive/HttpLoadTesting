@@ -9,14 +9,12 @@ using Zoxive.HttpLoadTesting.Framework.Model;
 
 namespace Zoxive.HttpLoadTesting.Framework.Http
 {
-    public class UserLoadTestHttpClient : IUserLoadTestHttpClient
+    public sealed class UserLoadTestHttpClient : IUserLoadTestHttpClient
     {
-        private ILoadTestHttpClient _loadTestHttpClient;
+        private readonly ILoadTestHttpClient _loadTestHttpClient;
         private readonly Func<TimeSpan> _getCurrentTimeSpan;
-
-        private List<HttpStatusResult> _statusResults = new List<HttpStatusResult>();
-
-        private Stopwatch _stopWatch;
+        private readonly List<HttpStatusResult> _statusResults = new List<HttpStatusResult>();
+        private readonly Stopwatch _stopWatch;
 
         public UserLoadTestHttpClient(ILoadTestHttpClient loadTestHttpClient, IDictionary<string, object> testState, Func<TimeSpan> getCurrentTimeSpan)
         {
@@ -31,27 +29,27 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
         // Stores anything you need for your tests specific to this user/httpclient
         public IDictionary<string, object> TestState { get; }
 
-        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
+        public Task<HttpResponseMessage> Post(string relativePath, HttpContent content, Action<HttpRequestMessage>? alterHttpRequestMessagePerRequest = null)
         {
             return LogStatusResult(() => _loadTestHttpClient.Post(relativePath, content, alterHttpRequestMessagePerRequest));
         }
 
-        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
+        public Task<HttpResponseMessage> Put(string relativePath, HttpContent content, Action<HttpRequestMessage>? alterHttpRequestMessagePerRequest = null)
         {
             return LogStatusResult(() => _loadTestHttpClient.Put(relativePath, content, alterHttpRequestMessagePerRequest));
         }
 
-        public Task<HttpResponseMessage> Patch(string relativePath, HttpContent content, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
+        public Task<HttpResponseMessage> Patch(string relativePath, HttpContent content, Action<HttpRequestMessage>? alterHttpRequestMessagePerRequest = null)
         {
             return LogStatusResult(() => _loadTestHttpClient.Patch(relativePath, content, alterHttpRequestMessagePerRequest));
         }
 
-        public Task<HttpResponseMessage> Get(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
+        public Task<HttpResponseMessage> Get(string relativePath, Action<HttpRequestMessage>? alterHttpRequestMessagePerRequest = null)
         {
             return LogStatusResult(() => _loadTestHttpClient.Get(relativePath, alterHttpRequestMessagePerRequest));
         }
 
-        public Task<HttpResponseMessage> Delete(string relativePath, Action<HttpRequestMessage> alterHttpRequestMessagePerRequest = null)
+        public Task<HttpResponseMessage> Delete(string relativePath, Action<HttpRequestMessage>? alterHttpRequestMessagePerRequest = null)
         {
             return LogStatusResult(() => _loadTestHttpClient.Delete(relativePath, alterHttpRequestMessagePerRequest));
         }
@@ -69,9 +67,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Http
 
         public void Dispose()
         {
-            _stopWatch = null;
-            _loadTestHttpClient = null;
-            _statusResults = null;
         }
 
         public IReadOnlyList<HttpStatusResult> StatusResults()

@@ -29,7 +29,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         /// </summary> 
         /// <param name="assembly"></param> 
         public DirectoryFriendlyEmbeddedFileProvider(Assembly assembly)
-            : this(assembly, assembly?.GetName().Name)
+            : this(assembly, assembly?.GetName().Name ?? "")
         {
         }
 
@@ -43,31 +43,14 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         {
             if (assembly == null)
             {
-                throw new ArgumentNullException("assembly");
+                throw new ArgumentNullException(nameof(assembly));
             }
 
             _baseNamespace = string.IsNullOrEmpty(baseNamespace) ? string.Empty : baseNamespace + ".";
             _assembly = assembly;
             _lastModified = DateTimeOffset.UtcNow;
-
-
-            // need to keep netstandard1.0 until ASP.NET Core 2.0 because it is a breaking change if we remove it 
-#if NETSTANDARD1_5 || NET451
-            if (!string.IsNullOrEmpty(_assembly.Location)) 
-            { 
-                try 
-                { 
-                    _lastModified = File.GetLastWriteTimeUtc(_assembly.Location); 
-                } 
-                catch (PathTooLongException) 
-                { 
-                } 
-                catch (UnauthorizedAccessException) 
-                { 
-                } 
-            } 
-#endif
         }
+
         public IFileInfo GetFileInfo(string subpath)
         {
             if (string.IsNullOrEmpty(subpath))
@@ -94,7 +77,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         }
 
-        public IDirectoryContents GetDirectoryContents(string subpath)
+        public IDirectoryContents GetDirectoryContents(string? subpath)
         {
 
             // The file name is assumed to be the remainder of the resource name. 
@@ -105,7 +88,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
             var encodedPath = EncodeAsResourcesPath(subpath);
             var resourcePath = _baseNamespace + encodedPath;
-            if (!resourcePath.EndsWith("."))
+            if (!resourcePath.EndsWith(".", StringComparison.Ordinal))
             {
                 resourcePath = resourcePath + ".";
             }
@@ -120,7 +103,7 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             for (var i = 0; i < resources.Length; i++)
             {
                 var resourceName = resources[i];
-                if (resourceName.StartsWith(resourcePath))
+                if (resourceName.StartsWith(resourcePath, StringComparison.OrdinalIgnoreCase))
                 {
                     entries.Add(new EmbeddedResourceFileInfo(
                         _assembly,
@@ -199,18 +182,10 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
 
         public EnumerableDirectoryContents(IEnumerable<IFileInfo> entries)
         {
-            if (entries == null)
-            {
-                throw new ArgumentNullException(nameof(entries));
-            }
-
-            _entries = entries;
+            _entries = entries ?? throw new ArgumentNullException(nameof(entries));
         }
 
-        public bool Exists
-        {
-            get { return true; }
-        }
+        public bool Exists => true;
 
         public IEnumerator<IFileInfo> GetEnumerator()
         {

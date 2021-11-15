@@ -9,12 +9,12 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
         {
             ElapsedMilliseconds = elapsedMilliseconds;
             StatusCode = result.StatusCode;
-            RequestUrl = result.RequestMessage.RequestUri.ToString();
-            Method = result.RequestMessage.Method.Method;
+            RequestUrl = result.RequestMessage?.RequestUri?.ToString();
+            Method = result.RequestMessage?.Method.Method;
             RequestStartedMs = requestStartMilliseconds;
         }
 
-        public HttpStatusResult(long id, string method, double elapsedMilliseconds, string requestUrl, HttpStatusCode statusCode, double requestStartMilliseconds)
+        public HttpStatusResult(long id, string? method, double elapsedMilliseconds, string? requestUrl, HttpStatusCode statusCode, double requestStartMilliseconds)
         {
             Id = id;
             Method = method;
@@ -26,11 +26,11 @@ namespace Zoxive.HttpLoadTesting.Framework.Model
 
         public long Id { get; }
 
-        public string Method { get; }
+        public string? Method { get; }
 
         public double ElapsedMilliseconds { get; }
 
-        public string RequestUrl { get; }
+        public string? RequestUrl { get; }
 
         public HttpStatusCode StatusCode { get; }
 

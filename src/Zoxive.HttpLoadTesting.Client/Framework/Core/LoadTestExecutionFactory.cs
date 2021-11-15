@@ -8,17 +8,17 @@ namespace Zoxive.HttpLoadTesting.Client.Framework.Core
     public class LoadTestExecutionFactory
     {
         private readonly ClientOptions _options;
-        private readonly HostRef _host;
+        private readonly UserExecutingQueue _userExecutingQueue;
 
-        public LoadTestExecutionFactory(ClientOptions options, HostRef host)
+        public LoadTestExecutionFactory(ClientOptions options, UserExecutingQueue userExecutingQueue)
         {
             _options = options;
-            _host = host;
+            _userExecutingQueue = userExecutingQueue;
         }
 
         public ILoadTestExecution Create(IReadOnlyList<IHttpUser> users)
         {
-            return new LoadTestExecution(users, _options, _host);
+            return new LoadTestExecution(users, _options, _userExecutingQueue);
         }
     }
 }

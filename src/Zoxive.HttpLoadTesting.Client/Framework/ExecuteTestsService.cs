@@ -14,22 +14,25 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
         private readonly ILoadTestExecution _loadTestExecution;
         private readonly IReadOnlyList<ISchedule> _schedules;
         private readonly ISaveIterationQueue _saveIterationQueue;
+        private readonly TestExecutionToken _testExecutionToken;
 
         public ExecuteTestsService
         (
             ClientOptions clientOptions,
             ILoadTestExecution loadTestExecution,
             IReadOnlyList<ISchedule> schedules,
-            ISaveIterationQueue saveIterationQueue
+            ISaveIterationQueue saveIterationQueue,
+            TestExecutionToken testExecutionToken
         )
         {
             _clientOptions = clientOptions;
             _loadTestExecution = loadTestExecution;
             _schedules = schedules;
             _saveIterationQueue = saveIterationQueue;
+            _testExecutionToken = testExecutionToken;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Console.WriteLine($"Using DatabaseFile: {_clientOptions.DatabaseFile}");
 
@@ -37,14 +40,24 @@ namespace Zoxive.HttpLoadTesting.Client.Framework
             if (_clientOptions.Viewing)
             {
                 Console.WriteLine("Viewing Existing Data..");
-                return Task.CompletedTask;
+                return;
             }
 
             Console.WriteLine("Running Tests..");
 
             _loadTestExecution.UserIterationFinished += LogIteration(_saveIterationQueue);
 
-            return _loadTestExecution.Execute(_schedules);
+            var token = _testExecutionToken.Token;
+
+            try
+            {
+                await _loadTestExecution.Execute(_schedules, token);
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("Test Scheduler Stopped.");
+                // eat the token cancelled exception
+            }
         }
 
         private static UserIterationFinished LogIteration(ISaveIterationQueue iterationQueueRepository)

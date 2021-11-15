@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
@@ -23,20 +24,20 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 
         public async Task OnGetAsync([FromQuery] Filters filters)
         {
-            filters.Period = filters.Period ?? 1m;
+            filters.Period ??= 1m;
 
             var graphStatus = _graphStatsService.GetStatusCodes(filters);
             var distincts = _resultRepository.GetDistincts(filters);
 
             await Task.WhenAll(graphStatus, distincts);
 
-            GraphStatus = graphStatus.Result.AsList();
-            Distincts = distincts.Result;
+            GraphStatus = (await graphStatus).AsList();
+            Distincts = await distincts;
             Filters = filters;
         }
 
-        public HttpStatusResultDistincts Distincts;
-        public Filters Filters { get; set; }
-        public IReadOnlyList<StatusCodeStatDto> GraphStatus;
+        public HttpStatusResultDistincts? Distincts { get; set; }
+        public Filters? Filters { get; set; }
+        public IReadOnlyList<StatusCodeStatDto> GraphStatus { get; set; }= ArraySegment<StatusCodeStatDto>.Empty;
     }
 }

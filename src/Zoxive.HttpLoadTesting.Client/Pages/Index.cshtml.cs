@@ -16,9 +16,9 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
             _resultRepository = resultRepository;
         }
 
-        public HttpStatusResultStatistics Stats;
-        public HttpStatusResultDistincts Distincts;
-        public Filters Filters { get; set; }
+        public HttpStatusResultStatistics Stats { get; private set; } =  HttpStatusResultStatistics.Empty;
+        public HttpStatusResultDistincts Distincts { get; private set; } = HttpStatusResultDistincts.Empty;
+        public Filters Filters { get; private set; } = Filters.Empty;
 
         public async Task OnGetAsync([FromQuery] Filters filters)
         {
@@ -27,9 +27,9 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 
             await Task.WhenAll(distincts, stats);
 
-            Distincts = distincts.Result;
+            Distincts = await distincts;
             Filters = filters;
-            Stats = stats.Result;
+            Stats = await stats;
         }
     }
 
@@ -41,13 +41,15 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
 
     public class Filters
     {
-        public int Count = 50;
+        public int Count { get; } = 50;
 
-        public Filters()
+        public static Filters Empty => new();
+
+        public Filters(): this(CollationType.Requests, null, null, null, null, null, null)
         {
         }
 
-        protected Filters(CollationType collationType, string test, string method, string requestUrl, int? deviations, int? statusCode, decimal? period)
+        protected Filters(CollationType collationType, string? test, string? method, string? requestUrl, int? deviations, int? statusCode, decimal? period)
         {
             CollationType = collationType;
             Test = test;
@@ -55,20 +57,20 @@ namespace Zoxive.HttpLoadTesting.Client.Pages
             RequestUrl = requestUrl;
             Deviations = deviations;
             StatusCode = statusCode;
-            Period = period;
+            Period = period ?? 1m;
         }
 
-        public CollationType CollationType { get; set; }
+        public CollationType CollationType { get; }
 
-        public string Test { get; set; }
+        public string? Test { get; }
 
-        public string Method { get; set; }
+        public string? Method { get; }
 
-        public string RequestUrl { get; set; }
+        public string? RequestUrl { get; }
 
         public int? Deviations { get; set; }
 
-        public int? StatusCode { get; set; }
+        public int? StatusCode { get; }
 
         public decimal? Period { get; set; }
 

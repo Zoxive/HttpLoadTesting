@@ -9,6 +9,6 @@ namespace Zoxive.HttpLoadTesting.Framework.Core
     {
         event UserIterationFinished UserIterationFinished;
 
-        Task Execute(IReadOnlyList<ISchedule> schedule);
+        Task Execute(IReadOnlyList<ISchedule> schedule, CancellationToken cancellationToken);
     }
 }
