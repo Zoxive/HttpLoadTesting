@@ -41,7 +41,7 @@
     </PackageReference>
     <PackageReference PrivateAssets="all" Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0" />
     <PackageReference Include="StructuredLogging.Analyzers" Version="0.2.0" />
-    <PackageReference Include="IDisposableAnalyzers" Version="3.4.15">
+    <PackageReference Include="IDisposableAnalyzers" Version="4.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
